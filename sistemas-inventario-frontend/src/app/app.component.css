@@ -37,7 +37,7 @@
 
 .contenido-principal {
   margin-top: 35px; 
-  height: calc(100vh);
+  height: calc(100vh - 35px);
   overflow: hidden;
   position: fixed;
   top: 0;
@@ -48,19 +48,21 @@
 
 .contenido-inventario-sistemas {
   display: grid;
-  grid-template-columns: var(--menu-width, 250px) 1fr;
+  grid-template-columns: var(--menu-width, 230px) 1fr;
   grid-template-rows: 1fr;
   height: 100%;
   width: 100%;
   transition: grid-template-columns 0.3s ease;
+  overflow: hidden;
 }
 
 .menu {
-  background-color: #f4f4f4;
+  background: #f3f4f6;
   padding: 0;
   margin: 0;
   overflow-x: hidden;
   overflow-y: auto; 
+  z-index: 1000;
 }
 
 .menu-minimizado {
