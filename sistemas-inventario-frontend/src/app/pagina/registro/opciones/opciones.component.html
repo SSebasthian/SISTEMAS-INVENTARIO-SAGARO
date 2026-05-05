@@ -2,7 +2,7 @@
     <div class="contenedor">
         <div class="carta">
             <div class="contenedor-caja">
-                <div class="contenido">
+                <div class="contenido" (click)="mostrarComponenteRegistroEmpleado()">
                     <mat-icon>perm_identity</mat-icon>
                     <h3>Usuario</h3>
                 </div>
@@ -10,7 +10,7 @@
         </div>
         <div class="carta">
             <div class="contenedor-caja">
-                <div class="contenido">
+                <div class="contenido" (click)="mostrarComponenteRegistroEquipo()">
                     <mat-icon>desktop_mac</mat-icon>
                     <h3>Equipo</h3>
                 </div>
@@ -18,15 +18,15 @@
         </div>
         <div class="carta">
             <div class="contenedor-caja">
-                <div class="contenido">
+                <div class="contenido" (click)="mostrarComponenteRegistroCelular()">
                     <mat-icon>phone_android</mat-icon>
-                    <h3>Telefono</h3>
+                    <h3>Celular</h3>
                 </div>
             </div>
         </div>
         <div class="carta">
             <div class="contenedor-caja">
-                <div class="contenido">
+                <div class="contenido" (click)="mostrarComponenteRegistroTablet()">
                     <mat-icon>tablet_mac</mat-icon>
                     <h3>Tablet</h3>
                 </div>
@@ -34,11 +34,33 @@
         </div>
         <div class="carta">
             <div class="contenedor-caja">
-                <div class="contenido">
+                <div class="contenido" (click)="mostrarComponenteRegistroImpresora()">
                     <mat-icon>print</mat-icon>
                     <h3>Impresora</h3>
                 </div>
             </div>
         </div>
+    </div>
+
+
+
+    <div *ngIf="componenteActivo === 'usuario'">
+        <app-opc-empleado></app-opc-empleado> <!-- Llamamos a OpcEmpleadoComponent -->
+    </div>
+
+    <div *ngIf="componenteActivo === 'equipo'">
+        <app-opc-equipo></app-opc-equipo> <!-- Llamamos a OpcEquipoComponent -->
+    </div>
+
+    <div *ngIf="componenteActivo === 'celular'">
+        <app-opc-telefono></app-opc-telefono> <!-- Llamamos a OpcTelefonoComponent -->
+    </div>
+
+    <div *ngIf="componenteActivo === 'tablet'">
+        <app-opc-tablet></app-opc-tablet> <!-- Llamamos a OpcTabletComponent -->
+    </div>
+
+    <div *ngIf="componenteActivo === 'impresora'">
+        <app-opc-impresora></app-opc-impresora> <!-- Llamamos a OpcImpresoraComponent -->
     </div>
 </div>
