@@ -81,8 +81,11 @@ export class AccesoComponent {
 
           // Redirigir al perfil después de 1 segundo (opcional)
           setTimeout(() => {
+            // Guardar sesión manualmente (actualiza localStorage y el observable)
+            this.autenticadorService.establecerSesion(respuesta);
+            // Navegar al perfil
             this.router.navigate(['/autenticacion/perfil']);
-          }, 1000);
+          }, 500);
         } else {
           // Cualquier otro mensaje (ej: "Usuario o contraseña incorrectos")
           this.notificacionSnackbarService.error(

@@ -1,8 +1,7 @@
-
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
-import { BehaviorSubject } from 'rxjs';
+import { Observable, tap, BehaviorSubject } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 import { inicioSesionSolicitud } from '../../interface/inicioSesionSolicitud.interface';
 import { inicioSesionRespuesta } from '../../interface/inicioSesionRespuesta.interface';
 import { PerfilService } from './perfil.service';
@@ -18,13 +17,23 @@ export class AutenticadorService {
   private apiUrl = 'http://localhost:8080/';
   private perfilActualizado = new BehaviorSubject<boolean>(false);
   perfilActualizado$ = this.perfilActualizado.asObservable();
+  private isBrowser: boolean;
 
+  // Subject para el estado de autenticación
+  private authState = new BehaviorSubject<boolean>(this.estaLogueado());
+  authState$ = this.authState.asObservable();
 
   constructor(
     private http: HttpClient,
-    private perfilService: PerfilService
-  ) { }
-
+    private perfilService: PerfilService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    // Solo verificar el estado inicial si estamos en el navegador
+    if (this.isBrowser) {
+      this.authState.next(this.estaLogueado());
+    }
+  }
 
 
   // ============================================
@@ -40,6 +49,14 @@ export class AutenticadorService {
   }
 
 
+  // Método para establecer la sesión manualmente (después del delay)
+  establecerSesion(respuesta: inicioSesionRespuesta): void {
+    if (this.isBrowser) {
+      localStorage.setItem('usuario', JSON.stringify(respuesta));
+      this.authState.next(true);
+    }
+  }
+  
   // ----------------
   // CERRAR PERFIL---
   // ----------------
@@ -48,17 +65,29 @@ export class AutenticadorService {
     this.perfilService.limpiarPermisosLocalStorage();
     // Elimina el usuario del localStorage para cerrar sesión
     localStorage.removeItem('usuario');
+    // Actualizar el estado de autenticación
+    this.authState.next(false);
   }
-  
+
 
 
   // ----------------------------------
   // VERIFICAR SI HAY SESION ACTIVA ---
   // ----------------------------------
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('usuario');
+  estaLogueado(): boolean {
+    if (this.isBrowser) {
+      return !!localStorage.getItem('usuario');
+    }
+    return false;
   }
 
-  
+  // Método para obtener el usuario actual (opcional)
+  getUsuarioActual(): any {
+    if (this.isBrowser) {
+      const usuario = localStorage.getItem('usuario');
+      return usuario ? JSON.parse(usuario) : null;
+    }
+    return null;
+  }
 
 }

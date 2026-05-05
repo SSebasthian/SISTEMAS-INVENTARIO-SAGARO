@@ -10,7 +10,7 @@ export const estadoPrivado: CanActivateFn = () => {
   const autenticadorService = inject(AutenticadorService);
 
   // Validar si está logueado
-  const estaLogueado = autenticadorService.isLoggedIn();
+  const estaLogueado = autenticadorService.estaLogueado();
 
   if (estaLogueado) {
     return true; // Deja entrar
@@ -27,7 +27,7 @@ export const estadoPublico: CanActivateFn = () => {
   const router = inject(Router);
   const autenticadorService = inject(AutenticadorService);
 
-  const estaLogueado = autenticadorService.isLoggedIn();
+  const estaLogueado = autenticadorService.estaLogueado();
 
   if (estaLogueado) {
     router.navigate(['/autenticacion/perfil']);

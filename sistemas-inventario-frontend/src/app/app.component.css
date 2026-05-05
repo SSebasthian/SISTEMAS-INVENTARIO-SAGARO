@@ -48,12 +48,21 @@
 
 .contenido-inventario-sistemas {
   display: grid;
-  grid-template-columns: var(--menu-width, 230px) 1fr;
   grid-template-rows: 1fr;
   height: 100%;
   width: 100%;
   transition: grid-template-columns 0.3s ease;
   overflow: hidden;
+}
+
+/* Estado SIN sesión: una sola columna (menu no existe) */
+.contenido-inventario-sistemas:not(.con-menu) {
+  grid-template-columns: 1fr;
+}
+
+/* Estado CON sesión: dos columnas (menú + contenido) */
+.contenido-inventario-sistemas.con-menu {
+  grid-template-columns: var(--menu-width, 230px) 1fr;
 }
 
 .menu {
@@ -65,7 +74,7 @@
   z-index: 1000;
 }
 
-.menu-minimizado {
+.contenido-inventario-sistemas.menu-minimizado.con-menu {
   --menu-width: 80px;
 }
 
