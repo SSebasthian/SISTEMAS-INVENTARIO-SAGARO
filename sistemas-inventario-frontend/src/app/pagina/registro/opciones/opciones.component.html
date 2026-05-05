@@ -1,6 +1,6 @@
 <div class="contendido-servicios">
     <div class="contenedor">
-        <div class="carta">
+        <div class="carta"  [ngClass]="{'selected': componenteActivo === 'usuario'}">
             <div class="contenedor-caja">
                 <div class="contenido" (click)="mostrarComponenteRegistroEmpleado()">
                     <mat-icon>perm_identity</mat-icon>
@@ -8,7 +8,7 @@
                 </div>
             </div>
         </div>
-        <div class="carta">
+        <div class="carta" [ngClass]="{'selected': componenteActivo === 'equipo'}">
             <div class="contenedor-caja">
                 <div class="contenido" (click)="mostrarComponenteRegistroEquipo()">
                     <mat-icon>desktop_mac</mat-icon>
@@ -16,7 +16,7 @@
                 </div>
             </div>
         </div>
-        <div class="carta">
+        <div class="carta"[ngClass]="{'selected': componenteActivo === 'celular'}">
             <div class="contenedor-caja">
                 <div class="contenido" (click)="mostrarComponenteRegistroCelular()">
                     <mat-icon>phone_android</mat-icon>
@@ -24,7 +24,7 @@
                 </div>
             </div>
         </div>
-        <div class="carta">
+        <div class="carta" [ngClass]="{'selected': componenteActivo === 'tablet'}">
             <div class="contenedor-caja">
                 <div class="contenido" (click)="mostrarComponenteRegistroTablet()">
                     <mat-icon>tablet_mac</mat-icon>
@@ -32,7 +32,7 @@
                 </div>
             </div>
         </div>
-        <div class="carta">
+        <div class="carta" [ngClass]="{'selected': componenteActivo === 'impresora'}">
             <div class="contenedor-caja">
                 <div class="contenido" (click)="mostrarComponenteRegistroImpresora()">
                     <mat-icon>print</mat-icon>

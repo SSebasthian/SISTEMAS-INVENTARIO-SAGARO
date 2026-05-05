@@ -57,7 +57,8 @@
     transform: 0.5s;
 }
 
-.contenedor .carta:hover .contenedor-caja .contenido mat-icon {
+.contenedor .carta:hover .contenedor-caja .contenido mat-icon,
+.contenedor .carta.selected .contenedor-caja .contenido mat-icon {
     color: #393e7f;
     z-index: -1;
     transform: translateY(-15px);
@@ -72,11 +73,14 @@
     transition: 0.2s;
 }
 
-.contenedor .carta:hover .contenedor-caja .contenido h3 {
+.contenedor .carta:hover .contenedor-caja .contenido h3,
+.contenedor .carta.selected .contenedor-caja .contenido h3 {
     color: #393e7f;
     transform: translateY(5px);
     transition: 0.2s;
 }
+
+
 
 
 
