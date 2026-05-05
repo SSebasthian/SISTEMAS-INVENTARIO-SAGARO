@@ -1,4 +1,4 @@
-<div class="header-superior"  *ngIf="isLoggedIn">
+<div class="header-superior" *ngIf="isLoggedIn">
   <div class="menu-izquierda">
     <a (click)="menuMinMax()" class="boton-menu-header">
       <mat-icon>menu</mat-icon>
@@ -12,12 +12,15 @@
 
 <!-- Contenedor principal con menú lateral y contenido (debajo del header) -->
 <div class="contenido-principal">
-  <div class="contenido-inventario-sistemas" [class.con-menu]="isLoggedIn"  [class.menu-minimizado]="isLoggedIn && menuMinimizado">
+  <div class="contenido-inventario-sistemas" [class.con-menu]="isLoggedIn"
+    [class.menu-minimizado]="isLoggedIn && menuMinimizado">
     <div *ngIf="isLoggedIn" class="menu">
       <app-menu></app-menu>
     </div>
     <div class="pagina-dinamica">
-      <router-outlet></router-outlet>
+      <div class="contenido">
+        <router-outlet></router-outlet>
+      </div>
     </div>
   </div>
 </div>
