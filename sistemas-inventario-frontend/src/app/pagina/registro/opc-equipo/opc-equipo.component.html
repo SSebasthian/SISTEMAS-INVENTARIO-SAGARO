@@ -1,1 +1,158 @@
-<p>opc-equipo works!</p>
+<div class="contenedor-regEquipo">
+  <form id="form-registro-equipo">
+    <div class="contenido">
+  
+      <div class="fila-de-tres">
+        <div class="contenedor-imagen">
+          <div class="contenido-img">
+            <mat-icon class="icono-img-prod">image</mat-icon>
+              <input type="file" id="archivo-producto">
+              <div>
+                <img alt="Imagen">
+              </div>
+          </div>
+        </div>
+                  
+        <div class="contenido-opcion">
+            <label>TIPO DE EQUIPO<br></label>
+            <select class="opcionForm select">
+                <option value=""></option>
+                <option value="TORRE">TORRE</option>
+                <option value="TODO EN UNO">TODO EN UNO</option>
+                <option value="PORTATIL">PORTATIL</option>
+                <option value="SERVIDOR">SERVIDOR</option>
+                <option value="TERMINAL">TERMINAL</option>
+            </select>
+        </div>
+
+        <div class="contenido-opcion">
+            <label>SERIAL:<br></label>
+            <input class="opcionForm" type="text">
+        </div>  
+
+        <div class="contenido-opcion">
+          <label>MARCA<br></label>
+          <select class="opcionForm select">
+              <option value=""></option>
+              <option value="ASUS">ASUS</option>
+              <option value="DELL INC">DELL INC</option>
+              <option value="HEWLETT PACKARD">HEWLETT PACKARD</option>
+              <option value="LENOVO">LENOVO</option>
+          </select>
+        </div>
+        
+        <div class="contenido-opcion">
+          <label>MODELO:<br></label>
+          <input class="opcionForm" type="text">
+        </div>
+
+        <div class="contenido-opcion">
+          <label>SISTEMA OPERATIVO<br></label>
+          <select class="opcionForm select">
+              <option value=""></option>
+              <option value="WINDOWS">WINDOWS</option>
+              <option value="LINUX">LINUX</option>
+          </select>
+        </div>
+
+        <div class="contenido-opcion">
+          <label>VERSION S.O.<br></label>
+          <select class="opcionForm select">
+              <option value=""></option>
+              <option value="WINDOWS XP">WINDOWS XP</option>
+              <option value="WINDOWS VISTA">WINDOWS VISTA</option>
+              <option value="WINDOWS 7">WINDOWS 7</option>
+              <option value="WINDOWS 8">WINDOWS 8</option>
+              <option value="WINDOWS 10">WINDOWS 10</option>
+              <option value="WINDOWS 11">WINDOWS 11</option>
+          </select>
+        </div>
+
+        <div class="contenido-opcion">
+          <label>BITS<br></label>
+          <select class="opcionForm select">
+              <option value=""></option>
+              <option value="32">32</option>
+              <option value="64">64</option>
+          </select>
+        </div>
+
+        <div class="contenido-opcion">
+          <label>TAMAÑO RAM<br></label>
+          <input class="opcionForm" type="text">
+        </div>
+
+        <div class="contenido-opcion">
+          <label>TIPO DE RAM<br></label>
+          <select class="opcionForm select">
+            <option value=""></option>
+            <option value="DDR2">DDR2</option>
+            <option value="DDR3">DDR3</option>
+            <option value="DDR4">DDR4</option>
+            <option value="DDR5">DDR5</option>
+          </select>
+        </div>
+        
+        <div class="contenido-opcion">
+          <label>PROCESADOR<br></label>
+          <input class="opcionForm" type="text">
+        </div>
+  
+        <div class="contenido-opcion">
+          <label>TAMAÑO DISCO<br></label>
+          <input class="opcionForm" type="text">
+        </div>
+
+        <div class="contenido-opcion">
+          <label>TIPO DE DISCO<br></label>
+          <select class="opcionForm select">
+            <option value=""></option>
+            <option value="SSD">SSD</option>
+            <option value="HDD">HDD</option>
+          </select>
+        </div>
+        
+        <div class="contenido-opcion">
+          <label>NUMERO DE PLACA<br></label>
+          <input class="opcionForm" type="text">
+        </div>
+
+        <div class="contenido-opcion">
+          <label>FACTURA<br></label>
+          <input class="opcionForm" type="text">
+        </div>
+
+        <div class="contenido-opcion">
+          <label>FECHA DE COMPRA<br></label>
+          <input class="opcionForm" type="date">
+        </div>
+
+        <div class="contenido-opcion">
+          <label>ESTADO<br></label>
+          <select class="opcionForm select">
+                <option value=""></option>
+              <option value="NUEVO" title="El equipo está en perfectas condiciones, puede ser un equipo recién adquirido o recién salido de la fábrica.">NUEVO</option>
+              <option value="BUEN ESTADO" title="El equipo está funcionando correctamente, Es un equipo que todavía cumple su función de manera eficiente.">BUEN ESTADO</option>
+              <option value="ESTADO REGULAR" title="El equipo muestra algunos signos de desgaste o mal uso, pero aún es funcional.">ESTADO REGULAR</option>
+              <option value="ESTADO DEFICIENTE" title="El equipo tiene daños visibles y/o problemas de funcionamiento que afectan su rendimiento.  Es posible que aún funcione, pero no de manera óptima.">ESTADO DEFICIENTE</option>
+              <option value="INOPERATIVO" title="El equipo ya no está operativo debido a fallas graves en el hardware.">INOPERATIVO</option>
+          </select>
+        </div>
+      
+        <div class="contenido-opcion textarea">
+          <label for="descripcion">DESCRIPCION:<br></label>
+          <textarea> </textarea>
+        </div>
+
+        <div>
+          <input type="submit" id="submitInput" value="Enviar">
+          <label for="submitInput" class="bookmark">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+      </div>
+        
+      </div>
+    </div>
+  </form>
+</div>
+<br><br><br>
