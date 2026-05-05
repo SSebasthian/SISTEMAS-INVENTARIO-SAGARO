@@ -33,7 +33,8 @@
 
 `ng generate component pagina/menu` (Menu)<br>
 `ng generate component pagina/registro/opciones` (Opciones de registro)<br>
+`ng generate component pagina/registro/opc-empleado` (Opciones de registro - EMPLEADO)<br>
 `ng generate component pagina/registro/opc-equipo` (Opciones de registro - EQUIPO)<br>
 `ng generate component pagina/registro/opc-telefono` (Opciones de registro - TELEFONO)<br>
 `ng generate component pagina/registro/opc-tablet` (Opciones de registro - TABLET)<br>
-`ng generate component pagina/registro/opc-impresora` (Opciones de registro - IMPRISORA)<br>
+`ng generate component pagina/registro/opc-impresora` (Opciones de registro - IMPRESORA)<br>
