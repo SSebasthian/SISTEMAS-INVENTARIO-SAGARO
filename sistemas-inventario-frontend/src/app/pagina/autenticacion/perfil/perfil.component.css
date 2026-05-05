@@ -1,9 +1,12 @@
-.perfil{
-    display: flex;
-    justify-content: center; /* centra horizontal */
-    align-items: center;     /* centra vertical */
-    min-height: 100vh;       /* ocupa toda la pantalla */
-    margin: 0;
+.perfil {
+  display: flex;
+  justify-content: center;
+  /* centra horizontal */
+  align-items: center;
+  /* centra vertical */
+  min-height: 100vh;
+  /* ocupa toda la pantalla */
+  margin: 0;
 }
 
 .tarjeta {
@@ -14,7 +17,7 @@
   position: relative;
   background: #f3f4f6;
   border-radius: 10px;
-  box-shadow: 
+  box-shadow:
     3px 10px 25px rgba(0, 0, 0, 0.08),
     3px 4px 10px rgba(0, 0, 0, 0.05);
 
@@ -37,20 +40,22 @@
   max-width: 25ch;
   margin: auto;
 }
-.tarjeta__cabeza{
-    width: min(220px, 97.5%);
-    font-size: 24px;
-    font-weight: 600;
-    color: #595959;
+
+.tarjeta__cabeza {
+  width: min(220px, 97.5%);
+  font-size: 24px;
+  font-weight: 600;
+  color: #595959;
 }
 
 .tarjeta__rol strong {
-    font-weight: 600;
-    color: #000;
+  font-weight: 600;
+  color: #000;
 }
-.tarjeta__rol span{
-    font-weight: 450;
-    color: #1a1818;
+
+.tarjeta__rol span {
+  font-weight: 450;
+  color: #1a1818;
 }
 
 .tarjeta__permisos {
@@ -58,18 +63,19 @@
 
 }
 
-.tarjeta__permisos hr{
+.tarjeta__permisos hr {
   width: 320px;
   margin-left: -50px;
   border: none;
   height: 1px;
   background: linear-gradient(to right, transparent, #9ca0e6, transparent);
 }
-.tarjeta__permisos p{
+
+.tarjeta__permisos p {
   padding-bottom: 5px;
   font-weight: 600;
-    color: #393e7f;
-    font-size: 18px;
+  color: #393e7f;
+  font-size: 18px;
 }
 
 
@@ -118,7 +124,7 @@
   position: relative;
   transform: translateY(-50%);
   border-radius: 50%;
-  border: 8px solid #393e7f;
+  border: 10px solid #393e7f;
   display: grid;
   place-items: center;
   font-weight: 900;
@@ -148,10 +154,10 @@
 }
 
 .card__ribbon mat-icon {
-    width: 45px;
-    height: 45px;
-    font-size: 45px;
-    color: #1c1a1a;
+  width: 45px;
+  height: 45px;
+  font-size: 45px;
+  color: #1c1a1a;
 }
 
 
@@ -162,42 +168,43 @@
   border: none;
   display: grid;
   place-items: center;
-  cursor: pointer;
 }
+
 .btn-logout-icon mat-icon {
   font-size: 30px;
   width: 30px;
   height: 30px;
   margin-left: -40px;
   color: #f3f4f6;
+  cursor: pointer;
 }
 
 
 /* MENÚ IZQUIERDO */
-.menu-lateral{
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-left: -530px;
+.menu-lateral {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-left: -530px;
 }
 
 
 /* BOTONES DE ACCIÓN */
 
 /* BOTONES ACCIONES PERFIL */
-.btn-accion{
-    background: #393e7f;
-    color: white;
-    border: none;
-    padding: 10px 13px; 
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 14px;
-    text-align: left;
-    box-shadow: 
-      3px 10px 25px rgba(0, 0, 0, .18),
-      3px 4px 10px rgba(0, 0, 0, 0.05);
+.btn-accion {
+  background: #393e7f;
+  color: white;
+  border: none;
+  padding: 10px 13px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  box-shadow:
+    3px 10px 25px rgba(0, 0, 0, .18),
+    3px 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 
@@ -207,7 +214,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px 10px; 
+  gap: 20px 10px;
   margin-top: -10px;
   margin-left: -72px;
   width: 370px;
@@ -236,8 +243,9 @@
   cursor: pointer;
   font-weight: bold;
   margin: -1px;
-  
+
 }
+
 .modulos .btn:active {
   translate: 0 0.225em;
   box-shadow:
@@ -261,19 +269,19 @@
 
 /* ACCIONES */
 
-.acciones{
+.acciones {
   width: 310px;
   height: 180px;
   margin-top: 30px;
   margin-left: -40px;
   border-radius: 10px;
   box-shadow: inset 8px 8px 10px #c3c3c3,
-            inset -8px -8px 10px #cfcfcf;
+    inset -8px -8px 10px #cfcfcf;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-.acciones-grid{
+.acciones-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
 }
@@ -332,8 +340,9 @@
   cursor: pointer;
   color: #fff;
 }
+
 .mostrar-modal .cancel-button:hover,
-.mostrar-modal .confirm-button:hover{
+.mostrar-modal .confirm-button:hover {
   opacity: 0.9;
 }
 
@@ -343,4 +352,111 @@
 
 .mostrar-modal .confirm-button {
   background: #c23232d5;
-}  
+}
+
+
+
+
+
+
+
+@media (max-width: 1250px) {
+
+  .tarjeta {
+    width: min(370px, 100%);
+    height: 400px;
+  }
+
+  .tarjeta::before {
+    width: 70px;
+    height: 20px;
+    top: 30px;
+  }
+
+  .tarjeta__cabeza {
+    width: min(220px, 97.5%);
+    margin-top: -20px;
+    font-size: 20px;
+  }
+
+  .tarjeta__rol {
+    margin-top: 5px;
+  }
+
+
+  .tarjeta__permisos {
+    margin-top: -8px;
+  }
+
+  .tarjeta__permisos p {
+    margin-top: -2px;
+    font-size: 17px;
+  }
+
+  .card__ribbon {
+    height: 40px;
+    top: -5px;
+  }
+
+  .card__ribbon-label {
+    width: 50px;
+    border: 10px solid #393e7f;
+  }
+
+  .card__ribbon mat-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 35px;
+  }
+
+  .btn-logout-icon mat-icon {
+    font-size: 25px;
+    width: 25px;
+    height: 25px;
+    margin-left: -45px;
+  }
+
+
+  /* MENÚ IZQUIERDO */
+  .menu-lateral {
+    margin-left: -470px;
+  }
+
+
+  /* BOTONES DE ACCIÓN */
+
+  /* BOTONES ACCIONES PERFIL */
+  .btn-accion {
+    padding: 8px 10px;
+  }
+
+  /* BOTONES PERMISOS */
+  .modulos {
+    margin-top: -10px;
+    margin-left: -69px;
+  }
+
+  .modulos .btn {
+    font-size: 12px;
+    padding: 0.4em 0.8em;
+  }
+
+
+  /* ACCIONES */
+
+  .acciones {
+    width: 280px;
+    height: 155px;
+    margin-top: 25px;
+    margin-left: -30px;
+  }
+
+  .acciones-grid {
+    margin-top: -20px;
+  }
+
+  .nombre-accion {
+    margin: 8px 0 10px 30px;
+  }
+
+}

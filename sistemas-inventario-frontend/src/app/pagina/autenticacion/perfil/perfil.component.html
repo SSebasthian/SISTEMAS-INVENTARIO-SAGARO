@@ -1,5 +1,4 @@
 <div class="perfil">
-
     <div class="menu-lateral">
 
         <button class="btn-accion" (click)="permisosPerfil()" matTooltip="Editar Perfil" matTooltipPosition="left"
@@ -72,9 +71,9 @@
             <label class="card__ribbon-label">
                 <mat-icon> person_pin</mat-icon>
             </label>
-            <button class="btn-logout-icon" (click)="confirmarCierreSesion()" matTooltip="Cerrar sesión"
-                matTooltip="Cerrar sesión" matTooltipPosition="below" matTooltipHideDelay="100">
-                <mat-icon>logout</mat-icon>
+            <button class="btn-logout-icon">
+                <mat-icon (click)="confirmarCierreSesion()" matTooltip="Cerrar sesión"
+                matTooltip="Cerrar sesión" matTooltipPosition="below" matTooltipHideDelay="100">logout</mat-icon>
             </button>
         </div>
     </div>
