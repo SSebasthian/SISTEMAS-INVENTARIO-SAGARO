@@ -32,3 +32,4 @@
 `ng generate service arquitectura/servicio/notificacion/notificacion-snackbar` (Servicio NOTIFICACIONES SNACKBAR)<br>
 
 `ng generate component pagina/menu` (Menu)<br>
+`ng generate component pagina/registro/opciones` (Opciones de registro)<br>
