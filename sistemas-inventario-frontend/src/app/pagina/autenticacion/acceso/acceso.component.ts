@@ -5,8 +5,8 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon'
 import { Router } from '@angular/router';
 import { RouterModule } from "@angular/router";
-import { inicioSesionSolicitud } from './../../../arquitectura/interface/inicioSesionSolicitud.interface';
-import { inicioSesionRespuesta } from './../../../arquitectura/interface/inicioSesionRespuesta.interface';
+import { inicioSesionSolicitud } from '../../../arquitectura/interface/Autenticacion/inicioSesionSolicitud.interface';
+import { inicioSesionRespuesta } from '../../../arquitectura/interface/Autenticacion/inicioSesionRespuesta.interface';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 
 

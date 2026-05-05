@@ -2,8 +2,8 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, BehaviorSubject } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
-import { inicioSesionSolicitud } from '../../interface/inicioSesionSolicitud.interface';
-import { inicioSesionRespuesta } from '../../interface/inicioSesionRespuesta.interface';
+import { inicioSesionSolicitud } from '../../interface/Autenticacion/inicioSesionSolicitud.interface';
+import { inicioSesionRespuesta } from '../../interface/Autenticacion/inicioSesionRespuesta.interface';
 import { PerfilService } from './perfil.service';
 
 
