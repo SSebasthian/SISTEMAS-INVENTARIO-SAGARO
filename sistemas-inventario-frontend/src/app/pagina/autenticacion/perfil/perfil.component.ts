@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon'
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { PermisosPerfilComponent } from '../../permisos/permisos-perfil/permisos-perfil.component';
@@ -21,7 +22,7 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 
 @Component({
   selector: 'app-perfil',
-  imports: [MatIconModule, CommonModule, MatTooltipModule],
+  imports: [MatIconModule, CommonModule, MatTooltipModule, RouterLink],
   templateUrl: './perfil.component.html',
   styleUrl: './perfil.component.css',
 })

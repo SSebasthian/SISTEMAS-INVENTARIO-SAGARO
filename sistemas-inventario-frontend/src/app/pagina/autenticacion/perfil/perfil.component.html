@@ -26,6 +26,11 @@
             <mat-icon>verified_user </mat-icon>
         </button>
 
+        <button class="btn-accion" *ngIf="permisoModuloService.puede('registro', 'ver')"
+            matTooltip="Registrar" matTooltipPosition="left" matTooltipHideDelay="100" [routerLink]="['/registro/opciones']">
+            <mat-icon>queue</mat-icon>
+        </button>
+
     </div>
 
     <div class="tarjeta">
