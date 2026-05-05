@@ -162,7 +162,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    right: 50px;
+    right: 90px;
     bottom: 0;
 }
 
@@ -223,7 +223,7 @@
 
 
     .contenedor-regEquipo .contenido .fila-de-tres {
-        gap: 7px 25px;
+        gap: 8px 25px;
     }
 
     .contenedor-regEquipo .contenido label {
@@ -264,7 +264,7 @@
 
 
     .contenedor-regEquipo .contenido .bookmark {
-        right: 30px;
+        right: 60px;
         bottom: 0px;
     }
 

@@ -1,1 +1,192 @@
-<p>opc-impresora works!</p>
+<div class="contenedor-regImpresora">
+    <form id="form-registro-impresora">
+        <div class="contenido">
+
+            <div class="fila-de-tres">
+
+                <!-----------------------  ----------------------->
+                <!------------ IMAGEN DE IMPRESORA --------------->
+                <!-----------------------  ----------------------->
+
+                <div class="contenedor-imagen">
+                    <div class="contenido-img">
+                        <mat-icon class="icono-img-prod">image</mat-icon>
+                        <input type="text" id="archivo-producto" style="display: none;">
+                    </div>
+                </div>
+                <!-----------------------  ----------------------->
+                <!------------ OPCIONES DE IMPRESORA ------------->
+                <!-----------------------  ----------------------->
+
+                <div class="contenido-opcion">
+                    <label>PROPIEDAD</label><br>
+                    <select class="opcionForm select">
+                        <option value=""></option>
+                        <option value="FLORES SAGARO">FLORES SAGARO</option>
+                        <option value="NEW SERVICE">NEW SERVICE</option>
+                    </select>
+                </div>
+
+
+                <div class="contenido-opcion">
+                    <label>TIPO DE IMPRESORA</label><br>
+                    <select class="opcionForm select">
+                        <option value=""></option>
+                        <option value="INYECCION DE TINTA">INYECCION DE TINTA</option>
+                        <option value="LASER">LASER</option>
+                        <option value="ESCANER">ESCANER</option>
+                        <option value="MATRIX">MATRIX</option>
+                    </select>
+                </div>
+
+
+                <!-----------------------  ----------------------->
+                <!-- OPCIONES DE MARCAS SEGUN EL TIPO DE IMPRESORA -->
+                <!-----------------------  ----------------------->
+
+
+                <div class="contenido-opcion">
+                    <label>MARCA</label><br>
+
+                    <select class="opcionForm select">
+                        <option value=""></option>
+                        <option value="CANON">CANON</option>
+                        <option value="EPSON">EPSON</option>
+                        <option value="HEWLETT PACKARD">HEWLETT PACKARD</option>
+                        <option value="KYOCERA">KYOCERA</option>
+                        <option value="TOSHIBA">TOSHIBA</option>
+                        <option value="ZEBRA">ZEBRA</option>
+                    </select>
+                </div>
+
+
+                <!-----------------------  ----------------------->
+                <!------- OPCIONES DE MODELO SEGUN SU MARCA ------>
+                <!-----------------------  ----------------------->
+
+                <div class="contenido-opcion">
+                    <label>MODELO:</label><br>
+
+                    <select class="opcionForm select">
+                        <option value=""></option>
+
+                        <option value="L210">L210</option>
+                        <option value="L220">L220</option>
+                        <option value="L365">L365</option>
+                        <option value="L380">L380</option>
+                        <option value="L3150">L3150</option>
+                        <option value="L3210">L3210</option>
+                        <option value="L4160">L4160</option>
+                        <option value="L4260">L4260</option>
+                        <option value="FX-1170">|FX-1170</option>
+
+
+                        <option value="ECOSYS M2540">ECOSYS M2540</option>
+                        <option value="ECOSYS M3550">ECOSYS M3550</option>
+                        <option value="ECOSYS M3560">ECOSYS M3560</option>
+                        <option value="ECOSYS P3045">ECOSYS P3045</option>
+                        <option value="FS-2100">FS-2100</option>
+                        <option value="FS-3640">FS-3640</option>
+                        <option value="FS-4200">FS-4200</option>
+
+                        <option value="E-STUDIO 3508A">E-STUDIO 3508</option>
+
+                        <option value="ZD230">ZD230</option>
+                        <option value="ZT210">ZT210</option>
+                        <option value="ZT410">ZT410</option>
+                        <option value="ZT230">ZT230</option>
+                        <option value="ZT510">ZT510</option>
+                        <option value="S4M">S4M</option>
+
+                        <option value="LASERJET P1102W">LASERJET P1102W</option>
+                        <option value="LASERJET M1212">LASERJET M1212</option>
+
+                        <option value="DR-C240">DR-C240</option>
+                        <option value="DR-M160 II">DR-M160 II</option>
+
+
+                    </select>
+                </div>
+
+
+                <div class="contenido-opcion">
+                    <label>SERIAL:</label><br>
+                    <input class="opcionForm" type="text">
+                </div>
+
+
+                <div class="contenido-opcion">
+                    <label>NUMERO DE PLACA</label><br>
+                    <input class="opcionForm" type="text">
+                </div>
+
+                <!-----------------------  ----------------------->
+                <!---------------- TIPO DE TINTA ----------------->
+                <!-----------------------  ----------------------->
+
+                <div class="contenido-opcion">
+                    <label>TIPO RECARGA</label><br>
+                    <select class="opcionForm select">
+                        <option value=""></option>
+                    </select>
+                </div>
+
+
+                <!-----------------------  ----------------------->
+                <!-------------------- SAGARO  ------------------->
+                <!-----------------------  ----------------------->
+
+
+
+                <div class="contenido-opcion">
+                    <label>FACTURA</label><br>
+                    <input class="opcionForm" type="text">
+                </div>
+
+                <div class="contenido-opcion">
+                    <label>FECHA DE COMPRA</label><br>
+                    <input class="opcionForm" type="date">
+                </div>
+
+                <div class="contenido-opcion">
+                    <label>ESTADO</label><br>
+                    <select class="opcionForm select">
+                        <option value=""></option>
+                        <option value="NUEVO"
+                            title="El equipo está en perfectas condiciones, puede ser un equipo recién adquirido o recién salido de la fábrica.">
+                            NUEVO</option>
+                        <option value="BUEN ESTADO"
+                            title="El equipo está funcionando correctamente, Es un equipo que todavía cumple su función de manera eficiente.">
+                            BUEN ESTADO</option>
+                        <option value="ESTADO REGULAR"
+                            title="El equipo muestra algunos signos de desgaste o mal uso, pero aún es funcional.">
+                            ESTADO REGULAR</option>
+                        <option value="ESTADO DEFICIENTE"
+                            title="El equipo tiene daños visibles y/o problemas de funcionamiento que afectan su rendimiento.  Es posible que aún funcione, pero no de manera óptima.">
+                            ESTADO DEFICIENTE</option>
+                        <option value="INOPERATIVO"
+                            title="El equipo ya no está operativo debido a fallas graves en el hardware.">INOPERATIVO
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="contenido-opcion textarea">
+                    <label for="descripcion">DESCRIPCION:</label><br>
+                    <textarea> </textarea>
+                </div>
+
+                
+
+                <div>
+                    <input type="submit" id="submitInput" value="Enviar">
+                    <label for="submitInput" class="bookmark">
+                        <mat-icon>bookmark</mat-icon>
+                    </label>
+                </div>
+
+
+            </div>
+        </div>
+    </form>
+</div>
+<br><br><br>
