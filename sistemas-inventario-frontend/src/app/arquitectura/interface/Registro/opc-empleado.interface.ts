@@ -1,5 +1,5 @@
 export default interface empleado{
-    cedula: number;             
+    cedula: string;             
     nombre: string;             
     apellido: string;           
     area: string;               
