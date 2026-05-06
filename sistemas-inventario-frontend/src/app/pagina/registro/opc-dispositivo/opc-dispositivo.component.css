@@ -1,0 +1,274 @@
+.contenedor-regTelefono {
+    max-width: 800px;
+    height: auto;
+    margin: auto;
+    margin-top: 30px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1), inset 5px 5px 10px #a9a9aa41, inset -5px -5px 10px #ffffff7e;
+}
+
+.contenedor-regTelefono .contenido {
+    position: relative;
+}
+
+.contenedor-regTelefono .contenido .fila-de-tres {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px 35px;
+    width: 100%;
+    margin: auto;
+}
+
+.contenedor-regTelefono .contenido label {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+    color: #494949;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.contenedor-regTelefono .contenido .opcionForm {
+    width: 205px;
+    padding: 9px;
+    border: 1px solid #ddd;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    outline: none;
+    color: #333;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.contenedor-regTelefono .contenido .select {
+    width: 225px;
+    padding: 8.5px;
+}
+
+.contenedor-regTelefono .contenido .opcionForm:focus,
+.contenedor-regTelefono .contenido textarea:focus {
+    border-color: rgba(49, 161, 253, 0.623);
+    background-color: #fff;
+    box-shadow: 0 0 7px rgba(100, 51, 219, 0.3);
+}
+
+.contenedor-regTelefono .contenido input[type="date"] {
+    width: 205px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    color: #333;
+    transition: all 0.3s ease;
+    font-size: 13px;
+}
+
+.contenedor-regTelefono .contenido textarea {
+    width: 100%;
+    height: 60px;
+    border: 1px solid #ddd;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    outline: none;
+    color: #333;
+    font-size: 14px;
+    resize: none;
+    letter-spacing: 1px;
+}
+
+.contenedor-regTelefono .contenido .textarea {
+    grid-column: span 2;
+    /* Hace que ocupe dos columnas */
+}
+
+.contenedor-regTelefono .contenido .contenedor-imagen {
+    border-radius: 7px;
+    grid-row: span 2;
+    /* Hace que ocupe dos columnas */
+    margin-top: -25px;
+}
+
+.contenedor-regTelefono .contenedor-imagen {
+    display: inline-block;
+    position: relative;
+}
+.contenedor-regTelefono .contenedor-imagen .contenido-img {
+    border: 2.5px dashed rgba(58, 57, 57, 0.5);
+    background-color: #f9f9f9;
+    width: 180px;
+    height: 140px;
+    justify-content: center;
+    align-items: center;
+    font-size: 50px;
+    color: #fff;
+    border-radius: 6px;
+    transition: 0.3s all ease;
+    position: relative;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.contenedor-regTelefono .contenedor-imagen .contenido-img:hover {
+    background: rgba(5, 5, 5, 0.17);
+}
+
+
+.contenedor-regTelefono .contenedor-imagen .contenido-img .icono-img-prod {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    font-size: 100px;
+    color: rgba(153, 153, 153, 0.671);
+}
+
+.contenedor-regTelefono .contenedor-imagen .contenido-img img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: 97%;
+    height: 97%;
+}
+
+.contenedor-regTelefono .contenedor-imagen .contenido-img input[type="file"] {
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    display: block;
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* BOTON GUARDAR */
+
+
+.contenedor-regTelefono .contenido .bookmark {
+    position: absolute;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    right: 90px;
+    bottom: 0;
+}
+
+/* Ocultar el input submit */
+.contenedor-regTelefono .contenido #submitInput {
+    display: none;
+}
+
+/* Estilo del ícono */
+.contenedor-regTelefono .contenido .bookmark mat-icon {
+    height: 70px;
+    width: 70px;
+    font-size: 70px;
+    color: rgb(153, 153, 153);
+}
+
+/* Estilo para el icono antes de que se haga clic */
+.contenedor-regTelefono .contenido .bookmark::before {
+    content: "\e161";
+    /* Ícono inicial */
+    font-family: 'Material Icons';
+    position: absolute;
+    color: rgb(255, 255, 255);
+    font-size: 1.4em;
+    top: 20px;
+}
+
+/* Estilo al hacer clic en el botón (simula un cambio de ícono) */
+.contenedor-regTelefono .contenido #submitInput:active+.bookmark::before {
+    content: "\e5ca";
+    /* Cambiar el ícono al hacer clic */
+    font-family: 'Material Icons';
+    font-size: 1.6em;
+    top: 20px;
+}
+
+
+/* Cambio de color al hacer clic en el ícono */
+.contenedor-regTelefono .contenido #submitInput:active+.bookmark mat-icon {
+    color: #5ba7e9e3;
+}
+
+/* Estilo cuando se presiona el botón */
+.contenedor-regTelefono .contenido .bookmark:active {
+    transform: translateY(4px);
+    /* Efecto de "presionar" */
+}
+
+
+@media (max-width: 1250px) {
+    /* CONTENEDOR PRINCIPAL */
+
+    .contenedor-regTelefono {
+        max-width: 650px;
+        margin-top: 10px;
+    }
+
+
+    .contenedor-regTelefono .contenido .fila-de-tres {
+        gap: 8px 25px;
+    }
+
+    .contenedor-regTelefono .contenido label {
+        font-size: 12px;
+    }
+
+    .contenedor-regTelefono .contenido .opcionForm {
+        width: 170px;
+        padding: 7px;
+    }
+
+    .contenedor-regTelefono .contenido .select {
+        width: 185px;
+        padding: 7.5px;
+    }
+
+    .contenedor-regTelefono .contenido input[type="date"] {
+        width: 170px;
+        padding: 7px;
+        font-size: 13px;
+    }
+
+    .contenedor-regTelefono .contenido textarea {
+        width: 100%;
+        height: 60px;
+        font-size: 13px;
+        resize: none;
+        letter-spacing: 1px;
+    }
+
+    .contenedor-regTelefono .contenedor-imagen .contenido-img {
+        width: 160px;
+        height: 120px;
+        margin-top: 10px;
+    }
+
+    /* BOTON GUARDAR */
+
+
+    .contenedor-regTelefono .contenido .bookmark {
+        right: 60px;
+        bottom: 0px;
+    }
+
+    /* Estilo del ícono */
+    .contenedor-regTelefono .contenido .bookmark mat-icon {
+        height: 60px;
+        width: 60px;
+        font-size: 60px;
+        color: rgb(153, 153, 153);
+    }
+
+}

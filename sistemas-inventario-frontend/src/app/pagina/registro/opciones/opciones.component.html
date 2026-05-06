@@ -16,22 +16,15 @@
                 </div>
             </div>
         </div>
-        <div class="carta"[ngClass]="{'selected': componenteActivo === 'celular'}">
+        <div class="carta"[ngClass]="{'selected': componenteActivo === 'dispositivo'}">
             <div class="contenedor-caja">
-                <div class="contenido" (click)="mostrarComponenteRegistroCelular()">
+                <div class="contenido" (click)="mostrarComponenteRegistroDispositivo()">
                     <mat-icon>phone_android</mat-icon>
-                    <h3>Celular</h3>
+                    <h3>Dispositivo</h3>
                 </div>
             </div>
         </div>
-        <div class="carta" [ngClass]="{'selected': componenteActivo === 'tablet'}">
-            <div class="contenedor-caja">
-                <div class="contenido" (click)="mostrarComponenteRegistroTablet()">
-                    <mat-icon>tablet_mac</mat-icon>
-                    <h3>Tablet</h3>
-                </div>
-            </div>
-        </div>
+        
         <div class="carta" [ngClass]="{'selected': componenteActivo === 'impresora'}">
             <div class="contenedor-caja">
                 <div class="contenido" (click)="mostrarComponenteRegistroImpresora()">
@@ -52,12 +45,8 @@
         <app-opc-equipo></app-opc-equipo> <!-- Llamamos a OpcEquipoComponent -->
     </div>
 
-    <div *ngIf="componenteActivo === 'celular'">
-        <app-opc-telefono></app-opc-telefono> <!-- Llamamos a OpcTelefonoComponent -->
-    </div>
-
-    <div *ngIf="componenteActivo === 'tablet'">
-        <app-opc-tablet></app-opc-tablet> <!-- Llamamos a OpcTabletComponent -->
+    <div *ngIf="componenteActivo === 'dispositivo'">
+        <app-opc-dispositivo></app-opc-dispositivo> <!-- Llamamos a OpcTelefonoComponent -->
     </div>
 
     <div *ngIf="componenteActivo === 'impresora'">

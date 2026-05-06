@@ -5,8 +5,7 @@ import { estadoPrivado, estadoPublico } from './arquitectura/guardianRuta/entura
 import { OpcionesComponent } from './pagina/registro/opciones/opciones.component';
 import { OpcEmpleadoComponent } from './pagina/registro/opc-empleado/opc-empleado.component';
 import { OpcEquipoComponent } from './pagina/registro/opc-equipo/opc-equipo.component';
-import { OpcTelefonoComponent } from './pagina/registro/opc-telefono/opc-telefono.component';
-import { OpcTabletComponent } from './pagina/registro/opc-tablet/opc-tablet.component';
+import { OpcDispositivoComponent } from './pagina/registro/opc-dispositivo/opc-dispositivo.component';
 import { OpcImpresoraComponent } from './pagina/registro/opc-impresora/opc-impresora.component';
 
 
@@ -51,12 +50,7 @@ export const routes: Routes = [
             },
             {
                 path: 'opciones',
-                component: OpcTelefonoComponent,
-                canActivate: [estadoPrivado],
-            },
-            {
-                path: 'opciones',
-                component: OpcTabletComponent,
+                component: OpcDispositivoComponent,
                 canActivate: [estadoPrivado],
             },
             {

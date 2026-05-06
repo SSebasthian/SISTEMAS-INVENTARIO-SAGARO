@@ -1,15 +1,17 @@
-export default interface telefono{
+export default interface dispositivo{
     serial: string;
-    imgTelefono: string;
-    tipoTelefono: string;
+    imgDispositivo: string;
+    tipoDispositivo: string;
     marca: string;
     modelo: string;
+    sistemaOperativo: string;
+    versionSO: string;
+    pulgadas: string;
     imei1: string;
     imei2: string;
     ram: string;
-    espacio: string;
-    versionAndroid: string;
-    cpu: string;
+    almacenamiento: string;
+    procesador: string;
     plaqueta: string;
     facturaCompra: string;
     fechaCompra: Date;

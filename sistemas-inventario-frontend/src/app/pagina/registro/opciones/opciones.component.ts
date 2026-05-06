@@ -3,15 +3,14 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { OpcEmpleadoComponent } from '../opc-empleado/opc-empleado.component';
 import { OpcEquipoComponent } from '../opc-equipo/opc-equipo.component';
-import { OpcTelefonoComponent } from '../opc-telefono/opc-telefono.component';
-import { OpcTabletComponent } from '../opc-tablet/opc-tablet.component';
+import { OpcDispositivoComponent } from '../opc-dispositivo/opc-dispositivo.component';
 import { OpcImpresoraComponent } from '../opc-impresora/opc-impresora.component';
 import { Location } from '@angular/common'; // Importar Location
 
 
 @Component({
   selector: 'app-opciones',
-  imports: [MatIconModule, CommonModule, OpcEmpleadoComponent, OpcEquipoComponent, OpcTelefonoComponent, OpcTabletComponent, OpcImpresoraComponent],
+  imports: [MatIconModule, CommonModule, OpcEmpleadoComponent, OpcEquipoComponent, OpcDispositivoComponent, OpcImpresoraComponent],
   templateUrl: './opciones.component.html',
   styleUrl: './opciones.component.css'
 })
@@ -46,25 +45,13 @@ export class OpcionesComponent {
 
 
   // Método para alternar la visibilidad del componente de registro
-  mostrarComponenteRegistroCelular() {
-    if (this.componenteActivo === 'celular') {
+  mostrarComponenteRegistroDispositivo() {
+    if (this.componenteActivo === 'dispositivo') {
       this.componenteActivo = '';  // Desactiva el componente
       this.location.replaceState('/registro/opciones'); // Vuelve a la ruta base
     } else {
-      this.componenteActivo = 'celular';  // Activa el componente
-      this.location.replaceState('/registro/celular'); // Cambia la URL
-    }
-  }
-
-
-  // Método para alternar la visibilidad del componente de registro
-  mostrarComponenteRegistroTablet() {
-    if (this.componenteActivo === 'tablet') {
-      this.componenteActivo = '';  // Desactiva el componente
-      this.location.replaceState('/registro/opciones'); // Vuelve a la ruta base
-    } else {
-      this.componenteActivo = 'tablet';  // Activa el componente
-      this.location.replaceState('/registro/tablet'); // Cambia la URL
+      this.componenteActivo = 'dispositivo';  // Activa el componente
+      this.location.replaceState('/registro/dispositivo'); // Cambia la URL
     }
   }
 
