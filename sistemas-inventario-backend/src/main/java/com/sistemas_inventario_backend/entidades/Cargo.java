@@ -23,10 +23,6 @@ public class Cargo {
     @Column(unique = true, nullable = false)
     private String descripcion;
     private Boolean activo = true;
-
-    // Relación inversa (útil para consultas bidireccionales)
-    @ManyToMany(mappedBy = "cargos", fetch = FetchType.LAZY)
-    private Set<Area> areas = new HashSet<>();
 }
 
 
