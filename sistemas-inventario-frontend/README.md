@@ -39,5 +39,7 @@
 `ng generate component pagina/registro/opc-tablet` (Opciones de registro - TABLET)<br>
 `ng generate component pagina/registro/opc-impresora` (Opciones de registro - IMPRESORA)<br>
 
+`Se crea interface Registro Empleado manualmente` (Interface opc-equipo REGISTRAR EMPLEADO)<br>
 `Se crea interface Registro Equipo manualmente` (Interface opc-equipo REGISTRAR EQUIPOS)<br>
+`Se crea interface Registro Dispositivo manualmente` (Interface opc-equipo REGISTRAR DISPOSITIVO)<br>
 `Se crea interface Registro Impresora manualmente` (Interface opc-equipo REGISTRAR IMPRESORA)<br>
