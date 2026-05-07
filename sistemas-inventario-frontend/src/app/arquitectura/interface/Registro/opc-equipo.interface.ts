@@ -1,12 +1,12 @@
 export default interface equipo{
     serial: string;
-    imgEquipo: string;
     tipoEquipo: string;
+    marca: string;
+    modelo: string;
+    imgEquipo: string;
     sistemaOperativo: string;
     versionSistemaOperativo: String;
     bits: number;
-    marca: string;
-    modelo: string;
     procesador: string;
     ram: string;
     tipoRam: string;
@@ -15,6 +15,6 @@ export default interface equipo{
     plaqueta: string;
     descripcion: string;
     fechaCompra: Date;
-    ordenCompra: string;
+    facturaCompra: string;
     estado: string;
 }
