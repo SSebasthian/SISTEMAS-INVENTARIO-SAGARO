@@ -1,64 +1,57 @@
 <div class="contenedor-regUsuario">
-    <form id="form-registro-producto">
-      <div class="contenido">
-  
-        <!-- Nueva fila con 3 columnas -->
-        <div class="fila-de-tres">
-          <p>
-            <label>CEDULA</label>
-            <input class="opcionForm" type="number" min="0">
-          </p>  
-          <p>
-            <label>FECHA DE INGRESO</label>
-            <input class="opcionForm" type="date">
-          </p>
-          <p>
-            <label>NOMBRE</label>
-            <input class="opcionForm" type="text">
-          </p>
-          <p>
-            <label>APELLIDO</label>
-            <input class="opcionForm" type="text">
-          </p>
-          <p>
-            <label>AREA</label>
-            <select class="opcionForm select">
-                <option value=""></option>
-                <option value="ADMINISTRACION">ADMINISTRACION</option>
-                <option value="ALMACEN">ALMACEN</option>
-                <option value="ARCHIVO">ARCHIVO</option>
-                <option value="COMPRAS">COMPRAS</option>
-                <option value="CONTABILDIAD">CONTABILDIAD</option>
-            </select>
-          </p>
-          <p>
-            <label>CARGO</label>
-           <select class="opcionForm select">
-                <option value=""></option>
-                <option value="PRESIDENCIA">PRESIDENCIA</option>
-                <option value="DIRECTOR">DIRECTOR</option>
-                <option value="GERENTE">GERENTE</option>
-                <option value="JEFE">JEFE</option>
-            </select>
-          </p>
+  <form id="form-registro-producto" (ngSubmit)="registrar()">
+    <div class="contenido">
 
-          <p class="checkbox-wrapper-10">
-            <label>ESTADO</label>
-            <input type="checkbox" id="cb5" class="tgl tgl-flip" checked disabled>
-            <label for="cb5" data-tg-on="ACTIVO" data-tg-off="INACTIVO" class="tgl-btn"></label>
-          </p> 
-        </div>
-  
-        <div>
-          <input type="checkbox" id="checkboxInput">
-          <label for="checkboxInput" class="bookmark">
-            <mat-icon>bookmark</mat-icon>
-          </label>
-        </div>
+      <!-- Nueva fila con 3 columnas -->
+      <div class="fila-de-tres">
+        <p>
+          <label>CEDULA</label>
+          <input class="opcionForm" type="text" [(ngModel)]="empleado.cedula" name="cedula" required>
+        </p>
+        <p>
+          <label>FECHA DE INGRESO</label>
+          <input class="opcionForm" type="date" [(ngModel)]="empleado.fechaIngreso" name="fechaIngreso" required>
+        </p>
+        <p>
+          <label>NOMBRE</label>
+          <input class="opcionForm" type="text" [(ngModel)]="empleado.nombre" name="nombre" required>
+        </p>
+        <p>
+          <label>APELLIDO</label>
+           <input class="opcionForm" type="text" [(ngModel)]="empleado.apellido" name="apellido" required>
+        </p>
+        <p>
+          <label>AREA</label>
+          <select class="opcionForm select" [(ngModel)]="empleado.areaCodigo" name="areaCodigo" (change)="onAreaChange()">
+            <option [value]="0"></option>
+            <option *ngFor="let area of areas" [value]="area.codigo">{{ area.descripcion }}</option>
+          </select>
+        </p>
+        <p>
+          <label>CARGO</label>
+          <select class="opcionForm select" [(ngModel)]="empleado.cargoCodigo" name="cargoCodigo">
+            <option [value]="0"></option>
+            <option *ngFor="let cargo of cargos" [value]="cargo.codigo">{{ cargo.descripcion }}</option>
+          </select>
+        </p>
+
+        <p class="checkbox-wrapper-10">
+          <label>ESTADO</label>
+          <!-- Checkbox deshabilitado y siempre marcado (el backend asigna activo=true) -->
+          <input type="checkbox" id="cb5" class="tgl tgl-flip" checked disabled>
+          <label for="cb5" data-tg-on="ACTIVO" data-tg-off="INACTIVO" class="tgl-btn"></label>
+        </p>
       </div>
-  
-      
-    </form>
-  </div>
-  <br><br><br><br>
-  
+
+      <div>
+        <input type="submit" id="checkboxInput">
+        <label for="checkboxInput" class="bookmark">
+          <mat-icon>bookmark</mat-icon>
+        </label>
+      </div>
+    </div>
+
+
+  </form>
+</div>
+<br><br><br><br>
