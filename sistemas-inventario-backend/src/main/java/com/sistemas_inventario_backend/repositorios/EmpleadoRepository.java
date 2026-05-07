@@ -18,3 +18,4 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, String> {
     // Busca empleados que aún NO tienen fecha de retiro (siguen activos en la empresa)
     List<Empleado> findByFechaRetiroIsNull();
 }
+

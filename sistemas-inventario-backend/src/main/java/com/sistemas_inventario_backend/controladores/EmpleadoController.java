@@ -7,9 +7,11 @@ import com.sistemas_inventario_backend.entidades.Empleado;
 import com.sistemas_inventario_backend.repositorios.AreaRepository;
 import com.sistemas_inventario_backend.servicios.EmpleadoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -38,8 +40,14 @@ public class EmpleadoController {
 
     // Endpoint 3: Registrar un nuevo empleado
     @PostMapping("/agregar")
-    public Empleado registrarEmpleado(@RequestBody EmpleadoSolicitud solicitud) {
-        return empleadoService.registrarEmpleado(solicitud);
+    public ResponseEntity<?> registrarEmpleado(@RequestBody EmpleadoSolicitud solicitud) {
+        try {
+            Empleado empleado = empleadoService.registrarEmpleado(solicitud);
+            return ResponseEntity.ok(empleado);
+        } catch (RuntimeException e) {
+            // Si el mensaje contiene "Ya existe un empleado" podemos enviar un 400 con el mensaje
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 }
 

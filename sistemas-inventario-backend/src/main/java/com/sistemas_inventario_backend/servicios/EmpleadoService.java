@@ -26,7 +26,7 @@ public class EmpleadoService {
     public Empleado registrarEmpleado(EmpleadoSolicitud solicitud) {
         // 1. Verificar si ya existe empleado con esa cédula
         if (empleadoRepository.existsById(solicitud.getCedula())) {
-            throw new RuntimeException("Ya existe un empleado con la cedula: " + solicitud.getCedula());
+            throw new RuntimeException("Ya existe la cedula: " + solicitud.getCedula());
         }
 
         // 2. Obtener el área

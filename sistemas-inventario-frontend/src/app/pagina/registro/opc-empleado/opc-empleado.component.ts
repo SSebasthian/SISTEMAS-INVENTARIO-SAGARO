@@ -7,6 +7,7 @@ import { EmpleadoRegistro } from '../../../arquitectura/interface/Registro/Emple
 import { EmpleadoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/EmpleadoRespuesta.interface';
 import { AreaLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/AreaRespuesta.interface';
 import { CargoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/CargoRespuesta.interface';
+import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 
 
 @Component({
@@ -27,8 +28,12 @@ export class OpcEmpleadoComponent implements OnInit {
     areaCodigo: 0,
     cargoCodigo: 0
   };
+  enviando = false;
 
-  constructor(private registroEmpleadoService: RegistroEmpleadoService) { }
+  constructor(
+    private registroEmpleadoService: RegistroEmpleadoService,
+    private notificacionSnackbarService: NotificacionSnackbarService
+  ) { }
 
 
   ngOnInit(): void {
@@ -41,8 +46,8 @@ export class OpcEmpleadoComponent implements OnInit {
         this.areas = data;
       },
       error: (err) => {
-        console.error('Error al cargar áreas', err);
-        alert('No se pudieron cargar las áreas');
+        console.error('Error al cargar areas', err);
+        this.notificacionSnackbarService.error('Error al cargar areas', 'No se pudo obtener la lista de areas');
       }
     });
   }
@@ -57,28 +62,29 @@ export class OpcEmpleadoComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error al cargar cargos', err);
-          alert('No se pudieron cargar los cargos para esta área');
+          this.notificacionSnackbarService.error('Error al cargar cargos', 'No se pudieron cargar los cargos para esta area');
         }
       });
     }
   }
 
   registrar(): void {
+    if (this.enviando) return; // evitar doble envío
+
     if (!this.empleado.cedula || !this.empleado.nombre || !this.empleado.apellido ||
       !this.empleado.fechaIngreso || !this.empleado.areaCodigo || !this.empleado.cargoCodigo) {
-      alert('Todos los campos son obligatorios');
+      this.notificacionSnackbarService.warning('Campos incompletos', 'Todos los campos son obligatorios');
       return;
     }
 
     this.registroEmpleadoService.registrarEmpleado(this.empleado).subscribe({
       next: (respuesta: EmpleadoLlamarDatos) => {
-        alert(`Empleado ${respuesta.nombre} ${respuesta.apellido} registrado correctamente en ${respuesta.area.descripcion} - ${respuesta.cargo.descripcion}`);
-        this.limpiarFormulario();
+        this.notificacionSnackbarService.success('Empleado registrado', `${respuesta.nombre} ${respuesta.apellido}`); this.limpiarFormulario();
       },
       error: (err) => {
         console.error('Error al registrar', err);
         const mensaje = err.error?.message || 'Error en el servidor';
-        alert(`Error: ${mensaje}`);
+        this.notificacionSnackbarService.error('Error al registrar empleado', mensaje);
       }
     });
   }
@@ -97,5 +103,5 @@ export class OpcEmpleadoComponent implements OnInit {
 
 
 
-  
+
 }
