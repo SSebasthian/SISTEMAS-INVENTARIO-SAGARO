@@ -71,7 +71,8 @@ public class IniciarBDPrimeraVez implements CommandLineRunner {
                 {10L, "permisos", "crear"},
                 {11L, "permisos", "editar"},
                 {12L, "permisos", "eliminar"},
-                {13L, "permisos", "asignar"}
+                {13L, "permisos", "asignar"},
+                {14L, "registro", "ver"}
         };
         // Inserta cada permiso en la base de datos
         for (Object[] p : permisos) {

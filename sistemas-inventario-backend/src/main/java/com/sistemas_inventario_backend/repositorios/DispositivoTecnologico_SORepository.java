@@ -7,7 +7,5 @@ import java.util.List;
 
 
 public interface DispositivoTecnologico_SORepository extends JpaRepository<DispositivoTecnologico_SO, Long> {
-
-    // Obtener SO por categoria (COMPUTADOR, TELEFONO)
-    List<DispositivoTecnologico_SO> findByCategoriaAndActivoTrue(String categoria);
+    List<DispositivoTecnologico_SO> findByCatalogoCodigoAndActivoTrue(Long catalogoCodigo);
 }

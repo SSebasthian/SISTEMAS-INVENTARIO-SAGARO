@@ -6,12 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 
-public interface DispositivoTecnologico_TipoRepository extends JpaRepository<DispositivoTecnologico_Tipo, Long>{
+public interface DispositivoTecnologico_TipoRepository extends JpaRepository<DispositivoTecnologico_Tipo, Long> {
+    // El metodo debe reflejar el nombre del campo: catalogo.codigo
 
-    // Obtener categorías unicas
-    @Query("SELECT DISTINCT t.categoria FROM DispositivoTecnologico_Tipo t WHERE t.activo = true")
-    List<String> findDistinctCategorias();
-
-    // Buscar tipos por categoria
-    List<DispositivoTecnologico_Tipo> findByCategoriaAndActivoTrue(String categoria);
+    List<DispositivoTecnologico_Tipo> findByCatalogoCodigoAndActivoTrue(Long catalogoCodigo);
 }

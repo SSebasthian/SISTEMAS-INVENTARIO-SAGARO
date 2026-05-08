@@ -25,7 +25,7 @@ public class EquipoDeComputo {
     private String descripcion; // observaciones
 
     // Especificaciones tecnicas (simples)
-    private Integer ram;
+    private String ram;
     private String tipoRam;
     private String procesador;
     private String disco;

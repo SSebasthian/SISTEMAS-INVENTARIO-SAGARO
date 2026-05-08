@@ -16,6 +16,31 @@ public class DispositivoTecnologico_SO {
 
     @Column(unique = true, nullable = false)
     private String descripcion;
-    private String categoria;
     private Boolean activo = true;
+
+    @ManyToOne
+    @JoinColumn(name = "categoria_codigo")
+    private Catalogo catalogo;
 }
+
+
+
+/*
+
+INSERT INTO dispositivotecnologico_so
+(descripcion, activo, categoria_codigo)
+VALUES
+
+    -- EQUIPO DE COMPUTO (catalogo = 1)
+    ('WINDOWS', 1, 1),
+    ('WINDOWS SERVER', 1, 1),
+    ('LINUX', 1, 1),
+    ('UBUNTU', 1, 1),
+
+    -- DISPOSITIVO MOVIL (catalogo = 2)
+    ('ANDROID', 1, 2),
+
+    -- IMPRESORA (catalogo = 3)
+    ('FIRMWARE PROPIO', 1, 3);
+
+ */
