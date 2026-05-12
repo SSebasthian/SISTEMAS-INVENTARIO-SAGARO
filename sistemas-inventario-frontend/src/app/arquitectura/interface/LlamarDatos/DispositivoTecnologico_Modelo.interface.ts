@@ -2,7 +2,7 @@ import { MarcaLlamarDatos } from '../LlamarDatos/DispositivoTecnologico_Marca.in
 
 export interface ModeloLlamarDatos {
   codigo: number;
-  imagen: string;
+  rutaImagen: string;
   descripcion: string;
   activo: boolean;
   marca: MarcaLlamarDatos;
