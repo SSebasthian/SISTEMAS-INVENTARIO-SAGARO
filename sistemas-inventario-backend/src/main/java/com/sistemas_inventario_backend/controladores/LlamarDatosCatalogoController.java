@@ -41,7 +41,13 @@ public class LlamarDatosCatalogoController {
     // Marcas por catálogo
     @GetMapping("/marcas/catalogo/{catalogoCodigo}")
     public List<DispositivoTecnologico_Marca> getMarcasPorCatalogo(@PathVariable Long catalogoCodigo) {
-        return marcaRepo.findByCatalogoCodigoAndActivoTrue(catalogoCodigo);
+        return marcaRepo.findByCatalogoCodigo(catalogoCodigo);
+    }
+
+    // Obtener marcas por tipo
+    @GetMapping("/marcas/tipo/{tipoCodigo}")
+    public List<DispositivoTecnologico_Marca> getMarcasPorTipo(@PathVariable Long tipoCodigo) {
+        return marcaRepo.findByTipoCodigoAndActivoTrue(tipoCodigo);
     }
 
     // Modelos por marca
@@ -50,12 +56,20 @@ public class LlamarDatosCatalogoController {
         return modeloRepo.findByMarcaCodigoAndActivoTrue(marcaCodigo);
     }
 
+    //Llamar Modelo x Marca + Tipo
+    @GetMapping("/modelos/marca/{marcaCodigo}/tipo/{tipoCodigo}")
+    public List<DispositivoTecnologico_Modelo> getModelosPorMarcaYTipo(
+            @PathVariable Long marcaCodigo,
+            @PathVariable Long tipoCodigo) {
+        return modeloRepo.findByMarcaCodigoAndTipoCodigoAndActivoTrue(marcaCodigo, tipoCodigo);
+    }
+
+
     // Sistemas Operativos por categoría  (usando el ID de la categoría)
     @GetMapping("/sistemas-operativos/catalogo/{catalogoCodigo}")
     public List<DispositivoTecnologico_SO> getSoPorCatalogo(@PathVariable Long catalogoCodigo) {
         return soRepo.findByCatalogoCodigoAndActivoTrue(catalogoCodigo);
     }
-
 
     // Versiones por SO
     @GetMapping("/versiones-so/so/{soCodigo}")
@@ -90,6 +104,9 @@ GET: http://localhost:8080/catalogo/sistemas-operativos/catalogo/{catalogoCodigo
 
 Obtiene las versiones según el sistema operativo
 GET: http://localhost:8080/catalogo/versiones-so/so/{soCodigo}
+
+
+http://localhost:8080/catalogo/marcas/tipo/2
 
 
 */

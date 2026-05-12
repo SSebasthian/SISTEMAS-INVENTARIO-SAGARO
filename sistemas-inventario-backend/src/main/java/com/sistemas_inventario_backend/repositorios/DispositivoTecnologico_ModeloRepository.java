@@ -8,6 +8,9 @@ import java.util.List;
 
 public interface DispositivoTecnologico_ModeloRepository extends JpaRepository<DispositivoTecnologico_Modelo, Long> {
 
+    // Modelos por marca (sin tipo) - si aún lo necesitas
     List<DispositivoTecnologico_Modelo> findByMarcaCodigoAndActivoTrue(Long marcaCodigo);
 
+    // Modelos por marca Y tipo
+    List<DispositivoTecnologico_Modelo> findByMarcaCodigoAndTipoCodigoAndActivoTrue(Long marcaCodigo, Long tipoCodigo);
 }

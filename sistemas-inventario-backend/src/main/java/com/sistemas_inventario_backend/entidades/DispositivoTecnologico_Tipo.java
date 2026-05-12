@@ -22,6 +22,7 @@ public class DispositivoTecnologico_Tipo {
     @ManyToOne
     @JoinColumn(name = "catalogo_codigo")
     private Catalogo catalogo;
+
 }
 
 
@@ -29,7 +30,7 @@ public class DispositivoTecnologico_Tipo {
 
     INSERT INTO dispositivotecnologico_tipo (descripcion, activo, catalogo_codigo)
     VALUES
-        ('ESCRITORIO', 1, 1),
+        ('TORRE', 1, 1),
         ('PORTATIL', 1, 1),
         ('TODO EN UNO', 1, 1),
         ('SERVIDOR', 1, 1),
@@ -41,7 +42,8 @@ public class DispositivoTecnologico_Tipo {
         ('INYECCION DE TINTA', 1, 3),
         ('LASER', 1, 3),
         ('ESCANER', 1, 3),
-        ('MATRIX', 1, 3);
+        ('MATRIX', 1, 3),
+        ('ETIQUETA', 1, 3);
 
 
  */

@@ -7,5 +7,8 @@ import java.util.List;
 
 
 public interface DispositivoTecnologico_SORepository extends JpaRepository<DispositivoTecnologico_SO, Long> {
+
+    // Buscar SO por catálogo
     List<DispositivoTecnologico_SO> findByCatalogoCodigoAndActivoTrue(Long catalogoCodigo);
+
 }

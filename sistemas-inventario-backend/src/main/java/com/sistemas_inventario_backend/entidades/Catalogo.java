@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "categoria")
+@Table(name = "catalogo")
 @Getter @Setter @NoArgsConstructor
 public class Catalogo {
 
@@ -15,7 +15,7 @@ public class Catalogo {
     private Long codigo;
 
     @Column(unique = true, nullable = false)
-    private String nombre;   // "EQUIPO", "DISPOSITIVO", "IMPRESORA"
+    private String nombre;   // "EQUIPO DE COMPUTO", "DISPOSITIVO MOVIL", "IMPRESORA"
 
     private Boolean activo = true;
 }
@@ -23,7 +23,7 @@ public class Catalogo {
 
 /*
 
-    INSERT INTO categoria (nombre, activo)
+    INSERT INTO catalogo (nombre, activo)
     VALUES
             ('EQUIPO DE COMPUTO', 1),
             ('DISPOSITIVO MOVIL', 1),
