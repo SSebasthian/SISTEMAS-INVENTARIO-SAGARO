@@ -44,8 +44,17 @@
 `Se crea interface LlamarDatos AreaRespuesta manualmente` (Interface AreaRespuesta LLAMAR DATOS AREA)<br>
 `Se crea interface LlamarDatos CargoRespuesta manualmente` (Interface CargoRespuesta LLAMAR DATOS CARGO)<br>
 
-`Se crea interface Registro Equipo manualmente` (Interface opc-equipo REGISTRAR EQUIPOS)<br>
+`Se crea interface Registro EquipoDeComputoRegistro manualmente` (Interface EquipoDeComputoRegistro REGISTRAR EQUIPO DE COMPUTO)<br>
+`Se crea interface LlamarDatos Catalogo manualmente` (Interface Catalogo LLAMAR DATOS CATALOGO)<br>
+`Se crea interface LlamarDatos DispositivoTecnologico_Tipo manualmente` (Interface DispositivoTecnologico_Tipo LLAMAR DATOS TIPOS)<br>
+`Se crea interface LlamarDatos DispositivoTecnologico_Marca manualmente` (Interface DispositivoTecnologico_Marca LLAMAR DATOS MARCA)<br>
+`Se crea interface LlamarDatos DispositivoTecnologico_Modelo manualmente` (Interface DispositivoTecnologico_Modelo LLAMAR DATOS MODELO)<br>
+`Se crea interface LlamarDatos DispositivoTecnologico_SO manualmente` (Interface DispositivoTecnologico_SO LLAMAR DATOS SO)<br>
+`Se crea interface LlamarDatos DispositivoTecnologico_VersionSO manualmente` (Interface DispositivoTecnologico_VersionSO LLAMAR DATOS VERSION SO)<br>
+
+
 `Se crea interface Registro Dispositivo manualmente` (Interface opc-equipo REGISTRAR DISPOSITIVO)<br>
 `Se crea interface Registro Impresora manualmente` (Interface opc-equipo REGISTRAR IMPRESORA)<br>
 
 `ng generate service arquitectura/servicio/registro/RegistroEmpleado` (Servicio REGISTRO EMPLEADO)<br>
+`ng generate service arquitectura/servicio/LlamarDatos/Catalogo` (Servicio LLAMAR DATOS CATALOGO)<br>
