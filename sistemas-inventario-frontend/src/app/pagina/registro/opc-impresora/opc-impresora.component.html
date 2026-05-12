@@ -10,7 +10,9 @@
 
                 <div class="contenedor-imagen">
                     <div class="contenido-img">
-                        <mat-icon class="icono-img-prod">image</mat-icon>
+                        <img *ngIf="imagenModeloSeleccionado" [src]="imagenModeloSeleccionado" class="imagen-modelo"
+                            alt="Imagen modelo">
+                        <mat-icon *ngIf="!imagenModeloSeleccionado" class="icono-img-prod">image</mat-icon>
                         <input type="text" id="archivo-producto" style="display: none;">
                     </div>
                 </div>
@@ -30,12 +32,9 @@
 
                 <div class="contenido-opcion">
                     <label>TIPO DE IMPRESORA</label><br>
-                    <select class="opcionForm select">
-                        <option value=""></option>
-                        <option value="INYECCION DE TINTA">INYECCION DE TINTA</option>
-                        <option value="LASER">LASER</option>
-                        <option value="ESCANER">ESCANER</option>
-                        <option value="MATRIX">MATRIX</option>
+                    <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo" (change)="onTipoChange()">
+                        <option [ngValue]="null"></option>
+                        <option *ngFor="let t of tipos" [ngValue]="t">{{ t.descripcion }}</option>
                     </select>
                 </div>
 
@@ -48,14 +47,9 @@
                 <div class="contenido-opcion">
                     <label>MARCA</label><br>
 
-                    <select class="opcionForm select">
-                        <option value=""></option>
-                        <option value="CANON">CANON</option>
-                        <option value="EPSON">EPSON</option>
-                        <option value="HEWLETT PACKARD">HEWLETT PACKARD</option>
-                        <option value="KYOCERA">KYOCERA</option>
-                        <option value="TOSHIBA">TOSHIBA</option>
-                        <option value="ZEBRA">ZEBRA</option>
+                    <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()">
+                        <option [ngValue]="null"></option>
+                        <option *ngFor="let m of marcas" [ngValue]="m">{{ m.descripcion }}</option>
                     </select>
                 </div>
 
@@ -67,44 +61,10 @@
                 <div class="contenido-opcion">
                     <label>MODELO:</label><br>
 
-                    <select class="opcionForm select">
-                        <option value=""></option>
-
-                        <option value="L210">L210</option>
-                        <option value="L220">L220</option>
-                        <option value="L365">L365</option>
-                        <option value="L380">L380</option>
-                        <option value="L3150">L3150</option>
-                        <option value="L3210">L3210</option>
-                        <option value="L4160">L4160</option>
-                        <option value="L4260">L4260</option>
-                        <option value="FX-1170">|FX-1170</option>
-
-
-                        <option value="ECOSYS M2540">ECOSYS M2540</option>
-                        <option value="ECOSYS M3550">ECOSYS M3550</option>
-                        <option value="ECOSYS M3560">ECOSYS M3560</option>
-                        <option value="ECOSYS P3045">ECOSYS P3045</option>
-                        <option value="FS-2100">FS-2100</option>
-                        <option value="FS-3640">FS-3640</option>
-                        <option value="FS-4200">FS-4200</option>
-
-                        <option value="E-STUDIO 3508A">E-STUDIO 3508</option>
-
-                        <option value="ZD230">ZD230</option>
-                        <option value="ZT210">ZT210</option>
-                        <option value="ZT410">ZT410</option>
-                        <option value="ZT230">ZT230</option>
-                        <option value="ZT510">ZT510</option>
-                        <option value="S4M">S4M</option>
-
-                        <option value="LASERJET P1102W">LASERJET P1102W</option>
-                        <option value="LASERJET M1212">LASERJET M1212</option>
-
-                        <option value="DR-C240">DR-C240</option>
-                        <option value="DR-M160 II">DR-M160 II</option>
-
-
+                    <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo"
+                        (change)="onModeloChange()">
+                        <option [ngValue]="null"></option>
+                        <option *ngFor="let mod of modelos" [ngValue]="mod">{{ mod.descripcion }}</option>
                     </select>
                 </div>
 
@@ -169,13 +129,13 @@
                         </option>
                     </select>
                 </div>
-                
+
                 <div class="contenido-opcion textarea">
                     <label for="descripcion">DESCRIPCION:</label><br>
                     <textarea> </textarea>
                 </div>
 
-                
+
 
                 <div>
                     <input type="submit" id="submitInput" value="Enviar">

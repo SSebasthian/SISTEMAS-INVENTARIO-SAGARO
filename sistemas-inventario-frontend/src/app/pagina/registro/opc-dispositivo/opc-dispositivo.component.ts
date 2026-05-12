@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,7 @@ import { VersionSOLlamarDatos } from '../../../arquitectura/interface/LlamarDato
   templateUrl: './opc-dispositivo.component.html',
   styleUrl: './opc-dispositivo.component.css'
 })
-export class OpcDispositivoComponent {
+export class OpcDispositivoComponent implements OnInit{
 
   // LISTAS
   tipos: TipoLlamarDatos[] = [];

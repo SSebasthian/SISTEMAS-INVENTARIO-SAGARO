@@ -23,7 +23,7 @@
                     <label>TIPO DE DISPOSITIVO<br></label>
                     <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo"
                         (change)="onTipoChange()">
-                        <option value=""></option>
+                        <option [ngValue]="null"></option>
                         <option *ngFor="let t of tipos" [ngValue]="t">{{ t.descripcion }}</option>
                     </select>
                 </div>
@@ -37,7 +37,7 @@
                 <div class="contenido-opcion">
                     <label>MARCA<br></label>
                     <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()">
-                        <option value=""></option>
+                        <option [ngValue]="null"></option>
                         <option *ngFor="let m of marcas" [ngValue]="m"> {{ m.descripcion }} </option>
                     </select>
                 </div>
@@ -45,7 +45,7 @@
                 <div class="contenido-opcion">
                     <label>MODELO:<br></label>
                     <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo" (change)="onModeloChange()">
-                        <option value=""></option>
+                        <option [ngValue]="null"></option>
                         <option *ngFor="let mod of modelos" [ngValue]="mod"> {{ mod.descripcion }} </option>
                     </select>
                 </div>
@@ -54,7 +54,7 @@
                 <div class="contenido-opcion">
                     <label>SISTEMA OPERATIVO<br></label>
                     <select class="opcionForm select" [(ngModel)]="soSeleccionado" name="so" (change)="onSOChange()">
-                        <option value=""></option>
+                        <option [ngValue]="null"></option>
                         <option *ngFor="let so of sistemasOperativos" [ngValue]="so">{{ so.descripcion }}</option>
                     </select>
                 </div>

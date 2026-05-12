@@ -16,7 +16,7 @@ import { VersionSOLlamarDatos } from '../../../arquitectura/interface/LlamarDato
   templateUrl: './opc-equipo.component.html',
   styleUrl: './opc-equipo.component.css'
 })
-export class OpcEquipoComponent {
+export class OpcEquipoComponent implements OnInit{
 
   // Listas para los selects
   tipos: TipoLlamarDatos[] = [];
@@ -93,8 +93,7 @@ export class OpcEquipoComponent {
         this.tipoSeleccionado.codigo
       ).subscribe(data => {
         this.modelos = data;
-        console.log('Modelos cargados:', data); // Verifica aquí
-        // Revisa si cada modelo tiene 'imagen' o 'rutaImagen'
+        //console.log('Modelos cargados:', data);
       });
     }
   }
