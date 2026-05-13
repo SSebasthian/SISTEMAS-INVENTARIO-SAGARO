@@ -18,20 +18,29 @@
         </p>
         <p>
           <label>APELLIDO</label>
-           <input class="opcionForm" type="text" [(ngModel)]="empleado.apellido" name="apellido" required>
+          <input class="opcionForm" type="text" [(ngModel)]="empleado.apellido" name="apellido" required>
         </p>
         <p>
           <label>AREA</label>
-          <select class="opcionForm select" [(ngModel)]="empleado.areaCodigo" name="areaCodigo" (change)="onAreaChange()">
-            <option [value]="0"></option>
+          <select class="opcionForm select" [(ngModel)]="empleado.areaCodigo" name="areaCodigo"
+            (change)="onAreaChange($event)">
+            <option [value]=""></option>
             <option *ngFor="let area of areas" [value]="area.codigo">{{ area.descripcion }}</option>
+            <option [value]="-1" [disabled]="true">─────────────────</option>
+            <option value="new"> Nueva Area</option>
           </select>
         </p>
         <p>
           <label>CARGO</label>
-          <select class="opcionForm select" [(ngModel)]="empleado.cargoCodigo" name="cargoCodigo">
-            <option [value]="0"></option>
+          <select class="opcionForm select" [(ngModel)]="empleado.cargoCodigo" name="cargoCodigo"
+            (change)="onCargoChange($event)">
+            <option [value]=""></option>
             <option *ngFor="let cargo of cargos" [value]="cargo.codigo">{{ cargo.descripcion }}</option>
+            <!-- Mostrar la opción de nuevo cargo SOLO si hay un área seleccionada -->
+            <ng-container *ngIf="empleado.areaCodigo && empleado.areaCodigo !== 0">
+              <option [value]="-1" [disabled]="true">─────────────────</option>
+              <option value="new">Nuevo Cargo</option>
+            </ng-container>
           </select>
         </p>
 
@@ -50,8 +59,97 @@
         </label>
       </div>
     </div>
-
-
   </form>
 </div>
 <br><br><br><br>
+
+
+
+<!-- Modal para crear Area -->
+<!-- Modal para crear Area -->
+<div class="modal" [class.show]="mostrarModalArea" *ngIf="mostrarModalArea">
+  <div class="modal-contenido">
+    <div class="modal-cabezera">
+      <div class="titulo">
+        <mat-icon>select_all</mat-icon>
+        <h2>Crear Area</h2>
+      </div>
+    </div>
+
+    <div class="crear">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nueva Area</mat-label>
+        <input matInput [(ngModel)]="nuevaAreaDescripcion" [matAutocomplete]="autoArea" (input)="filtrarAreas()"
+          placeholder="Ejemplo: Archivo, Compras" autocomplete="off">
+
+        <mat-autocomplete #autoArea="matAutocomplete" (optionSelected)="seleccionarAreaExistente($event)">
+          <mat-option *ngFor="let area of areasFiltradas" [value]="area.descripcion">
+            <div class="sugerencia-option">
+              <mat-icon>assignment</mat-icon>
+              <span>{{ area.descripcion }}</span>
+              <small class="ya-existe"> - Ya existe</small>
+            </div>
+          </mat-option>
+          <mat-option *ngIf="areasFiltradas.length === 0 && nuevaAreaDescripcion" disabled>
+            No hay áreas coincidentes. Se creará una nueva.
+          </mat-option>
+        </mat-autocomplete>
+
+      </mat-form-field>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-raised-button type="button" class="btn-guardar" color="primary" (click)="crearArea()">
+        <mat-icon>done_all</mat-icon> Crear
+      </button>
+      <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalArea()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- Modal para crear Cargo -->
+<div class="modal" [class.show]="mostrarModalCargo" *ngIf="mostrarModalCargo">
+  <div class="modal-contenido">
+    <div class="modal-cabezera">
+      <div class="titulo">
+        <h2>
+          <mat-icon class="cargoicon">select_all</mat-icon> Nuevo Cargo <br>
+          <strong>{{ obtenerNombreArea() }}</strong>
+        </h2>
+      </div>
+    </div>
+
+    <div class="crear">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Seleccione un cargo</mat-label>
+        <mat-select [(ngModel)]="cargoSeleccionadoId" name="cargoSeleccionado">
+          <mat-select-trigger>
+            {{ obtenerNombreCargoSeleccionado() }}
+          </mat-select-trigger>
+          <mat-option *ngFor="let cargo of todosLosCargos" [value]="cargo.codigo">
+            <div class="sugerencia-option">
+              <mat-icon>work</mat-icon>
+              <span>{{ cargo.descripcion }}</span>
+            </div>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-raised-button type="button" class="btn-guardar" color="primary" (click)="asignarCargoSeleccionado()"
+        [disabled]="!cargoSeleccionadoId">
+        <mat-icon>done_all</mat-icon> Asignar
+      </button>
+      <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalCargo()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+</div>

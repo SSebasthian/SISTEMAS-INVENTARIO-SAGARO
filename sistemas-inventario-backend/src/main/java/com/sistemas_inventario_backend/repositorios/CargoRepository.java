@@ -3,9 +3,12 @@ package com.sistemas_inventario_backend.repositorios;
 import com.sistemas_inventario_backend.entidades.Cargo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 
 // Repositorio para la entidad Cargo
 // No se agregan métodos personalizados porque JpaRepository
 // ya proporciona todos los básicos (CRUD)
-public interface CargoRepository extends JpaRepository<Cargo, Long> {
+public interface CargoRepository  extends JpaRepository<Cargo, Long> {
+    Optional<Cargo> findByDescripcionIgnoreCase(String descripcion);
 }

@@ -17,16 +17,34 @@ export class RegistroEmpleadoService {
 
   constructor(private http: HttpClient) { }
 
+  // Obtiene todas las áreas disponibles
   getAreas(): Observable<AreaLlamarDatos[]> {
     return this.http.get<AreaLlamarDatos[]>(`${this.apiUrlRegistroEmpleado}/areas`);
   }
 
+  // Lista los cargos según el área seleccionada
   getCargosPorArea(areaCodigo: number): Observable<CargoLlamarDatos[]> {
     return this.http.get<CargoLlamarDatos[]>(`${this.apiUrlRegistroEmpleado}/areas/${areaCodigo}/cargos`);
   }
 
+  //Permite registrar nuevos empleados en el sistema
   registrarEmpleado(empleado: EmpleadoRegistro): Observable<EmpleadoLlamarDatos> {
     return this.http.post<EmpleadoLlamarDatos>(`${this.apiUrlRegistroEmpleado}/agregar`, empleado);
   }
 
+  // Crear una nueva área
+  crearArea(descripcion: string): Observable<AreaLlamarDatos> {
+    return this.http.post<AreaLlamarDatos>(`${this.apiUrlRegistroEmpleado}/areas/crear`, { descripcion });
+  }
+
+
+  // Traer todos los cargos globales (para búsqueda)
+  getTodosLosCargos(): Observable<CargoLlamarDatos[]> {
+    return this.http.get<CargoLlamarDatos[]>(`${this.apiUrlRegistroEmpleado}/cargos/todos`);
+  }
+
+  // Crear un nuevo cargo y asociarlo a un área
+  crearCargo(descripcion: string, areaCodigo: number): Observable<CargoLlamarDatos> {
+    return this.http.post<CargoLlamarDatos>(`${this.apiUrlRegistroEmpleado}/cargos/crear`, { descripcion, areaCodigo });
+  }
 }
