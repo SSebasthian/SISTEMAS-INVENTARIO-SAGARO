@@ -32,7 +32,8 @@
 
                 <div class="contenido-opcion">
                     <label>TIPO DE IMPRESORA</label><br>
-                    <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo" (change)="onTipoChange()">
+                    <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo"
+                        (change)="onTipoChange()">
                         <option [ngValue]="null"></option>
                         <option *ngFor="let t of tipos" [ngValue]="t">{{ t.descripcion }}</option>
                     </select>
@@ -47,9 +48,15 @@
                 <div class="contenido-opcion">
                     <label>MARCA</label><br>
 
-                    <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()">
+                    <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca"
+                        (change)="onMarcaChange()">
                         <option [ngValue]="null"></option>
                         <option *ngFor="let m of marcas" [ngValue]="m">{{ m.descripcion }}</option>
+                        <!-- SOLO aparece NUEVA MARCA si hay un tipo seleccionado -->
+                        <ng-container *ngIf="tipoSeleccionado">
+                            <option [value]="-1" [disabled]="true">─────────────────</option>
+                            <option value="new">NUEVA MARCA</option>
+                        </ng-container>
                     </select>
                 </div>
 
@@ -65,6 +72,11 @@
                         (change)="onModeloChange()">
                         <option [ngValue]="null"></option>
                         <option *ngFor="let mod of modelos" [ngValue]="mod">{{ mod.descripcion }}</option>
+                        <!-- SOLO aparece NUEVO MODELO si hay tipo Y marca seleccionados -->
+                        <ng-container *ngIf="tipoSeleccionado && marcaSeleccionada">
+                            <option [value]="-1" [disabled]="true">─────────────────</option>
+                            <option value="new">NUEVO MODELO</option>
+                        </ng-container>
                     </select>
                 </div>
 
@@ -85,12 +97,41 @@
                 <!-----------------------  ----------------------->
 
                 <div class="contenido-opcion">
-                    <label>TIPO RECARGA</label><br>
-                    <select class="opcionForm select">
+                    <label>TIPO RECARGA<br></label>
+                    <select class="opcionForm select" [(ngModel)]="tipoRecarga" name="tipoRecarga">
+
+                        <!-- Opción por defecto siempre visible -->
                         <option value=""></option>
+
+                        <!-- INYECCION DE TINTA (tipo 8) -->
+                        <ng-container *ngIf="tipoSeleccionado?.codigo === 8">
+                            <option value="T504">T504</option>
+                            <option value="T544">T544</option>
+                            <option value="T664">T664</option>
+                        </ng-container>
+
+                        <!-- LASER (tipo 9) -->
+                        <ng-container *ngIf="tipoSeleccionado?.codigo === 9">
+                            <option value="TONER">TONER</option>
+                        </ng-container>
+
+                        <!-- ESCANER (tipo 10) -->
+                        <ng-container *ngIf="tipoSeleccionado?.codigo === 10">
+                            <option value="NO APLICA">NO APLICA</option>
+                        </ng-container>
+
+                        <!-- MATRIX (tipo 11) -->
+                        <ng-container *ngIf="tipoSeleccionado?.codigo === 11">
+                            <option value="CINTA">CINTA</option>
+                        </ng-container>
+
+                        <!-- ETIQUETA (tipo 12) -->
+                        <ng-container *ngIf="tipoSeleccionado?.codigo === 12">
+                            <option value="CABEZAL">CABEZAL</option>
+                        </ng-container>
+
                     </select>
                 </div>
-
 
                 <!-----------------------  ----------------------->
                 <!-------------------- SAGARO  ------------------->
@@ -150,3 +191,79 @@
     </form>
 </div>
 <br><br><br>
+
+
+
+
+
+
+
+
+
+<!-- Modal para crear Marca -->
+<div class="modal" [class.show]="mostrarModalMarca" *ngIf="mostrarModalMarca">
+    <div class="modal-contenido">
+        <div class="modal-cabezera">
+            <div class="titulo">
+                <h2>
+                    <mat-icon class="cargoicon">select_all</mat-icon> Nuevo Marca <br>
+                    <strong *ngIf="tipoSeleccionado">{{ tipoSeleccionado.descripcion }}</strong>
+                </h2>
+            </div>
+        </div>
+
+        <div class="crear">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nueva Marca</mat-label>
+                <input matInput [(ngModel)]="nuevaMarcaDescripcion" placeholder="Ejemplo: Epson, Kyocera, Canon"
+                    autocomplete="off">
+            </mat-form-field>
+        </div>
+
+        <div class="modal-footer">
+            <button mat-raised-button type="button" class="btn-guardar" color="primary" (click)="crearMarca()"
+                [disabled]="!nuevaMarcaDescripcion.trim()">
+                <mat-icon>done_all</mat-icon> Crear
+            </button>
+            <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalMarca()">
+                <mat-icon>cancel</mat-icon> Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- Modal para crear Modelo -->
+<div class="modal" [class.show]="mostrarModalModelo" *ngIf="mostrarModalModelo">
+    <div class="modal-contenido">
+        <div class="modal-cabezera">
+            <div class="titulo">
+                <h2>
+                    <mat-icon class="cargoicon">select_all</mat-icon> Nuevo Modelo <br>
+                    <strong *ngIf="tipoSeleccionado">{{ tipoSeleccionado.descripcion }}</strong>
+                    <strong *ngIf="marcaSeleccionada"> - {{ marcaSeleccionada.descripcion }}</strong>
+                </h2>
+            </div>
+        </div>
+
+        <div class="crear">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nueva Modelo</mat-label>
+                <input matInput [(ngModel)]="nuevaModeloDescripcion" placeholder="Ejemplo: L3210, 3250"
+                    autocomplete="off">
+            </mat-form-field>
+        </div>
+
+        <div class="modal-footer">
+            <button mat-raised-button type="button" class="btn-guardar" color="primary" (click)="crearModelo()"
+                [disabled]="!nuevaModeloDescripcion.trim()">
+                <mat-icon>done_all</mat-icon> Crear
+            </button>
+            <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalModelo()">
+                <mat-icon>cancel</mat-icon> Cancelar
+            </button>
+        </div>
+    </div>
+</div>

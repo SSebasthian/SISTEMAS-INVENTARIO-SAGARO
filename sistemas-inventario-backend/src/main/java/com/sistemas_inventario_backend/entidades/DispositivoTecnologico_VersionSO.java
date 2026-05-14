@@ -39,7 +39,6 @@ VALUES
     ('WINDOWS 8', 1, 1),
     ('WINDOWS 10', 1, 1),
     ('WINDOWS 11', 1, 1),
-    ('WINDOWS DISPONIBLE', 0, 1),
 
     -- LINUX (so_codigo = 2)
     ('DEBIAN', 1, 2),
@@ -53,7 +52,6 @@ VALUES
     ('WINDOWS SERVER 2016', 1, 3),
     ('WINDOWS SERVER 2019', 1, 3),
     ('WINDOWS SERVER 2022', 1, 3),
-    ('WINDOWS SERVER DISPONIBLE', 0, 3),
 
 
 
@@ -70,21 +68,6 @@ VALUES
     ('13 TIRAMISU', 1, 4),
     ('14 UPSIDE', 1, 4),
     ('15 VANILLA', 1, 4),
-    ('16', 0, 4),
-    ('17', 0, 4),
-    ('18', 0, 4),
-    ('19', 0, 4),
-    ('20', 0, 4),
-    ('21', 0, 4),
-    ('22', 0, 4),
-    ('23', 0, 4),
-    ('24', 0, 4),
-    ('25', 0, 4),
-    ('26', 0, 4),
-    ('27', 0, 4),
-    ('28', 0, 4),
-    ('29', 0, 4),
-    ('30', 0, 4),
 
 
 

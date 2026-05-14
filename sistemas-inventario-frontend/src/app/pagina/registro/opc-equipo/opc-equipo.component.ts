@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CatalogoService } from '../../../arquitectura/servicio/LlamarDatos/catalogo.service';
 import { TipoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Tipo.interface';
@@ -12,11 +16,14 @@ import { VersionSOLlamarDatos } from '../../../arquitectura/interface/LlamarDato
 
 @Component({
   selector: 'app-opc-equipo',
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatAutocompleteModule],
   templateUrl: './opc-equipo.component.html',
   styleUrl: './opc-equipo.component.css'
 })
-export class OpcEquipoComponent implements OnInit{
+export class OpcEquipoComponent implements OnInit {
+
+  // ID del catálogo "EQUIPO DE COMPUTO" en tu base de datos
+  private readonly CATALOGO_EQUIPO_COMPUTO_ID = 1;
 
   // Listas para los selects
   tipos: TipoLlamarDatos[] = [];
@@ -36,9 +43,17 @@ export class OpcEquipoComponent implements OnInit{
   tipoRamSeleccionado: string = '';
   tipoDiscoSeleccionado: string = '';
 
+  // ========== VARIABLES PARA MODAL DE MARCA ==========
+  mostrarModalMarca = false;
+  nuevaMarcaDescripcion = '';
 
-  // ID del catálogo "EQUIPO DE COMPUTO" en tu base de datos
-  private readonly CATALOGO_EQUIPO_COMPUTO_ID = 1;
+  // ========== VARIABLES PARA MODAL DE MODELO ==========
+  mostrarModalModelo = false;
+  nuevaModeloDescripcion = '';
+
+  // ========== VARIABLES PARA MODAL DE VERSION SO ==========
+  mostrarModalVersionSO = false;
+  nuevaVersionSODescripcion = '';
 
 
   constructor(
@@ -56,8 +71,6 @@ export class OpcEquipoComponent implements OnInit{
     // Cargar tipos y sistemas operativos del catálogo
     this.catalogoService.getTiposPorCatalogo(catalogoId).subscribe(data => this.tipos = data);
     this.catalogoService.getSistemasOperativosPorCatalogo(catalogoId).subscribe(data => this.sistemasOperativos = data);
-
-    // Las marcas NO se cargan aquí, se cargarán cuando se seleccione un tipo
   }
 
 
@@ -81,10 +94,15 @@ export class OpcEquipoComponent implements OnInit{
 
   // Al cambiar marca, carga modelos correspondientes
   onMarcaChange(): void {
+    // Si seleccionó "NUEVA MARCA"
+    if (this.marcaSeleccionada === ('new' as any)) {
+      this.abrirModalMarca();
+      this.marcaSeleccionada = null;
+      return;
+    }
+
     this.modelos = [];
     this.modeloSeleccionado = null;
-
-    // LIMPIAR IMAGEN
     this.imagenModeloSeleccionado = '';
 
     if (this.marcaSeleccionada && this.tipoSeleccionado) {
@@ -93,15 +111,21 @@ export class OpcEquipoComponent implements OnInit{
         this.tipoSeleccionado.codigo
       ).subscribe(data => {
         this.modelos = data;
-        //console.log('Modelos cargados:', data);
       });
     }
   }
 
+
   // Cuando cambia el modelo, actualizar la imagen
   onModeloChange(): void {
+    // Si seleccionó "NUEVO MODELO"
+    if (this.modeloSeleccionado === ('new' as any)) {
+      this.abrirModalModelo();
+      this.modeloSeleccionado = null;
+      return;
+    }
+
     if (this.modeloSeleccionado && this.modeloSeleccionado.rutaImagen) {
-      // Limpiar la URL eliminando el token
       let urlLimpia = this.modeloSeleccionado.rutaImagen.split('&token=')[0];
       this.imagenModeloSeleccionado = this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
     } else {
@@ -121,4 +145,176 @@ export class OpcEquipoComponent implements OnInit{
   }
 
 
+
+  // Al cambiar versión SO
+  onVersionSOChange(): void {
+    // Si seleccionó "NUEVA VERSION"
+    if (this.versionSOSeleccionada === ('new' as any)) {
+      this.abrirModalVersionSO();
+      this.versionSOSeleccionada = null;
+      return;
+    }
+
+    // Aquí puedes agregar lógica adicional si es necesario
+    // Por ejemplo, validar o cargar algo cuando se selecciona una versión existente
+    if (this.versionSOSeleccionada) {
+      console.log('Versión seleccionada:', this.versionSOSeleccionada);
+    }
+  }
+
+
+
+  // ========== MÉTODOS PARA MODAL DE MARCA ==========
+
+  // Abrir modal
+  abrirModalMarca(): void {
+    this.mostrarModalMarca = true;
+    this.nuevaMarcaDescripcion = '';
+  }
+
+  // Cerrar modal
+  cerrarModalMarca(): void {
+    this.mostrarModalMarca = false;
+    this.nuevaMarcaDescripcion = '';
+  }
+
+  // Crear marca
+  crearMarca() {
+
+  }
+
+
+
+
+  // ========== MÉTODOS PARA MODAL DE MARCA ==========
+
+  // Abrir modal
+  abrirModalModelo(): void {
+    this.mostrarModalModelo = true;
+    this.nuevaModeloDescripcion = '';
+  }
+
+  // Cerrar modal
+  cerrarModalModelo(): void {
+    this.mostrarModalModelo = false;
+    this.nuevaModeloDescripcion = '';
+  }
+
+  // Crear Modelo
+  crearModelo() {
+
+  }
+
+
+
+  // ========== MÉTODOS PARA MODAL DE MARCA ==========
+
+  // Abrir modal
+  abrirModalVersionSO(): void {
+    this.mostrarModalVersionSO = true;
+    this.nuevaVersionSODescripcion = '';
+  }
+
+  // Cerrar modal
+  cerrarModalVersionSO(): void {
+    this.mostrarModalVersionSO = false;
+    this.nuevaVersionSODescripcion = '';
+  }
+
+  // Crear VersionSO
+  crearVersionSO() {
+
+  }
+
+
+
+
+  // ================== TAMAÑO RAM ==========================
+
+
+  tamanoRamReal: number | null = null;
+  tamanoRamMostrar: string = '';
+
+  // Metodo para permitir solo numeros
+  soloNumeros(event: KeyboardEvent): void {
+    const tecla = event.key;
+
+    // Permitir teclas de control (backspace, delete, tab, enter, flechas)
+    const teclasPermitidas = [
+      'Backspace', 'Delete', 'Tab', 'Enter', 'Escape',
+      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
+    ];
+
+    if (teclasPermitidas.includes(tecla)) {
+      return; // Permitir estas teclas
+    }
+
+    // Permitir solo dígitos (0-9)
+    if (!/^[0-9]$/.test(tecla)) {
+      event.preventDefault();
+    }
+  }
+
+  // Formatear: al escribir, muestra "número GB"
+  formatearRam(): void {
+    // Extraer solo números de lo que escribe
+    const numeros = this.tamanoRamMostrar.replace(/[^0-9]/g, '');
+
+    if (numeros && numeros !== '') {
+      this.tamanoRamReal = parseInt(numeros);
+      this.tamanoRamMostrar = `${numeros} GB`;
+    } else {
+      this.tamanoRamReal = null;
+      this.tamanoRamMostrar = '';
+    }
+  }
+
+
+  // ================== TAMAÑO DISCO (para servidor) ==========================
+
+  tamanoDiscoReal: number | null = null;
+  tamanoDiscoMostrar: string = '';
+
+  // Metodo para permitir solo numeros en disco
+  soloNumerosDisco(event: KeyboardEvent): void {
+    const tecla = event.key;
+
+    // Permitir teclas de control (backspace, delete, tab, enter, flechas)
+    const teclasPermitidas = [
+      'Backspace', 'Delete', 'Tab', 'Enter', 'Escape',
+      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
+    ];
+
+    if (teclasPermitidas.includes(tecla)) {
+      return; // Permitir estas teclas
+    }
+
+    // Permitir solo dígitos (0-9)
+    if (!/^[0-9]$/.test(tecla)) {
+      event.preventDefault();
+    }
+  }
+
+  // Formatear disco: al escribir, muestra "número TB"
+  formatearDisco(): void {
+    // Extraer solo números de lo que escribe
+    const numeros = this.tamanoDiscoMostrar.replace(/[^0-9]/g, '');
+
+    if (numeros && numeros !== '') {
+      this.tamanoDiscoReal = parseInt(numeros);
+      this.tamanoDiscoMostrar = `${numeros} TB`;
+    } else {
+      this.tamanoDiscoReal = null;
+      this.tamanoDiscoMostrar = '';
+    }
+  }
+
+
+
+
 }
+
+
+
+
+

@@ -1,4 +1,4 @@
-package com.sistemas_inventario_backend.servicios;
+/**package com.sistemas_inventario_backend.servicios;
 
 import com.sistemas_inventario_backend.entidades.EquipoDeComputo;
 import com.sistemas_inventario_backend.repositorios.*;
@@ -145,5 +145,5 @@ public class EquipoDeComputoService {
     }
 
 }
-
+*/
 

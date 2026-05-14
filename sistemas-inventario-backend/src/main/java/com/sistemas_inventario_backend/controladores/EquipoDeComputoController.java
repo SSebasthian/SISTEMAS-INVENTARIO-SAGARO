@@ -1,4 +1,4 @@
-package com.sistemas_inventario_backend.controladores;
+/*package com.sistemas_inventario_backend.controladores;
 
 import com.sistemas_inventario_backend.entidades.EquipoDeComputo;
 import com.sistemas_inventario_backend.servicios.EquipoDeComputoService;
@@ -97,7 +97,7 @@ public class EquipoDeComputoController {
         equipoService.activar(serial);
     }
 }
-
+*/
 
 /// //////////////////////////////////////////////////////////////////////////////
 /// /////////////////////// COMO PROBAR EN POSTMAN  //////////////////////////////

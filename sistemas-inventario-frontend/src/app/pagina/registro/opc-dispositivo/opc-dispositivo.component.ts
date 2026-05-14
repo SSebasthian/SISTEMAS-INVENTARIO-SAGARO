@@ -1,7 +1,11 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CatalogoService } from '../../../arquitectura/servicio/LlamarDatos/catalogo.service';
 import { TipoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Tipo.interface';
@@ -12,16 +16,20 @@ import { VersionSOLlamarDatos } from '../../../arquitectura/interface/LlamarDato
 
 @Component({
   selector: 'app-opc-dispositivo',
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatAutocompleteModule],
   templateUrl: './opc-dispositivo.component.html',
   styleUrl: './opc-dispositivo.component.css'
 })
-export class OpcDispositivoComponent implements OnInit{
+export class OpcDispositivoComponent implements OnInit {
+
+  // DISPOSITIVO MOVIL
+  private readonly CATALOGO_DISPOSITIVO_MOVIL_ID = 2;
 
   // LISTAS
   tipos: TipoLlamarDatos[] = [];
   marcas: MarcaLlamarDatos[] = [];
   modelos: ModeloLlamarDatos[] = [];
+  imagenModeloSeleccionado: SafeResourceUrl = '';
   sistemasOperativos: SOLlamarDatos[] = [];
   versionesSO: VersionSOLlamarDatos[] = [];
 
@@ -32,11 +40,19 @@ export class OpcDispositivoComponent implements OnInit{
   soSeleccionado: SOLlamarDatos | null = null;
   versionSOSeleccionada: VersionSOLlamarDatos | null = null;
 
-  // IMAGEN
-  imagenModeloSeleccionado: SafeResourceUrl = '';
+  // ========== VARIABLES PARA MODAL DE MARCA ==========
+  mostrarModalMarca = false;
+  nuevaMarcaDescripcion = '';
 
-  // DISPOSITIVO MOVIL
-  private readonly CATALOGO_DISPOSITIVO_MOVIL_ID = 2;
+  // ========== VARIABLES PARA MODAL DE MODELO ==========
+  mostrarModalModelo = false;
+  nuevaModeloDescripcion = '';
+
+  // ========== VARIABLES PARA MODAL DE VERSION SO ==========
+  mostrarModalVersionSO = false;
+  nuevaVersionSODescripcion = '';
+
+
 
   constructor(
     private catalogoService: CatalogoService,
@@ -84,63 +100,182 @@ export class OpcDispositivoComponent implements OnInit{
     }
   }
 
-  // CAMBIO MARCA
+  // Al cambiar marca, carga modelos correspondientes
   onMarcaChange(): void {
+    // Si seleccionó "NUEVA MARCA"
+    if (this.marcaSeleccionada === ('new' as any)) {
+      this.abrirModalMarca();
+      this.marcaSeleccionada = null;
+      return;
+    }
 
     this.modelos = [];
     this.modeloSeleccionado = null;
-
     this.imagenModeloSeleccionado = '';
 
     if (this.marcaSeleccionada && this.tipoSeleccionado) {
-
       this.catalogoService.getModelosPorMarcaYTipo(
         this.marcaSeleccionada.codigo,
         this.tipoSeleccionado.codigo
       ).subscribe(data => {
-
         this.modelos = data;
-
       });
-
     }
   }
 
-  // CAMBIO MODELO
+  // Cuando cambia el modelo, actualizar la imagen
   onModeloChange(): void {
+    // Si seleccionó "NUEVO MODELO"
+    if (this.modeloSeleccionado === ('new' as any)) {
+      this.abrirModalModelo();
+      this.modeloSeleccionado = null;
+      return;
+    }
 
-    if (
-      this.modeloSeleccionado &&
-      this.modeloSeleccionado.rutaImagen
-    ) {
-
-      const urlLimpia =
-        this.modeloSeleccionado.rutaImagen.split('&token=')[0];
-
-      this.imagenModeloSeleccionado =
-        this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
-
+    if (this.modeloSeleccionado && this.modeloSeleccionado.rutaImagen) {
+      let urlLimpia = this.modeloSeleccionado.rutaImagen.split('&token=')[0];
+      this.imagenModeloSeleccionado = this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
     } else {
-
       this.imagenModeloSeleccionado = '';
-
     }
   }
 
-  // CAMBIO SO
+  // Al cambiar SO, carga versiones correspondientes
   onSOChange(): void {
-
     this.versionesSO = [];
     this.versionSOSeleccionada = null;
-
     if (this.soSeleccionado) {
+      this.catalogoService.getVersionesPorSO(this.soSeleccionado.codigo).subscribe(data => this.versionesSO = data);
+    }
+  }
 
-      this.catalogoService
-        .getVersionesPorSO(this.soSeleccionado.codigo)
-        .subscribe(data => {
-          this.versionesSO = data;
-        });
+  // Al cambiar versión SO
+  onVersionSOChange(): void {
+    // Si seleccionó "NUEVA VERSION"
+    if (this.versionSOSeleccionada === ('new' as any)) {
+      this.abrirModalVersionSO();
+      this.versionSOSeleccionada = null;
+      return;
+    }
 
+    // Aquí puedes agregar lógica adicional si es necesario
+    // Por ejemplo, validar o cargar algo cuando se selecciona una versión existente
+    if (this.versionSOSeleccionada) {
+      console.log('Versión seleccionada:', this.versionSOSeleccionada);
+    }
+  }
+
+  // ========== MÉTODOS PARA MODAL DE MARCA ==========
+
+  // Abrir modal
+  abrirModalMarca(): void {
+    this.mostrarModalMarca = true;
+    this.nuevaMarcaDescripcion = '';
+  }
+
+  // Cerrar modal
+  cerrarModalMarca(): void {
+    this.mostrarModalMarca = false;
+    this.nuevaMarcaDescripcion = '';
+  }
+
+  // Crear marca
+  crearMarca() {
+
+  }
+
+
+
+
+  // ========== MÉTODOS PARA MODAL DE MARCA ==========
+
+  // Abrir modal
+  abrirModalModelo(): void {
+    this.mostrarModalModelo = true;
+    this.nuevaModeloDescripcion = '';
+  }
+
+  // Cerrar modal
+  cerrarModalModelo(): void {
+    this.mostrarModalModelo = false;
+    this.nuevaModeloDescripcion = '';
+  }
+
+  // Crear Modelo
+  crearModelo() {
+
+  }
+
+
+
+  // ========== MÉTODOS PARA MODAL DE MARCA ==========
+
+  // Abrir modal
+  abrirModalVersionSO(): void {
+    this.mostrarModalVersionSO = true;
+    this.nuevaVersionSODescripcion = '';
+  }
+
+  // Cerrar modal
+  cerrarModalVersionSO(): void {
+    this.mostrarModalVersionSO = false;
+    this.nuevaVersionSODescripcion = '';
+  }
+
+  // Crear versionSo
+  crearVersionSO() {
+
+  }
+
+
+
+  // ================== MEMORIA RAM  - ALMACENAMIENTO  ==========================
+  tamanoRamReal: number | null = null;
+  tamanoRamMostrar: string = '';
+  tamanoAlmacenamientoReal: number | null = null;
+  tamanoAlmacenamientoMostrar: string = '';
+
+  
+  // Método genérico para permitir solo números
+  soloNumeros(event: KeyboardEvent): void {
+    const tecla = event.key;
+    const teclasPermitidas = [
+      'Backspace', 'Delete', 'Tab', 'Enter', 'Escape',
+      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
+    ];
+
+    if (teclasPermitidas.includes(tecla)) {
+      return;
+    }
+
+    if (!/^[0-9]$/.test(tecla)) {
+      event.preventDefault();
+    }
+  }
+
+  // Formatear RAM
+  formatearRam(): void {
+    const numeros = this.tamanoRamMostrar.replace(/[^0-9]/g, '');
+
+    if (numeros && numeros !== '') {
+      this.tamanoRamReal = parseInt(numeros);
+      this.tamanoRamMostrar = `${numeros} GB`;
+    } else {
+      this.tamanoRamReal = null;
+      this.tamanoRamMostrar = '';
+    }
+  }
+
+  // Formatear ALMACENAMIENTO
+  formatearAlmacenamiento(): void {
+    const numeros = this.tamanoAlmacenamientoMostrar.replace(/[^0-9]/g, '');
+
+    if (numeros && numeros !== '') {
+      this.tamanoAlmacenamientoReal = parseInt(numeros);
+      this.tamanoAlmacenamientoMostrar = `${numeros} GB`;
+    } else {
+      this.tamanoAlmacenamientoReal = null;
+      this.tamanoAlmacenamientoMostrar = '';
     }
   }
 

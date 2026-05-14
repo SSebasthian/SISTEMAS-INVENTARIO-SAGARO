@@ -86,7 +86,7 @@ public class DispositivoTecnologico_Marca {
     ('DELL', 1, 11),
 
     -- ETIQUETA (tipo = 12)
-    ('ZEBRA', 1, 11);
+    ('ZEBRA', 1, 12);
 
 
  */

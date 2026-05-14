@@ -208,6 +208,123 @@
 }
 
 
+
+
+
+/* MODAL */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.425);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.show {
+    display: block;
+}
+
+.modal-contenido {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 15px;
+    width: 370px;
+    max-width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.418);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-cabezera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+    padding: 0px 10px;
+    border-bottom: 1px solid #c4b9b9;
+}
+
+.modal-cabezera .titulo {
+    display: flex;
+    align-items: center;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 10px;
+}
+
+.modal-cabezera .titulo h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #595959;
+    padding-left: 10px;
+    text-align: center;
+}
+
+
+.modal-cabezera .titulo mat-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 30px;
+    color: #595959;
+}
+
+.modal-cabezera .titulo .cargoicon {
+    position: relative;
+    margin-bottom: -5px;
+    padding-right: 5px;
+}
+.modal-cabezera .titulo h2 strong{
+    font-size: 20px;
+}
+
+.crear {
+    padding: 30px 0px 0 0;
+    width: 98%;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+}
+
+.modal-footer button {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #fff;
+    background-color: #393e7f;
+    margin: 0 15px;
+}
+
+
 @media (max-width: 1250px) {
     /* CONTENEDOR PRINCIPAL */
 
