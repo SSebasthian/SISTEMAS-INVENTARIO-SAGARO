@@ -215,8 +215,24 @@
         <div class="crear">
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Nueva Marca</mat-label>
-                <input matInput [(ngModel)]="nuevaMarcaDescripcion" placeholder="Ejemplo: Epson, Kyocera, Canon"
-                    autocomplete="off">
+                <input matInput [(ngModel)]="nuevaMarcaDescripcion" [matAutocomplete]="autoMarca" (input)="convertirMayusculas()" 
+                    (input)="filtrarMarcas()" placeholder="Ejemplo: Epson, Kyocera, Canon" autocomplete="off">
+
+                <mat-autocomplete #autoMarca="matAutocomplete" (optionSelected)="seleccionarMarcaExistente($event)">
+                    <!-- Mostrar marcas existentes en este tipo -->
+                    <mat-option *ngFor="let marca of marcasFiltradas" [value]="marca.descripcion">
+                        <div class="sugerencia-option">
+                            <mat-icon>branding_watermark</mat-icon>
+                            <span>{{ marca.descripcion }}</span>
+                            <small class="ya-existe"> - Ya existe</small>
+                        </div>
+                    </mat-option>
+                    <!-- Mensaje cuando no hay coincidencias -->
+                    <mat-option *ngIf="marcasFiltradas.length === 0 && nuevaMarcaDescripcion" disabled>
+                        No hay marcas coincidentes. Se creará una nueva.
+                    </mat-option>
+                </mat-autocomplete>
+
             </mat-form-field>
         </div>
 

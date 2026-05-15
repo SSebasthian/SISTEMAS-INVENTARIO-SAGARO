@@ -57,4 +57,5 @@
 `Se crea interface Registro Impresora manualmente` (Interface opc-equipo REGISTRAR IMPRESORA)<br>
 
 `ng generate service arquitectura/servicio/registro/RegistroEmpleado` (Servicio REGISTRO EMPLEADO)<br>
+`ng generate service arquitectura/servicio/registro/RegistroCatalogo` (Servicio REGISTRO CATALOGO, MARCA, MODELO, VERSION SO)<br>
 `ng generate service arquitectura/servicio/LlamarDatos/Catalogo` (Servicio LLAMAR DATOS CATALOGO)<br>

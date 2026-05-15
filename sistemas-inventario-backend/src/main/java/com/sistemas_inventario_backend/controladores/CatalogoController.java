@@ -1,22 +1,30 @@
 package com.sistemas_inventario_backend.controladores;
+
 import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.entidades.Catalogo;
 import com.sistemas_inventario_backend.repositorios.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/catalogo")
 @RequiredArgsConstructor
-public class LlamarDatosCatalogoController {
+public class CatalogoController {
 
+    private final CatalogoRepository catalogoRepo;
     private final DispositivoTecnologico_TipoRepository tipoRepo;
     private final DispositivoTecnologico_MarcaRepository marcaRepo;
     private final DispositivoTecnologico_ModeloRepository modeloRepo;
     private final DispositivoTecnologico_SORepository soRepo;
     private final DispositivoTecnologico_VersionSORepository versionRepo;
-    private final CatalogoRepository catalogoRepo;
+
+    // =====================================================
+    // ========== CONSULTAS (GET) ==========================
+    // =====================================================
 
 
     // Obtener todas las categorías activas
@@ -76,6 +84,44 @@ public class LlamarDatosCatalogoController {
     public List<DispositivoTecnologico_VersionSO> getVersionesPorSO(@PathVariable Long soCodigo) {
         return versionRepo.findBySistemaOperativoCodigoAndActivoTrue(soCodigo);
     }
+
+
+    // =============================================
+    // ========== CREAR (POST)  ====================
+    // =============================================
+
+
+    // Crear nueva MARCA
+    @PostMapping("/marcas/crear")
+    public ResponseEntity<?> crearMarca(@RequestBody Map<String, Object> request) {
+        try {
+            String descripcion = (String) request.get("descripcion");
+            Long tipoCodigo = Long.valueOf(request.get("tipoCodigo").toString());
+
+            if (descripcion == null || descripcion.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "La descripción de la marca es requerida"));
+            }
+
+            // Buscar el tipo
+            DispositivoTecnologico_Tipo tipo = tipoRepo.findById(tipoCodigo)
+                    .orElseThrow(() -> new RuntimeException("Tipo no encontrado"));
+
+            // Crear nueva marca
+            DispositivoTecnologico_Marca nuevaMarca = new DispositivoTecnologico_Marca();
+            nuevaMarca.setDescripcion(descripcion.trim());
+            nuevaMarca.setActivo(true);
+            nuevaMarca.setTipo(tipo);
+
+            DispositivoTecnologico_Marca guardada = marcaRepo.save(nuevaMarca);
+            return ResponseEntity.ok(guardada);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Error al crear la marca: " + e.getMessage()));
+        }
+    }
+
 
 }
 

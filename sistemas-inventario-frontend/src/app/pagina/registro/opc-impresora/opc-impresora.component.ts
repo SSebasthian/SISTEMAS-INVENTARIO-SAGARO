@@ -7,10 +7,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { CatalogoService } from '../../../arquitectura/servicio/LlamarDatos/catalogo.service';
+import { RegistroCatalogoService } from '../../../arquitectura/servicio/registro/RegistroCatalogo.service';
 import { TipoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Tipo.interface';
 import { MarcaLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Marca.interface';
-import { ModeloLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Modelo.interface';
+import { ModeloLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Modelo.interface'
+import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
+
 
 @Component({
   selector: 'app-opc-impresora',
@@ -37,6 +39,8 @@ export class OpcImpresoraComponent implements OnInit {
   // ========== VARIABLES PARA MODAL DE MARCA ==========
   mostrarModalMarca = false;
   nuevaMarcaDescripcion = '';
+  marcasFiltradas: MarcaLlamarDatos[] = [];
+  todasLasMarcas: MarcaLlamarDatos[] = [];
 
   // ========== VARIABLES PARA MODAL DE MODELO ==========
   mostrarModalModelo = false;
@@ -46,8 +50,9 @@ export class OpcImpresoraComponent implements OnInit {
 
 
   constructor(
-    private catalogoService: CatalogoService,
-    private sanitizer: DomSanitizer
+    private registroCatalogoService: RegistroCatalogoService,
+    private sanitizer: DomSanitizer,
+    private notificacionSnackbarService: NotificacionSnackbarService
   ) { }
 
   ngOnInit(): void {
@@ -55,7 +60,7 @@ export class OpcImpresoraComponent implements OnInit {
   }
 
   cargarDatosIniciales(): void {
-    this.catalogoService
+    this.registroCatalogoService
       .getTiposPorCatalogo(this.CATALOGO_IMPRESORA_ID)
       .subscribe(data => {
         this.tipos = data;
@@ -75,7 +80,7 @@ export class OpcImpresoraComponent implements OnInit {
 
     if (this.tipoSeleccionado) {
 
-      this.catalogoService
+      this.registroCatalogoService
         .getMarcasPorTipo(this.tipoSeleccionado.codigo)
         .subscribe(data => {
           this.marcas = data;
@@ -98,7 +103,7 @@ export class OpcImpresoraComponent implements OnInit {
     this.imagenModeloSeleccionado = '';
 
     if (this.marcaSeleccionada && this.tipoSeleccionado) {
-      this.catalogoService.getModelosPorMarcaYTipo(
+      this.registroCatalogoService.getModelosPorMarcaYTipo(
         this.marcaSeleccionada.codigo,
         this.tipoSeleccionado.codigo
       ).subscribe(data => {
@@ -132,25 +137,102 @@ export class OpcImpresoraComponent implements OnInit {
 
   // Abrir modal
   abrirModalMarca(): void {
+    if (!this.tipoSeleccionado) {
+      this.notificacionSnackbarService.warning('Tipo requerido', 'Primero debe seleccionar un tipo');
+      return;
+    }
     this.mostrarModalMarca = true;
     this.nuevaMarcaDescripcion = '';
+    this.marcasFiltradas = [];
   }
 
   // Cerrar modal
   cerrarModalMarca(): void {
     this.mostrarModalMarca = false;
     this.nuevaMarcaDescripcion = '';
+    this.marcasFiltradas = [];
   }
+
+  // Filtrar marcas existentes en el tipo seleccionado
+  filtrarMarcas(): void {
+    const texto = this.nuevaMarcaDescripcion?.toLowerCase() || '';
+
+    if (texto.length > 0) {
+      // Filtrar SOLO las marcas del tipo seleccionado
+      this.marcasFiltradas = this.marcas
+        .filter(marca => marca.descripcion.toLowerCase().includes(texto))
+        .slice(0, 10);
+    } else {
+      this.marcasFiltradas = [];
+    }
+  }
+
+
+  // Seleccionar una marca existente
+  seleccionarMarcaExistente(event: any): void {
+    const marcaSeleccionada = this.marcas.find(
+      m => m.descripcion === event.option.value
+    );
+
+    if (marcaSeleccionada) {
+      this.notificacionSnackbarService.info('Marca existente',
+        `La marca "${marcaSeleccionada.descripcion}" ya existe en ${this.tipoSeleccionado?.descripcion}. Se ha seleccionado automáticamente.`);
+      this.marcaSeleccionada = marcaSeleccionada;
+      this.cerrarModalMarca();
+    }
+  }
+
 
   // Crear marca
-  crearMarca() {
+  crearMarca(): void {
+    if (!this.nuevaMarcaDescripcion.trim()) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el nombre de la marca');
+      return;
+    }
 
+    if (!this.tipoSeleccionado) {
+      this.notificacionSnackbarService.warning('Tipo requerido', 'Seleccione un tipo primero');
+      return;
+    }
+
+    // Verificar si ya existe en el tipo actual
+    const marcaExistente = this.marcas.find(
+      m => m.descripcion.toLowerCase() === this.nuevaMarcaDescripcion.toLowerCase()
+    );
+
+    if (marcaExistente) {
+      this.notificacionSnackbarService.info('Marca existente',
+        `La marca "${marcaExistente.descripcion}" ya existe en ${this.tipoSeleccionado?.descripcion}.`);
+      this.marcaSeleccionada = marcaExistente;
+      this.cerrarModalMarca();
+      return;
+    }
+
+    // Crear nueva marca en el backend
+    this.registroCatalogoService.crearMarca(
+      this.nuevaMarcaDescripcion,
+      this.tipoSeleccionado.codigo
+    ).subscribe({
+      next: (nuevaMarca: MarcaLlamarDatos) => {
+        // Agregar a la lista de marcas del tipo actual
+        this.marcas.push(nuevaMarca);
+        this.marcas.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+        // Seleccionar la nueva marca
+        this.marcaSeleccionada = nuevaMarca;
+        this.notificacionSnackbarService.success('Marca creada',
+          `Marca "${nuevaMarca.descripcion}" creada exitosamente`);
+        this.cerrarModalMarca();
+      },
+      error: (err) => {
+        const mensaje = err.error?.message || 'Error al crear la marca';
+        this.notificacionSnackbarService.error('Error', mensaje);
+      }
+    });
   }
 
 
 
-
-  // ========== MÉTODOS PARA MODAL DE MARCA ==========
+  // ========== MÉTODOS PARA MODAL MODELO ==========
 
   // Abrir modal
   abrirModalModelo(): void {
@@ -167,6 +249,15 @@ export class OpcImpresoraComponent implements OnInit {
   // Crear Modelo
   crearModelo() {
 
+  }
+
+
+
+
+  // Convertir texto a mayúsculas mientras escribe
+  convertirMayusculas(): void {
+    this.nuevaMarcaDescripcion = this.nuevaMarcaDescripcion.toUpperCase();
+    this.filtrarMarcas(); // Llamar al filtro después de convertir
   }
 
 }
