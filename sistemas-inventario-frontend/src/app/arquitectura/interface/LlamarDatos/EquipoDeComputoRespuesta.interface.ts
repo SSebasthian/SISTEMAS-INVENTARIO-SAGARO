@@ -8,10 +8,11 @@ import { VersionSOLlamarDatos } from '../LlamarDatos/DispositivoTecnologico_Vers
 export interface EquipoDeComputoLlamarDatos {
     serial: string;
     plaqueta: string;
-    fechaCompra: Date;
+    fechaCompra: string;
     facturaCompra: string;
-    estado: string;
+    activo: boolean;
     descripcion: string;
+    estado: string;
 
     // Especificaciones tecnicas (simples)
     ram: string;
@@ -23,11 +24,11 @@ export interface EquipoDeComputoLlamarDatos {
 
 
     // Relaciones ManyToOne con catalogos
-    tipoEquipo: TipoLlamarDatos;
+    tipo: TipoLlamarDatos;
     marca: MarcaLlamarDatos;
     modelo: ModeloLlamarDatos;
     sistemaOperativo: SOLlamarDatos;
-    versionSistemaOperativo: VersionSOLlamarDatos;
+    versionSO: VersionSOLlamarDatos;
     
     
 }

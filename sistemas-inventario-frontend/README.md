@@ -53,9 +53,10 @@
 `Se crea interface LlamarDatos DispositivoTecnologico_VersionSO manualmente` (Interface DispositivoTecnologico_VersionSO LLAMAR DATOS VERSION SO)<br>
 
 
-`Se crea interface Registro Dispositivo manualmente` (Interface opc-equipo REGISTRAR DISPOSITIVO)<br>
-`Se crea interface Registro Impresora manualmente` (Interface opc-equipo REGISTRAR IMPRESORA)<br>
-
 `ng generate service arquitectura/servicio/registro/RegistroEmpleado` (Servicio REGISTRO EMPLEADO)<br>
 `ng generate service arquitectura/servicio/registro/RegistroCatalogo` (Servicio REGISTRO CATALOGO, MARCA, MODELO, VERSION SO)<br>
 `ng generate service arquitectura/servicio/LlamarDatos/Catalogo` (Servicio LLAMAR DATOS CATALOGO)<br>
+
+
+`Se crea interface Registro EquipoComputoRegistro manualmente` (Interface EquipoComputoRegistro REGISTRAR EMPLEADO)<br>
+`ng generate service arquitectura/servicio/Registro/RegistroEquipo` (Servicio REGISTRAR EQUIPO)<br>

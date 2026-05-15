@@ -15,6 +15,10 @@ import { SOLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/Dispo
 import { VersionSOLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_VersionSO.interface';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 
+import { RegistroEquipoService } from './../../../arquitectura/servicio/registro/RegistroEquipo.service';
+import { EquipoComputoRegistro } from './../../../arquitectura/interface/Registro/EquipoComputoRegistro.interface';
+
+
 
 @Component({
   selector: 'app-opc-equipo',
@@ -25,6 +29,7 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 export class OpcEquipoComponent implements OnInit {
 
   // ID del catálogo "EQUIPO DE COMPUTO" en tu base de datos
+
   private readonly CATALOGO_EQUIPO_COMPUTO_ID = 1;
 
   // Listas para los selects
@@ -36,14 +41,29 @@ export class OpcEquipoComponent implements OnInit {
   versionesSO: VersionSOLlamarDatos[] = [];
 
   // Variables para guardar la selección actual del usuario
+
+  serial: string = '';
+  plaqueta: string = '';
+  facturaCompra: string = '';
+  fechaCompra: string = '';
+  descripcion: string = '';
+  estado: string = '';
+  ram: string = '';
+  tipoRam: string = '';
+  disco: string = '';
+  tipoDisco: string = '';
+  procesador: string = '';
+  bits: number | null = null;
+
+
   tipoSeleccionado: TipoLlamarDatos | null = null;
   marcaSeleccionada: MarcaLlamarDatos | null = null;
   modeloSeleccionado: ModeloLlamarDatos | null = null;
   soSeleccionado: SOLlamarDatos | null = null;
   versionSOSeleccionada: VersionSOLlamarDatos | null = null;
-  bitsSeleccionado: number | null = null;
-  tipoRamSeleccionado: string = '';
-  tipoDiscoSeleccionado: string = '';
+
+
+
 
   // ========== VARIABLES PARA MODAL DE MARCA ==========
   mostrarModalMarca = false;
@@ -67,7 +87,8 @@ export class OpcEquipoComponent implements OnInit {
   constructor(
     private registroCatalogoService: RegistroCatalogoService,
     private sanitizer: DomSanitizer,
-    private notificacionSnackbarService: NotificacionSnackbarService
+    private notificacionSnackbarService: NotificacionSnackbarService,
+    private registroEquipoService: RegistroEquipoService
   ) { }
 
   ngOnInit(): void {
@@ -482,9 +503,7 @@ export class OpcEquipoComponent implements OnInit {
 
   // ================== TAMAÑO RAM ==========================
 
-
   tamanoRamReal: number | null = null;
-  tamanoRamMostrar: string = '';
 
   // Metodo para permitir solo numeros
   soloNumeros(event: KeyboardEvent): void {
@@ -509,14 +528,14 @@ export class OpcEquipoComponent implements OnInit {
   // Formatear: al escribir, muestra "número GB"
   formatearRam(): void {
     // Extraer solo números de lo que escribe
-    const numeros = this.tamanoRamMostrar.replace(/[^0-9]/g, '');
+    const numeros = this.ram.replace(/[^0-9]/g, '');
 
     if (numeros && numeros !== '') {
       this.tamanoRamReal = parseInt(numeros);
-      this.tamanoRamMostrar = `${numeros} GB`;
+      this.ram = `${numeros} GB`;
     } else {
       this.tamanoRamReal = null;
-      this.tamanoRamMostrar = '';
+      this.ram = '';
     }
   }
 
@@ -524,7 +543,6 @@ export class OpcEquipoComponent implements OnInit {
   // ================== TAMAÑO DISCO (para servidor) ==========================
 
   tamanoDiscoReal: number | null = null;
-  tamanoDiscoMostrar: string = '';
 
   // Metodo para permitir solo numeros en disco
   soloNumerosDisco(event: KeyboardEvent): void {
@@ -549,14 +567,14 @@ export class OpcEquipoComponent implements OnInit {
   // Formatear disco: al escribir, muestra "número TB"
   formatearDisco(): void {
     // Extraer solo números de lo que escribe
-    const numeros = this.tamanoDiscoMostrar.replace(/[^0-9]/g, '');
+    const numeros = this.disco.replace(/[^0-9]/g, '');
 
     if (numeros && numeros !== '') {
       this.tamanoDiscoReal = parseInt(numeros);
-      this.tamanoDiscoMostrar = `${numeros} TB`;
+      this.disco = `${numeros} TB`;
     } else {
       this.tamanoDiscoReal = null;
-      this.tamanoDiscoMostrar = '';
+      this.disco = '';
     }
   }
 
@@ -572,6 +590,204 @@ export class OpcEquipoComponent implements OnInit {
 
     this.nuevaVersionSODescripcion = this.nuevaVersionSODescripcion.toUpperCase();
     this.filtrarVersionesSo(); // Llamar al filtro después de convertir
+  }
+
+
+
+
+
+
+
+
+  // ================== REGISTRAR EQUIPO ==========================
+
+
+
+  registrarEquipo(): void {
+    // ========== VALIDACIONES DE CAMPOS OBLIGATORIOS ==========
+
+    // Serial
+    if (!this.serial || this.serial.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el serial del equipo');
+      return;
+    }
+
+    // Tipo
+    if (!this.tipoSeleccionado) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione un tipo de equipo');
+      return;
+    }
+
+    // Marca
+    if (!this.marcaSeleccionada) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione una marca');
+      return;
+    }
+
+    // Modelo
+    if (!this.modeloSeleccionado) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione un modelo');
+      return;
+    }
+
+    // Sistema Operativo
+    if (!this.soSeleccionado) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione un sistema operativo');
+      return;
+    }
+
+    // Sistema Operativo version 
+    if (!this.versionSOSeleccionada) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione una version');
+      return;
+    }
+
+
+    // Bits
+    if (!this.bits) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione los bits (32/64)');
+      return;
+    }
+
+    // RAM
+    if (!this.ram || this.ram.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el tamaño de RAM');
+      return;
+    }
+
+    // Tipo de RAM
+    if (!this.tipoRam || this.tipoRam.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione el tipo de RAM');
+      return;
+    }
+
+
+    // Procesador
+    if (!this.procesador || this.procesador.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el procesador');
+      return;
+    }
+
+    // Disco
+    let discoFinal = this.disco;
+    if (this.tipoSeleccionado?.codigo === 4) {
+      // Es servidor
+      if (!this.disco || this.disco.trim() === '') {
+        this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el tamaño del disco');
+        return;
+      }
+      discoFinal = this.disco;
+    } else {
+      // No es servidor
+      if (!this.disco || this.disco.trim() === '') {
+        this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione el tamaño del disco');
+        return;
+      }
+      discoFinal = this.disco;
+    }
+
+    // Tipo de Disco
+    if (!this.tipoDisco || this.tipoDisco.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione el tipo de disco');
+      return;
+    }
+
+    // Estado del equipo
+    if (!this.estado || this.estado.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione el estado del equipo');
+      return;
+    }
+
+    // Tiene factura pero NO tiene fecha
+    if (this.facturaCompra && this.facturaCompra.trim() !== '' && !this.fechaCompra) {
+      this.notificacionSnackbarService.warning('Campos relacionados', 'Si ingresa una factura, debe ingresar la fecha de compra');
+      return;
+    }
+
+    // Tiene fecha pero NO tiene factura
+    if (this.fechaCompra && this.fechaCompra.trim() !== '' && !this.facturaCompra) {
+      this.notificacionSnackbarService.warning('Campos relacionados', 'Si ingresa una fecha de compra, debe ingresar la factura');
+      return;
+    }
+
+    // ========== ASIGNAR VALORES OPCIONALES CON "NO TIENE" ==========
+
+    // Plaqueta - Si está vacío, poner "NO TIENE"
+    const plaquetaFinal = this.plaqueta && this.plaqueta.trim() !== '' ? this.plaqueta : 'NO TIENE';
+
+    // Factura - Si está vacío, poner "NO TIENE"
+    const facturaFinal = this.facturaCompra && this.facturaCompra.trim() !== '' ? this.facturaCompra : 'NO TIENE';
+
+    // Fecha Compra - Si está vacío, poner "NO TIENE"
+    const fechaFinal = this.fechaCompra && this.fechaCompra.trim() !== '' ? this.fechaCompra : null;
+
+
+
+    // ========== ARMAR OBJETO PARA ENVIAR ==========
+
+    const equipoData: EquipoComputoRegistro = {
+      serial: this.serial,
+      plaqueta: plaquetaFinal,
+      facturaCompra: facturaFinal,
+      fechaCompra: fechaFinal,
+      activo: true,
+      descripcion: this.descripcion || '',
+      estado: this.estado,
+      ram: this.ram,
+      tipoRam: this.tipoRam,
+      procesador: this.procesador,
+      disco: discoFinal,
+      tipoDisco: this.tipoDisco,
+      bits: this.bits,
+      tipo: { codigo: this.tipoSeleccionado.codigo },
+      marca: { codigo: this.marcaSeleccionada.codigo },
+      modelo: { codigo: this.modeloSeleccionado.codigo },
+      sistemaOperativo: { codigo: this.soSeleccionado?.codigo ?? 0 },
+      versionSO: { codigo: this.versionSOSeleccionada?.codigo ?? 0 }
+    };
+
+    console.log('📤 Enviando equipo:', equipoData);
+
+    this.registroEquipoService.registrarEquipo(equipoData).subscribe({
+      next: (respuesta) => {
+        console.log('✅ Equipo registrado:', respuesta);
+        this.notificacionSnackbarService.success('Equipo registrado', `Serial: ${respuesta.serial}`);
+        this.limpiarFormulario();
+      },
+      error: (err) => {
+        console.error('❌ Error:', err);
+        const mensaje = err.error?.message || 'Error al registrar el equipo';
+        this.notificacionSnackbarService.error('Error', mensaje);
+      }
+    });
+  }
+
+  limpiarFormulario(): void {
+    this.serial = '';
+    this.plaqueta = '';
+    this.facturaCompra = '';
+    this.fechaCompra = '';
+    this.descripcion = '';
+    this.procesador = '';
+    this.ram = '';
+    this.tipoRam = '';
+    this.disco = '';
+    this.tipoDisco = '';
+    this.bits = null;
+    this.disco = '';
+    this.ram = '';
+    this.tipoSeleccionado = null;
+    this.marcaSeleccionada = null;
+    this.modeloSeleccionado = null;
+    this.soSeleccionado = null;
+    this.versionSOSeleccionada = null;
+    this.modelos = [];
+    this.marcas = [];
+    this.versionesSO = [];
+    this.imagenModeloSeleccionado = '';
+
+    // Recargar datos iniciales
+    this.cargarDatosIniciales();
   }
 
 }

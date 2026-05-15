@@ -23,6 +23,7 @@ public class EquipoDeComputo {
     private LocalDate fechaCompra;
     private Boolean activo = true;
     private String descripcion; // observaciones
+    private String estado;
 
     // Especificaciones tecnicas (simples)
     private String ram;

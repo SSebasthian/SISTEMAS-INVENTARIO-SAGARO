@@ -1,5 +1,5 @@
 <div class="contenedor-regEquipo">
-  <form id="form-registro-equipo">
+  <form id="form-registro-equipo" (ngSubmit)="registrarEquipo()">
     <div class="contenido">
 
       <div class="fila-de-tres">
@@ -23,7 +23,7 @@
 
         <div class="contenido-opcion">
           <label>SERIAL:<br></label>
-          <input class="opcionForm" type="text">
+          <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial">
         </div>
 
         <div class="contenido-opcion">
@@ -76,7 +76,7 @@
 
         <div class="contenido-opcion">
           <label>BITS<br></label>
-          <select class="opcionForm select">
+          <select class="opcionForm select" [(ngModel)]="bits" name="bits">
             <option value=""></option>
             <option value="32">32</option>
             <option value="64">64</option>
@@ -86,14 +86,14 @@
         <div class="contenido-opcion">
           <label>TAMAÑO RAM<br></label>
           <div class="input-group">
-            <input class="opcionForm" type="text" [(ngModel)]="tamanoRamMostrar" name="tamanoRam"
+            <input class="opcionForm" type="text" [(ngModel)]="ram" name="ram" 
               (input)="formatearRam()" (keydown)="soloNumeros($event)">
           </div>
         </div>
 
         <div class="contenido-opcion">
           <label>TIPO DE RAM<br></label>
-          <select class="opcionForm select">
+          <select class="opcionForm select" [(ngModel)]="tipoRam" name="tipoRam">
             <option value=""></option>
             <option value="DDR2">DDR2</option>
             <option value="DDR3">DDR3</option>
@@ -104,12 +104,12 @@
 
         <div class="contenido-opcion">
           <label>PROCESADOR<br></label>
-          <input class="opcionForm" type="text">
+          <input class="opcionForm" type="text" [(ngModel)]="procesador" name="procesador">
         </div>
 
         <div class="contenido-opcion"  *ngIf="tipoSeleccionado?.codigo !== 4">
           <label>TAMAÑO DISCO<br></label>
-          <select class="opcionForm select">
+          <select class="opcionForm select" [(ngModel)]="disco" name="disco">
             <option value=""></option>
             <option value="125 GB">125 GB</option>
             <option value="250 GB">250 GB</option>
@@ -122,7 +122,7 @@
         <div class="contenido-opcion"  *ngIf="tipoSeleccionado?.codigo === 4">
           <label>TAMAÑO DISCO<br></label>
           <div class="input-group">
-            <input class="opcionForm" type="text" [(ngModel)]="tamanoDiscoMostrar" name="tamanoDisco"
+            <input class="opcionForm" type="text" [(ngModel)]="disco" name="disco"
               (input)="formatearDisco()" (keydown)="soloNumerosDisco($event)">
           </div>
         </div>
@@ -130,7 +130,7 @@
 
         <div class="contenido-opcion">
           <label>TIPO DE DISCO<br></label>
-          <select class="opcionForm select">
+          <select class="opcionForm select" [(ngModel)]="tipoDisco" name="tipoDisco">
             <option value=""></option>
             <option value="SSD">SSD</option>
             <option value="HDD">HDD</option>
@@ -140,22 +140,22 @@
 
         <div class="contenido-opcion">
           <label>NUMERO DE PLACA<br></label>
-          <input class="opcionForm" type="text">
+          <input class="opcionForm" type="text" [(ngModel)]="plaqueta" name="plaqueta">
         </div>
 
         <div class="contenido-opcion">
           <label>FACTURA<br></label>
-          <input class="opcionForm" type="text">
+          <input class="opcionForm" type="text" [(ngModel)]="facturaCompra" name="facturaCompra">
         </div>
 
         <div class="contenido-opcion">
           <label>FECHA DE COMPRA<br></label>
-          <input class="opcionForm" type="date">
+          <input class="opcionForm" type="date" [(ngModel)]="fechaCompra" name="fechaCompra">
         </div>
 
         <div class="contenido-opcion">
           <label>ESTADO<br></label>
-          <select class="opcionForm select">
+          <select class="opcionForm select" [(ngModel)]="estado" name="estado">
             <option value=""></option>
             <option value="NUEVO"
               title="El equipo está en perfectas condiciones, puede ser un equipo recién adquirido o recién salido de la fábrica.">
@@ -176,7 +176,7 @@
 
         <div class="contenido-opcion textarea">
           <label for="descripcion">DESCRIPCION:<br></label>
-          <textarea> </textarea>
+          <textarea [(ngModel)]="descripcion" name="descripcion"> </textarea>
         </div>
 
         <div>
@@ -213,7 +213,7 @@
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nueva Marca</mat-label>
         <input matInput [(ngModel)]="nuevaMarcaDescripcion" [matAutocomplete]="autoMarca" (input)="convertirMayusculas()" 
-          (input)="filtrarMarcas()" placeholder="Ejemplo: HP, Dell, Lenovo" autocomplete="off">
+           placeholder="Ejemplo: HP, Dell, Lenovo" autocomplete="off">
 
         <mat-autocomplete #autoMarca="matAutocomplete" (optionSelected)="seleccionarMarcaExistente($event)">
           <!-- Mostrar marcas existentes en este tipo -->
@@ -264,7 +264,7 @@
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nueva Modelo</mat-label>
         <input matInput [(ngModel)]="nuevaModeloDescripcion" [matAutocomplete]="autoModelo" (input)="convertirMayusculas()" 
-        (input)="filtrarModelos()" placeholder="Ejemplo: Vostro, Optiplex, Latitude" autocomplete="off">
+        placeholder="Ejemplo: Vostro, Optiplex, Latitude" autocomplete="off">
 
           <!-- Autocompletado para modelos existentes -->
           <mat-autocomplete #autoModelo="matAutocomplete" (optionSelected)="seleccionarModeloExistente($event)">
@@ -307,7 +307,7 @@
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nueva Versión</mat-label>
         <input matInput [(ngModel)]="nuevaVersionSODescripcion" [matAutocomplete]="autoVersion" (input)="convertirMayusculas()"
-        (input)="filtrarVersionesSo()" placeholder="Ejemplo: Windows 10, Windows 11" autocomplete="off">
+        placeholder="Ejemplo: Windows 10, Windows 11" autocomplete="off">
 
         <!-- Autocompletado para las versiones so existentes -->
           <mat-autocomplete #autoVersion="matAutocomplete"  (optionSelected)="seleccionarVersionSOExistente($event)">
