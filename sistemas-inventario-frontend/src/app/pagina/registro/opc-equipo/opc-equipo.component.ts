@@ -60,6 +60,8 @@ export class OpcEquipoComponent implements OnInit {
   // ========== VARIABLES PARA MODAL DE VERSION SO ==========
   mostrarModalVersionSO = false;
   nuevaVersionSODescripcion = '';
+  versionesFiltradas: VersionSOLlamarDatos[] = [];
+  todasLasVersionesSo: VersionSOLlamarDatos[] = [];
 
 
   constructor(
@@ -280,8 +282,8 @@ export class OpcEquipoComponent implements OnInit {
       return;
     }
     if (!this.marcaSeleccionada) {
-        this.notificacionSnackbarService.warning('Marca requerida', 'Primero debe seleccionar una marca');
-        return;
+      this.notificacionSnackbarService.warning('Marca requerida', 'Primero debe seleccionar una marca');
+      return;
     }
     this.mostrarModalModelo = true;
     this.nuevaModeloDescripcion = '';
@@ -384,21 +386,97 @@ export class OpcEquipoComponent implements OnInit {
 
   // Abrir modal
   abrirModalVersionSO(): void {
+    if (!this.soSeleccionado) {
+      this.notificacionSnackbarService.warning('SO requerido', 'Primero debe seleccionar un Sistema Operativo');
+      return;
+    }
     this.mostrarModalVersionSO = true;
     this.nuevaVersionSODescripcion = '';
+    this.versionesFiltradas = [];
   }
 
   // Cerrar modal
   cerrarModalVersionSO(): void {
     this.mostrarModalVersionSO = false;
     this.nuevaVersionSODescripcion = '';
+    this.versionesFiltradas = [];
   }
+
+  // Filtrar modelo existentes en el tipo seleccionado
+  filtrarVersionesSo(): void {
+    const texto = this.nuevaVersionSODescripcion?.toLowerCase() || '';
+
+    if (texto.length > 0) {
+      this.versionesFiltradas = this.versionesSO
+        .filter(version => version.descripcion.toLowerCase().includes(texto))
+        .slice(0, 10);
+    } else {
+      this.versionesFiltradas = [];
+    }
+  }
+
+
+  // Seleccionar una version SO existente
+  seleccionarVersionSOExistente(event: any): void {
+    const versionSeleccionada = this.versionesSO.find(
+      v => v.descripcion === event.option.value
+    );
+
+    if (versionSeleccionada) {
+      this.notificacionSnackbarService.info('Versión SO existente',
+        `La versión "${versionSeleccionada.descripcion}" ya existe. Se ha seleccionado automáticamente.`);
+      this.versionSOSeleccionada = versionSeleccionada;  // ← CORREGIDO: versionSeleccionada
+      this.cerrarModalVersionSO();
+    }
+  }
+
 
   // Crear VersionSO
-  crearVersionSO() {
+  crearVersionSO(): void {
+    if (!this.nuevaVersionSODescripcion.trim()) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el nombre de la versión');
+      return;
+    }
 
+    if (!this.soSeleccionado) {
+      this.notificacionSnackbarService.warning('SO requerido', 'Primero debe seleccionar un Sistema Operativo');
+      return;
+    }
+
+    // Verificar si ya existe en la lista actual de versiones
+    const versionExistente = this.versionesSO.find(
+      v => v.descripcion.toLowerCase() === this.nuevaVersionSODescripcion.toLowerCase()
+    );
+
+    if (versionExistente) {
+      this.notificacionSnackbarService.info('Versión existente',
+        `La versión "${versionExistente.descripcion}" ya existe para ${this.soSeleccionado?.descripcion}.`);
+      this.versionSOSeleccionada = versionExistente;
+      this.cerrarModalVersionSO();
+      return;
+    }
+
+    // Crear nueva versión en el backend
+    this.registroCatalogoService.crearVersionSO(
+      this.nuevaVersionSODescripcion.toUpperCase(),
+      this.soSeleccionado.codigo
+    ).subscribe({
+      next: (nuevaVersion: VersionSOLlamarDatos) => {
+        // Agregar a la lista de versiones
+        this.versionesSO.push(nuevaVersion);
+        this.versionesSO.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+        // Seleccionar la nueva versión
+        this.versionSOSeleccionada = nuevaVersion;
+        this.notificacionSnackbarService.success('Versión creada',
+          `Versión "${nuevaVersion.descripcion}" creada exitosamente`);
+        this.cerrarModalVersionSO();
+      },
+      error: (err) => {
+        const mensaje = err.error?.message || 'Error al crear la versión';
+        this.notificacionSnackbarService.error('Error', mensaje);
+      }
+    });
   }
-
 
 
 
@@ -491,6 +569,9 @@ export class OpcEquipoComponent implements OnInit {
 
     this.nuevaModeloDescripcion = this.nuevaModeloDescripcion.toUpperCase();
     this.filtrarModelos(); // Llamar al filtro después de convertir
+
+    this.nuevaVersionSODescripcion = this.nuevaVersionSODescripcion.toUpperCase();
+    this.filtrarVersionesSo(); // Llamar al filtro después de convertir
   }
 
 }

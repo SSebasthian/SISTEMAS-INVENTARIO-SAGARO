@@ -4,6 +4,8 @@ import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_TipoRepository;
 import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_MarcaRepository;
 import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_ModeloRepository;
+import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_SORepository;
+import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_VersionSORepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +20,8 @@ public class CatalogoService {
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final DispositivoTecnologico_MarcaRepository marcaRepository;
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
-
-
+    private final DispositivoTecnologico_SORepository soRepository;
+    private final DispositivoTecnologico_VersionSORepository versionSORepository;
 
 
     // ========== CREAR MARCA ==========
@@ -64,5 +66,24 @@ public class CatalogoService {
 
         return modeloRepository.save(nuevoModelo);
     }
+
+
+    // ==========  CREAR VERSION SO ==========
+
+    @Transactional
+    public DispositivoTecnologico_VersionSO crearVersionSO(String descripcion, Long soCodigo) {
+        // Buscar el USANDO EL REPOSITORIO (soRepository), no la entidad
+        DispositivoTecnologico_SO so = soRepository.findById(soCodigo)
+                .orElseThrow(() -> new RuntimeException("SO no encontrado con código: " + soCodigo));
+
+        // Crear nueva versión
+        DispositivoTecnologico_VersionSO nuevaVersion = new DispositivoTecnologico_VersionSO();
+        nuevaVersion.setDescripcion(descripcion);
+        nuevaVersion.setActivo(true);
+        nuevaVersion.setSistemaOperativo(so);
+
+        return versionSORepository.save(nuevaVersion);
+    }
+
 
 }

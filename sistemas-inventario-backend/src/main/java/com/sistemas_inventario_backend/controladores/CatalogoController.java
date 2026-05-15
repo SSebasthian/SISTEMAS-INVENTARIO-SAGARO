@@ -147,6 +147,30 @@ public class CatalogoController {
     }
 
 
+    // ========== CREAR VERSION SO  ==========
+
+    @PostMapping("/versiones-so/crear")
+    public ResponseEntity<?> crearVersionSO(@RequestBody Map<String, Object> request) {
+        try {
+            String descripcion = (String) request.get("descripcion");
+            Map<String, Object> soMap = (Map<String, Object>) request.get("sistemaOperativo");
+            Long soCodigo = Long.valueOf(soMap.get("codigo").toString());
+
+            if (descripcion == null || descripcion.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "La descripción de la versión es requerida"));
+            }
+
+            DispositivoTecnologico_VersionSO nuevaVersion = catalogoService.crearVersionSO(descripcion.trim(), soCodigo);
+            return ResponseEntity.ok(nuevaVersion);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Error al crear la versión: " + e.getMessage()));
+        }
+    }
+
+
 }
 
 /// //////////////////////////////////////////////////////////////////////////////

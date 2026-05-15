@@ -295,8 +295,15 @@
         <div class="crear">
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Nueva Versión</mat-label>
-                <input matInput [(ngModel)]="nuevaVersionSODescripcion" placeholder="Ejemplo: Kitkat, Lollipop"
-                    autocomplete="off">
+                <input matInput [(ngModel)]="nuevaVersionSODescripcion" [matAutocomplete]="autoVersion" (input)="convertirMayusculas()"
+                 (input)="filtrarVersionesSo()" placeholder="Ejemplo: Kitkat, Lollipop" autocomplete="off">
+
+                 <!-- Autocompletado para las versiones so existentes -->
+                <mat-autocomplete #autoVersion="matAutocomplete"  (optionSelected)="seleccionarVersionSOExistente($event)">
+                    <mat-option *ngFor="let version of versionesFiltradas" [value]="version.descripcion">
+                    {{ version.descripcion }}
+                    </mat-option>
+                </mat-autocomplete>
             </mat-form-field>
         </div>
 

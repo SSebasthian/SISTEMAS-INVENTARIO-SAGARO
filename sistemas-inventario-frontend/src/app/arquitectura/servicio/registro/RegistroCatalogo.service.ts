@@ -88,5 +88,14 @@ export class RegistroCatalogoService {
     return this.http.post(`${this.apiUrlCatalogo}/modelos/crear`, body);
   }
 
+  /** CREAR NUEVA VERSIÓN DE SO asociada a un SO */
+  crearVersionSO(descripcion: string, soCodigo: number): Observable<VersionSOLlamarDatos> {
+    const body = {
+      descripcion: descripcion,
+      sistemaOperativo: { codigo: soCodigo }
+    };
+    return this.http.post<VersionSOLlamarDatos>(`${this.apiUrlCatalogo}/versiones-so/crear`, body);
+  }
+
 
 }
