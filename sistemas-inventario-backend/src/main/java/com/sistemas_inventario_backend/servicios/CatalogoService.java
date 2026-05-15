@@ -3,6 +3,7 @@ package com.sistemas_inventario_backend.servicios;
 import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_TipoRepository;
 import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_MarcaRepository;
+import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_ModeloRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,21 +17,13 @@ public class CatalogoService {
 
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final DispositivoTecnologico_MarcaRepository marcaRepository;
+    private final DispositivoTecnologico_ModeloRepository modeloRepository;
 
 
-    // ========== MARCAS ==========
 
-    public List<DispositivoTecnologico_Marca> listarTodasLasMarcas() {
-        return marcaRepository.findAll();
-    }
 
-    public List<DispositivoTecnologico_Marca> listarMarcasPorTipo(Long tipoCodigo) {
-        return marcaRepository.findByTipoCodigoAndActivoTrue(tipoCodigo);
-    }
+    // ========== CREAR MARCA ==========
 
-    public List<DispositivoTecnologico_Tipo> listarTiposPorCatalogo(Long catalogoCodigo) {
-        return tipoRepository.findByCatalogoCodigoAndActivoTrue(catalogoCodigo);
-    }
 
     @Transactional
     public DispositivoTecnologico_Marca crearMarca(String descripcion, Long tipoCodigo) {
@@ -46,6 +39,30 @@ public class CatalogoService {
         }
 
         return marcaRepository.save(marca);
+    }
+
+
+    // ========== CREAR MODELO ==========
+
+    @Transactional
+    public DispositivoTecnologico_Modelo crearModelo(DispositivoTecnologico_Modelo modelo) {
+        // Validar que el tipo exista
+        DispositivoTecnologico_Tipo tipo = tipoRepository.findById(modelo.getTipo().getCodigo())
+                .orElseThrow(() -> new RuntimeException("Tipo no encontrado con codigo: " + modelo.getTipo().getCodigo()));
+
+        // Validar que la marca exista
+        DispositivoTecnologico_Marca marca = marcaRepository.findById(modelo.getMarca().getCodigo())
+                .orElseThrow(() -> new RuntimeException("Marca no encontrada con codigo: " + modelo.getMarca().getCodigo()));
+
+        // Crear el modelo
+        DispositivoTecnologico_Modelo nuevoModelo = new DispositivoTecnologico_Modelo();
+        nuevoModelo.setDescripcion(modelo.getDescripcion());
+        nuevoModelo.setTipo(tipo);
+        nuevoModelo.setMarca(marca);
+        nuevoModelo.setRutaImagen(modelo.getRutaImagen());
+        nuevoModelo.setActivo(true);
+
+        return modeloRepository.save(nuevoModelo);
     }
 
 }

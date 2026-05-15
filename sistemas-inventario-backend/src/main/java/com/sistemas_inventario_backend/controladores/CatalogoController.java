@@ -3,6 +3,7 @@ package com.sistemas_inventario_backend.controladores;
 import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.entidades.Catalogo;
 import com.sistemas_inventario_backend.repositorios.*;
+import com.sistemas_inventario_backend.servicios.CatalogoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CatalogoController {
 
+
+    private final CatalogoService catalogoService;
     private final CatalogoRepository catalogoRepo;
     private final DispositivoTecnologico_TipoRepository tipoRepo;
     private final DispositivoTecnologico_MarcaRepository marcaRepo;
@@ -91,7 +94,8 @@ public class CatalogoController {
     // =============================================
 
 
-    // Crear nueva MARCA
+    // ========== CREAR MARCA  ==========
+
     @PostMapping("/marcas/crear")
     public ResponseEntity<?> crearMarca(@RequestBody Map<String, Object> request) {
         try {
@@ -103,22 +107,42 @@ public class CatalogoController {
                         .body(Map.of("message", "La descripción de la marca es requerida"));
             }
 
-            // Buscar el tipo
-            DispositivoTecnologico_Tipo tipo = tipoRepo.findById(tipoCodigo)
-                    .orElseThrow(() -> new RuntimeException("Tipo no encontrado"));
-
-            // Crear nueva marca
-            DispositivoTecnologico_Marca nuevaMarca = new DispositivoTecnologico_Marca();
-            nuevaMarca.setDescripcion(descripcion.trim());
-            nuevaMarca.setActivo(true);
-            nuevaMarca.setTipo(tipo);
-
-            DispositivoTecnologico_Marca guardada = marcaRepo.save(nuevaMarca);
-            return ResponseEntity.ok(guardada);
+            DispositivoTecnologico_Marca nuevaMarca = catalogoService.crearMarca(descripcion.trim(), tipoCodigo);
+            return ResponseEntity.ok(nuevaMarca);
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(Map.of("message", "Error al crear la marca: " + e.getMessage()));
+        }
+    }
+
+
+    // ========== CREAR MODELO  ==========
+
+    @PostMapping("/modelos/crear")
+    public ResponseEntity<?> crearModelo(@RequestBody DispositivoTecnologico_Modelo modelo) {
+        try {
+            if (modelo.getDescripcion() == null || modelo.getDescripcion().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "La descripción del modelo es requerida"));
+            }
+
+            if (modelo.getTipo() == null || modelo.getTipo().getCodigo() == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "El tipo de equipo es requerido"));
+            }
+
+            if (modelo.getMarca() == null || modelo.getMarca().getCodigo() == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "La marca es requerida"));
+            }
+
+            DispositivoTecnologico_Modelo nuevoModelo = catalogoService.crearModelo(modelo);
+            return ResponseEntity.ok(nuevoModelo);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Error al crear el modelo: " + e.getMessage()));
         }
     }
 

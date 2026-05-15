@@ -107,7 +107,7 @@
           <input class="opcionForm" type="text">
         </div>
 
-        <div class="contenido-opcion"  *ngIf="tipoSeleccionado?.codigo !== 4"> 
+        <div class="contenido-opcion"  *ngIf="tipoSeleccionado?.codigo !== 4">
           <label>TAMAÑO DISCO<br></label>
           <select class="opcionForm select">
             <option value=""></option>
@@ -118,7 +118,7 @@
           </select>
         </div>
 
-       
+
         <div class="contenido-opcion"  *ngIf="tipoSeleccionado?.codigo === 4">
           <label>TAMAÑO DISCO<br></label>
           <div class="input-group">
@@ -126,7 +126,7 @@
               (input)="formatearDisco()" (keydown)="soloNumerosDisco($event)">
           </div>
         </div>
-        
+
 
         <div class="contenido-opcion">
           <label>TIPO DE DISCO<br></label>
@@ -263,8 +263,17 @@
     <div class="crear">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nueva Modelo</mat-label>
-        <input matInput [(ngModel)]="nuevaModeloDescripcion" placeholder="Ejemplo: Vostro, Optiplex, Latitude"
-          autocomplete="off">
+        <input matInput [(ngModel)]="nuevaModeloDescripcion" [matAutocomplete]="autoModelo" (input)="convertirMayusculas()" 
+        (input)="filtrarModelos()" placeholder="Ejemplo: Vostro, Optiplex, Latitude" autocomplete="off">
+
+          <!-- Autocompletado para modelos existentes -->
+          <mat-autocomplete #autoModelo="matAutocomplete" (optionSelected)="seleccionarModeloExistente($event)">
+            <mat-option *ngFor="let modelo of modelosFiltrados" [value]="modelo.descripcion">
+              {{ modelo.descripcion }}
+              <small class="ya-existe"> - Ya existe</small>
+            </mat-option>
+          </mat-autocomplete>
+
       </mat-form-field>
     </div>
 

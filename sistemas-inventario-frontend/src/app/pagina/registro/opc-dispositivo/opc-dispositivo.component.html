@@ -253,8 +253,16 @@
         <div class="crear">
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Nueva Modelo</mat-label>
-                <input matInput [(ngModel)]="nuevaModeloDescripcion" placeholder="Ejemplo: Redmi, Galaxy"
-                    autocomplete="off">
+                <input matInput [(ngModel)]="nuevaModeloDescripcion" [matAutocomplete]="autoModelo" (input)="convertirMayusculas()" 
+                (input)="filtrarModelos()" placeholder="Ejemplo: Redmi, Galaxy" autocomplete="off">
+
+                <!-- Autocompletado para modelos existentes -->
+                <mat-autocomplete #autoModelo="matAutocomplete" (optionSelected)="seleccionarModeloExistente($event)">
+                    <mat-option *ngFor="let modelo of modelosFiltrados" [value]="modelo.descripcion">
+                    {{ modelo.descripcion }}
+                    <small class="ya-existe"> - Ya existe</small>
+                    </mat-option>
+                </mat-autocomplete>
             </mat-form-field>
         </div>
 

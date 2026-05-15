@@ -45,6 +45,8 @@ export class OpcImpresoraComponent implements OnInit {
   // ========== VARIABLES PARA MODAL DE MODELO ==========
   mostrarModalModelo = false;
   nuevaModeloDescripcion = '';
+  modelosFiltrados: ModeloLlamarDatos[] = [];
+  todasLasModelo: ModeloLlamarDatos[] = [];
 
   tipoRecarga: string = '';
 
@@ -236,19 +238,106 @@ export class OpcImpresoraComponent implements OnInit {
 
   // Abrir modal
   abrirModalModelo(): void {
+    if (!this.tipoSeleccionado) {
+      this.notificacionSnackbarService.warning('Tipo requerido', 'Primero debe seleccionar un tipo');
+      return;
+    }
+    if (!this.marcaSeleccionada) {
+        this.notificacionSnackbarService.warning('Marca requerida', 'Primero debe seleccionar una marca');
+        return;
+    }
     this.mostrarModalModelo = true;
     this.nuevaModeloDescripcion = '';
+    this.modelosFiltrados = [];
   }
 
   // Cerrar modal
   cerrarModalModelo(): void {
     this.mostrarModalModelo = false;
     this.nuevaModeloDescripcion = '';
+    this.modelosFiltrados = [];
+  }
+
+  // Filtrar modelo existentes en el tipo seleccionado
+  filtrarModelos(): void {
+    const texto = this.nuevaModeloDescripcion?.toLowerCase() || '';
+
+    if (texto.length > 0) {
+      // Filtrar SOLO las modelo del tipo seleccionado
+      this.modelosFiltrados = this.modelos
+        .filter(modelo => modelo.descripcion.toLowerCase().includes(texto))
+        .slice(0, 10);
+    } else {
+      this.modelosFiltrados = [];
+    }
+  }
+
+
+  // Seleccionar una modelo existente
+  seleccionarModeloExistente(event: any): void {
+    const modeloSeleccionado = this.modelos.find(
+      m => m.descripcion === event.option.value
+    );
+
+    if (modeloSeleccionado) {
+      this.notificacionSnackbarService.info('Modelo existente',
+        `El modelo "${modeloSeleccionado.descripcion}" ya existe. Se ha seleccionado automáticamente.`);
+      this.modeloSeleccionado = modeloSeleccionado;
+      this.cerrarModalModelo();
+    }
   }
 
   // Crear Modelo
-  crearModelo() {
+  crearModelo(): void {
+    if (!this.nuevaModeloDescripcion.trim()) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el nombre del modelo');
+      return;
+    }
 
+    if (!this.tipoSeleccionado) {
+      this.notificacionSnackbarService.warning('Tipo requerido', 'Primero debe seleccionar un tipo');
+      return;
+    }
+
+    if (!this.marcaSeleccionada) {
+      this.notificacionSnackbarService.warning('Marca requerida', 'Primero debe seleccionar una marca');
+      return;
+    }
+
+    // Verificar si ya existe en la lista actual de modelos
+    const modeloExistente = this.modelos.find(
+      m => m.descripcion.toLowerCase() === this.nuevaModeloDescripcion.toLowerCase()
+    );
+
+    if (modeloExistente) {
+      this.notificacionSnackbarService.info('Modelo existente',
+        `El modelo "${modeloExistente.descripcion}" ya existe para ${this.marcaSeleccionada?.descripcion} - ${this.tipoSeleccionado?.descripcion}.`);
+      this.modeloSeleccionado = modeloExistente;
+      this.cerrarModalModelo();
+      return;
+    }
+
+    // Crear nuevo modelo en el backend
+    this.registroCatalogoService.crearModelo(
+      this.nuevaModeloDescripcion.toUpperCase(),
+      this.tipoSeleccionado.codigo,
+      this.marcaSeleccionada.codigo
+    ).subscribe({
+      next: (nuevoModelo: ModeloLlamarDatos) => {
+        // Agregar a la lista de modelos
+        this.modelos.push(nuevoModelo);
+        this.modelos.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+        // Seleccionar el nuevo modelo
+        this.modeloSeleccionado = nuevoModelo;
+        this.notificacionSnackbarService.success('Modelo creado',
+          `Modelo "${nuevoModelo.descripcion}" creado exitosamente`);
+        this.cerrarModalModelo();
+      },
+      error: (err) => {
+        const mensaje = err.error?.message || 'Error al crear el modelo';
+        this.notificacionSnackbarService.error('Error', mensaje);
+      }
+    });
   }
 
 
@@ -256,8 +345,11 @@ export class OpcImpresoraComponent implements OnInit {
 
   // Convertir texto a mayúsculas mientras escribe
   convertirMayusculas(): void {
+
     this.nuevaMarcaDescripcion = this.nuevaMarcaDescripcion.toUpperCase();
     this.filtrarMarcas(); // Llamar al filtro después de convertir
-  }
 
+    this.nuevaModeloDescripcion = this.nuevaModeloDescripcion.toUpperCase();
+    this.filtrarModelos(); // Llamar al filtro después de convertir
+  }
 }

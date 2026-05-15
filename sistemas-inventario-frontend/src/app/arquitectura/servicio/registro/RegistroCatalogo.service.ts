@@ -14,60 +14,60 @@ import { VersionSOLlamarDatos } from '../../interface/LlamarDatos/DispositivoTec
 export class RegistroCatalogoService {
 
   private apiUrlCatalogo = 'http://localhost:8080/catalogo';
- 
-   constructor(private http: HttpClient) { }
- 
- 
-   // Obtener todos los catálogos (COMPUTADOR, TELEFONO, IMPRESORA)
-   getCatalogos(): Observable<CatalogoLlamarDatos[]> {
-     return this.http.get<CatalogoLlamarDatos[]>(`${this.apiUrlCatalogo}/catalogos`);
-   }
- 
-   // Tipos por categoría (para equipo de cómputo usamos 'COMPUTADOR')
-   getTiposPorCatalogo(catalogoCodigo: number): Observable<TipoLlamarDatos[]> {
-     return this.http.get<TipoLlamarDatos[]>(`${this.apiUrlCatalogo}/tipos/catalogo/${catalogoCodigo}`);
-   }
- 
-   // Todas las marcas
-   getMarcas(): Observable<MarcaLlamarDatos[]> {
-     return this.http.get<MarcaLlamarDatos[]>(`${this.apiUrlCatalogo}/marcas`);
-   }
- 
-   // Marcas por catálogo
-   getMarcasPorCatalogo(catalogoCodigo: number): Observable<MarcaLlamarDatos[]> {
-     return this.http.get<MarcaLlamarDatos[]>(`${this.apiUrlCatalogo}/marcas/catalogo/${catalogoCodigo}`);
-   }
- 
-   // Marcas por tipo
-   getMarcasPorTipo(tipoCodigo: number): Observable<MarcaLlamarDatos[]> {
-     return this.http.get<MarcaLlamarDatos[]>(`${this.apiUrlCatalogo}/marcas/tipo/${tipoCodigo}`);
-   }
- 
-   // Modelos por marca
-   getModelosPorMarca(marcaCodigo: number): Observable<ModeloLlamarDatos[]> {
-     return this.http.get<ModeloLlamarDatos[]>(`${this.apiUrlCatalogo}/modelos/marca/${marcaCodigo}`);
-   }
- 
-   // Modelos por marca y tipo
-   getModelosPorMarcaYTipo(marcaCodigo: number, tipoCodigo: number): Observable<ModeloLlamarDatos[]> {
-     return this.http.get<ModeloLlamarDatos[]>(`${this.apiUrlCatalogo}/modelos/marca/${marcaCodigo}/tipo/${tipoCodigo}`);
-   }
- 
-   // Sistemas operativos por catalogo
-   getSistemasOperativosPorCatalogo(catalogoCodigo: number): Observable<SOLlamarDatos[]> {
-     return this.http.get<SOLlamarDatos[]>(`${this.apiUrlCatalogo}/sistemas-operativos/catalogo/${catalogoCodigo}`);
-   }
- 
-   // Versiones por SO
-   getVersionesPorSO(soCodigo: number): Observable<VersionSOLlamarDatos[]> {
-     return this.http.get<VersionSOLlamarDatos[]>(`${this.apiUrlCatalogo}/versiones-so/so/${soCodigo}`);
-   }
+
+  constructor(private http: HttpClient) { }
+
+
+  // Obtener todos los catálogos (COMPUTADOR, TELEFONO, IMPRESORA)
+  getCatalogos(): Observable<CatalogoLlamarDatos[]> {
+    return this.http.get<CatalogoLlamarDatos[]>(`${this.apiUrlCatalogo}/catalogos`);
+  }
+
+  // Tipos por categoría (para equipo de cómputo usamos 'COMPUTADOR')
+  getTiposPorCatalogo(catalogoCodigo: number): Observable<TipoLlamarDatos[]> {
+    return this.http.get<TipoLlamarDatos[]>(`${this.apiUrlCatalogo}/tipos/catalogo/${catalogoCodigo}`);
+  }
+
+  // Todas las marcas
+  getMarcas(): Observable<MarcaLlamarDatos[]> {
+    return this.http.get<MarcaLlamarDatos[]>(`${this.apiUrlCatalogo}/marcas`);
+  }
+
+  // Marcas por catálogo
+  getMarcasPorCatalogo(catalogoCodigo: number): Observable<MarcaLlamarDatos[]> {
+    return this.http.get<MarcaLlamarDatos[]>(`${this.apiUrlCatalogo}/marcas/catalogo/${catalogoCodigo}`);
+  }
+
+  // Marcas por tipo
+  getMarcasPorTipo(tipoCodigo: number): Observable<MarcaLlamarDatos[]> {
+    return this.http.get<MarcaLlamarDatos[]>(`${this.apiUrlCatalogo}/marcas/tipo/${tipoCodigo}`);
+  }
+
+  // Modelos por marca
+  getModelosPorMarca(marcaCodigo: number): Observable<ModeloLlamarDatos[]> {
+    return this.http.get<ModeloLlamarDatos[]>(`${this.apiUrlCatalogo}/modelos/marca/${marcaCodigo}`);
+  }
+
+  // Modelos por marca y tipo
+  getModelosPorMarcaYTipo(marcaCodigo: number, tipoCodigo: number): Observable<ModeloLlamarDatos[]> {
+    return this.http.get<ModeloLlamarDatos[]>(`${this.apiUrlCatalogo}/modelos/marca/${marcaCodigo}/tipo/${tipoCodigo}`);
+  }
+
+  // Sistemas operativos por catalogo
+  getSistemasOperativosPorCatalogo(catalogoCodigo: number): Observable<SOLlamarDatos[]> {
+    return this.http.get<SOLlamarDatos[]>(`${this.apiUrlCatalogo}/sistemas-operativos/catalogo/${catalogoCodigo}`);
+  }
+
+  // Versiones por SO
+  getVersionesPorSO(soCodigo: number): Observable<VersionSOLlamarDatos[]> {
+    return this.http.get<VersionSOLlamarDatos[]>(`${this.apiUrlCatalogo}/versiones-so/so/${soCodigo}`);
+  }
 
 
 
 
 
-   // REGISTRAR
+  // REGISTRAR
 
   /** CREAR NUEVA MARCA asociada a un tipo */
   crearMarca(descripcion: string, tipoCodigo: number): Observable<MarcaLlamarDatos> {
@@ -76,5 +76,17 @@ export class RegistroCatalogoService {
       tipoCodigo   // ← enviar el tipo seleccionado
     });
   }
+
+  /** CREAR NUEVO MODELO asociada a un tipo y marca */
+  crearModelo(descripcion: string, tipoCodigo: number, marcaCodigo: number, rutaImagen?: string): Observable<any> {
+    const body = {
+      descripcion: descripcion,
+      tipo: { codigo: tipoCodigo },
+      marca: { codigo: marcaCodigo },
+      rutaImagen: rutaImagen || ''
+    };
+    return this.http.post(`${this.apiUrlCatalogo}/modelos/crear`, body);
+  }
+
 
 }
