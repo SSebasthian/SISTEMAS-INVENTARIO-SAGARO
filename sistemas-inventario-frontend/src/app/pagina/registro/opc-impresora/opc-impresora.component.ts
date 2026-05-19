@@ -13,6 +13,9 @@ import { MarcaLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/Di
 import { ModeloLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Modelo.interface'
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 
+import { ImpresoraService } from '../../../arquitectura/servicio/registro/RegistroImpresora.service';
+import { ImpresoraRegistro } from './../../../arquitectura/interface/Registro/ImpresoraRegistro.interface';
+
 
 @Component({
   selector: 'app-opc-impresora',
@@ -31,6 +34,16 @@ export class OpcImpresoraComponent implements OnInit {
   modelos: ModeloLlamarDatos[] = [];
   imagenModeloSeleccionado: SafeResourceUrl = '';
 
+  // Variables para guardar la selección actual del usuario
+  serial: string = '';
+  plaqueta: string = '';
+  facturaCompra: string = '';
+  fechaCompra: string = '';
+  descripcion: string = '';
+  estado: string = '';
+  propiedad: string = '';
+  tipoRecarga: string = '';
+
   // SELECCIONES
   tipoSeleccionado: TipoLlamarDatos | null = null;
   marcaSeleccionada: MarcaLlamarDatos | null = null;
@@ -48,13 +61,13 @@ export class OpcImpresoraComponent implements OnInit {
   modelosFiltrados: ModeloLlamarDatos[] = [];
   todasLasModelo: ModeloLlamarDatos[] = [];
 
-  tipoRecarga: string = '';
 
 
   constructor(
     private registroCatalogoService: RegistroCatalogoService,
     private sanitizer: DomSanitizer,
-    private notificacionSnackbarService: NotificacionSnackbarService
+    private notificacionSnackbarService: NotificacionSnackbarService,
+    private impresoraService: ImpresoraService
   ) { }
 
   ngOnInit(): void {
@@ -243,8 +256,8 @@ export class OpcImpresoraComponent implements OnInit {
       return;
     }
     if (!this.marcaSeleccionada) {
-        this.notificacionSnackbarService.warning('Marca requerida', 'Primero debe seleccionar una marca');
-        return;
+      this.notificacionSnackbarService.warning('Marca requerida', 'Primero debe seleccionar una marca');
+      return;
     }
     this.mostrarModalModelo = true;
     this.nuevaModeloDescripcion = '';
@@ -351,5 +364,141 @@ export class OpcImpresoraComponent implements OnInit {
 
     this.nuevaModeloDescripcion = this.nuevaModeloDescripcion.toUpperCase();
     this.filtrarModelos(); // Llamar al filtro después de convertir
+  }
+
+
+
+
+  // ================== REGISTRAR DISPOSITIVO ==========================
+
+  registrarImpresora(): void {
+
+    // ===== VALIDACIONES DE CAMPOS OBLIGATORIOS =====
+
+    // Serial
+    if (!this.serial || this.serial.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el serial de la impresora');
+      return;
+    }
+
+    // Propiedad
+    if (!this.propiedad || this.propiedad.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione la propiedad');
+      return;
+    }
+
+    // Tipo
+    if (!this.tipoSeleccionado) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione un tipo de impresora');
+      return;
+    }
+
+    // Marca
+    if (!this.marcaSeleccionada) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione una marca');
+      return;
+    }
+
+    // Modelo
+    if (!this.modeloSeleccionado) {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione un modelo');
+      return;
+    }
+
+
+    // Tipo Recarga
+    if (!this.tipoRecarga || this.tipoRecarga.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione el tipo de recarga');
+      return;
+    }
+
+    // Estado
+    if (!this.estado || this.estado.trim() === '') {
+      this.notificacionSnackbarService.warning('Campo requerido', 'Seleccione el estado de la impresora');
+      return;
+    }
+
+    // Tiene factura pero NO tiene fecha
+    if (this.facturaCompra && this.facturaCompra.trim() !== '' && !this.fechaCompra) {
+      this.notificacionSnackbarService.warning('Campos relacionados', 'Si ingresa una factura, debe ingresar la fecha de compra');
+      return;
+    }
+
+    // Tiene fecha pero NO tiene factura
+    if (this.fechaCompra && this.fechaCompra.trim() !== '' && !this.facturaCompra) {
+      this.notificacionSnackbarService.warning('Campos relacionados', 'Si ingresa una fecha de compra, debe ingresar la factura');
+      return;
+    }
+
+    const plaquetaFinal = this.plaqueta && this.plaqueta.trim() !== '' ? this.plaqueta : 'NO TIENE';
+    const descripcionFinal = this.descripcion && this.descripcion.trim() !== '' ? this.descripcion : 'SIN DESCRIPCIÓN';
+    const facturaFinal = this.facturaCompra && this.facturaCompra.trim() !== '' ? this.facturaCompra : 'NO TIENE';
+    const fechaFinal = this.fechaCompra && this.fechaCompra.trim() !== '' ? this.fechaCompra : null;
+
+    // ===== ARMAR OBJETO PARA ENVIAR =====
+
+    const impresoraData: ImpresoraRegistro = {
+      serial: this.serial.trim().toUpperCase(),
+      propiedad: this.propiedad.trim(),
+      plaqueta: plaquetaFinal,
+      tipoRecarga: this.tipoRecarga,
+      facturaCompra: facturaFinal,
+      fechaCompra: fechaFinal,
+      estado: this.estado,
+      descripcion: descripcionFinal,
+      tipo: { codigo: this.tipoSeleccionado.codigo },
+      marca: { codigo: this.marcaSeleccionada.codigo },
+      modelo: { codigo: this.modeloSeleccionado.codigo }
+    };
+
+
+    // ===== ENVIAR AL BACKEND =====
+
+    this.impresoraService.registrarImpresora(impresoraData).subscribe({
+      next: (respuesta) => {
+        console.log('Impresora registrada:', respuesta);
+        this.notificacionSnackbarService.success(
+          'Registro exitoso',
+          `Impresora ${respuesta.serial} registrada correctamente`
+        );
+        this.limpiarFormulario();
+      },
+      error: (error) => {
+        console.error('Error al registrar:', error);
+        let mensajeError = 'Error al registrar la impresora';
+
+        if (error.error?.message) {
+          mensajeError = error.error.message;
+        } else if (error.message) {
+          mensajeError = error.message;
+        }
+
+        this.notificacionSnackbarService.error('Error', mensajeError);
+      }
+    });
+  }
+
+  // ========== LIMPIAR FORMULARIO ==========
+
+  limpiarFormulario(): void {
+    this.serial = '';
+    this.propiedad = '';
+    this.plaqueta = '';
+    this.tipoRecarga = '';
+    this.facturaCompra = '';
+    this.fechaCompra = '';
+    this.descripcion = '';
+    this.estado = '';
+
+    this.tipoSeleccionado = null;
+    this.marcaSeleccionada = null;
+    this.modeloSeleccionado = null;
+
+    this.marcas = [];
+    this.modelos = [];
+    this.imagenModeloSeleccionado = '';
+
+    // Recargar datos iniciales
+    this.cargarDatosIniciales();
   }
 }

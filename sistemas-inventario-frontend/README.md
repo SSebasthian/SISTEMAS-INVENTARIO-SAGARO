@@ -61,5 +61,9 @@
 `Se crea interface Registro EquipoComputoRespuesta manualmente` (Interface EquipoComputoRegistro RESPUESTA EQUIPO DE COMPUTO)<br>
 `Se crea interface Registro DispositivoMovilRegistro manualmente` (Interface DispositivoMovilRegistro REGISTRAR DISPOSITIVOS MOVILES)<br>
 `Se crea interface Registro DispositivoMovilRespuesta manualmente` (Interface DispositivoMovilRegistro RESPUESTA DISPOSITIVOS MOVILES)<br>
+`Se crea interface Registro ImpresoraRegistro manualmente` (Interface ImpresoraRegistro REGISTRAR IMPRESORA<br>
+`Se crea interface Registro ImpresoraRespuesta manualmente` (Interface ImpresoraRespuesta RESPUESTA IMPRESORA<br>
 `ng generate service arquitectura/servicio/Registro/RegistroEquipo` (Servicio REGISTRAR EQUIPO)<br>
 `ng generate service arquitectura/servicio/Registro/RegistroDispositivo` (Servicio REGISTRAR TELEFONOS)<br>
+`ng generate service arquitectura/servicio/Registro/RegistroImpresora` (Servicio REGISTRAR IMPRESORA)<br>
+

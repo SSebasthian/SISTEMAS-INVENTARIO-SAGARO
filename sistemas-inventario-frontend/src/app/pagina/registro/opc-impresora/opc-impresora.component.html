@@ -1,5 +1,5 @@
 <div class="contenedor-regImpresora">
-    <form id="form-registro-impresora">
+    <form id="form-registro-impresora" (ngSubmit)="registrarImpresora()">
         <div class="contenido">
 
             <div class="fila-de-tres">
@@ -22,7 +22,7 @@
 
                 <div class="contenido-opcion">
                     <label>PROPIEDAD</label><br>
-                    <select class="opcionForm select">
+                    <select class="opcionForm select" [(ngModel)]="propiedad" name="propiedad">
                         <option value=""></option>
                         <option value="FLORES SAGARO">FLORES SAGARO</option>
                         <option value="NEW SERVICE">NEW SERVICE</option>
@@ -83,13 +83,13 @@
 
                 <div class="contenido-opcion">
                     <label>SERIAL:</label><br>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial">
                 </div>
 
 
                 <div class="contenido-opcion">
                     <label>NUMERO DE PLACA</label><br>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="plaqueta" name="plaqueta">
                 </div>
 
                 <!-----------------------  ----------------------->
@@ -141,17 +141,17 @@
 
                 <div class="contenido-opcion">
                     <label>FACTURA</label><br>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="facturaCompra" name="facturaCompra">
                 </div>
 
                 <div class="contenido-opcion">
                     <label>FECHA DE COMPRA</label><br>
-                    <input class="opcionForm" type="date">
+                    <input class="opcionForm" type="date" [(ngModel)]="fechaCompra" name="fechaCompra">
                 </div>
 
                 <div class="contenido-opcion">
                     <label>ESTADO</label><br>
-                    <select class="opcionForm select">
+                    <select class="opcionForm select" [(ngModel)]="estado" name="estado">
                         <option value=""></option>
                         <option value="NUEVO"
                             title="El equipo está en perfectas condiciones, puede ser un equipo recién adquirido o recién salido de la fábrica.">
@@ -173,7 +173,7 @@
 
                 <div class="contenido-opcion textarea">
                     <label for="descripcion">DESCRIPCION:</label><br>
-                    <textarea> </textarea>
+                    <textarea [(ngModel)]="descripcion" name="descripcion"></textarea>
                 </div>
 
 
