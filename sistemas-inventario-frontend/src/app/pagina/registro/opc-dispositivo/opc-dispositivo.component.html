@@ -1,5 +1,5 @@
 <div class="contenedor-regTelefono">
-    <form id="form-registro-telefono">
+    <form id="form-registro-telefono" (ngSubmit)="registrarDispositivo()">
         <div class="contenido">
 
             <div class="fila-de-tres">
@@ -31,7 +31,7 @@
 
                 <div class="contenido-opcion">
                     <label>SERIAL:<br></label>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial">
                 </div>
 
 
@@ -88,22 +88,22 @@
 
                 <div class="contenido-opcion">
                     <label>PULGADAS<br></label>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="pulgadas" name="pulgadas">
                 </div>
 
                 <div class="contenido-opcion">
                     <label>NUMERO DE PLACA<br></label>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="plaqueta" name="plaqueta">
                 </div>
 
                 <div class="contenido-opcion">
                     <label>IMEI 1<br></label>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="imei1" name="imei1">
                 </div>
 
                 <div class="contenido-opcion">
                     <label>IMEI 2<br></label>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="imei2" name="imei2">
                 </div>
 
 
@@ -111,7 +111,7 @@
                 <div class="contenido-opcion">
                     <label>MEMORIA RAM<br></label>
                     <div class="input-group">
-                        <input class="opcionForm" type="text" [(ngModel)]="tamanoRamMostrar" name="tamanoRam"
+                        <input class="opcionForm" type="text" [(ngModel)]="ram" name="ram"
                             (input)="formatearRam()" (keydown)="soloNumeros($event)">
                     </div>
                 </div>
@@ -119,30 +119,30 @@
                 <div class="contenido-opcion">
                     <label>ALMACENAMIENTO<br></label>
                     <div class="input-group">
-                        <input class="opcionForm" type="text" [(ngModel)]="tamanoAlmacenamientoMostrar"
-                            name="tamanoAlmacenamiento" (input)="formatearAlmacenamiento()"
+                        <input class="opcionForm" type="text" [(ngModel)]="almacenamiento"
+                            name="almacenamiento" (input)="formatearAlmacenamiento()"
                             (keydown)="soloNumeros($event)">
                     </div>
                 </div>
 
                 <div class="contenido-opcion">
                     <label>PROCESADOR<br></label>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="procesador" name="procesador">
                 </div>
 
                 <div class="contenido-opcion">
                     <label>FACTURA</label><br>
-                    <input class="opcionForm" type="text">
+                    <input class="opcionForm" type="text" [(ngModel)]="facturaCompra" name="facturaCompra">
                 </div>
 
                 <div class="contenido-opcion">
                     <label>FECHA DE COMPRA<br></label>
-                    <input class="opcionForm" type="date">
+                    <input class="opcionForm" type="date" [(ngModel)]="fechaCompra" name="fechaCompra">
                 </div>
 
                 <div class="contenido-opcion">
                     <label>ESTADO<br></label>
-                    <select class="opcionForm select">
+                    <select class="opcionForm select" [(ngModel)]="estado" name="estado">
                         <option value=""></option>
                         <option value="NUEVO"
                             title="El equipo está en perfectas condiciones, puede ser un equipo recién adquirido o recién salido de la fábrica.">
@@ -164,7 +164,7 @@
 
                 <div class="contenido-opcion textarea">
                     <label for="descripcion">DESCRIPCION:<br></label>
-                    <textarea> </textarea>
+                    <textarea [(ngModel)]="descripcion" name="descripcion"></textarea>
                 </div>
 
 

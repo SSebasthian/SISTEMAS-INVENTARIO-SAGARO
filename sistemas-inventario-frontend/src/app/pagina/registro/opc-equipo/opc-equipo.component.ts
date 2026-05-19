@@ -712,6 +712,10 @@ export class OpcEquipoComponent implements OnInit {
 
     // ========== ASIGNAR VALORES OPCIONALES CON "NO TIENE" ==========
 
+    // Descripción - Si está vacío, poner "SIN DESCRIPCION"
+    const descripcionFinal = this.descripcion && this.descripcion.trim() !== '' ? this.descripcion : 'SIN DESCRIPCION';
+
+
     // Plaqueta - Si está vacío, poner "NO TIENE"
     const plaquetaFinal = this.plaqueta && this.plaqueta.trim() !== '' ? this.plaqueta : 'NO TIENE';
 
@@ -731,7 +735,7 @@ export class OpcEquipoComponent implements OnInit {
       facturaCompra: facturaFinal,
       fechaCompra: fechaFinal,
       activo: true,
-      descripcion: this.descripcion || '',
+      descripcion: descripcionFinal,
       estado: this.estado,
       ram: this.ram,
       tipoRam: this.tipoRam,
@@ -746,16 +750,14 @@ export class OpcEquipoComponent implements OnInit {
       versionSO: { codigo: this.versionSOSeleccionada?.codigo ?? 0 }
     };
 
-    console.log('📤 Enviando equipo:', equipoData);
-
     this.registroEquipoService.registrarEquipo(equipoData).subscribe({
       next: (respuesta) => {
-        console.log('✅ Equipo registrado:', respuesta);
+        console.log('Equipo registrado:', respuesta);
         this.notificacionSnackbarService.success('Equipo registrado', `Serial: ${respuesta.serial}`);
         this.limpiarFormulario();
       },
       error: (err) => {
-        console.error('❌ Error:', err);
+        console.error('Error:', err);
         const mensaje = err.error?.message || 'Error al registrar el equipo';
         this.notificacionSnackbarService.error('Error', mensaje);
       }
@@ -775,7 +777,6 @@ export class OpcEquipoComponent implements OnInit {
     this.tipoDisco = '';
     this.bits = null;
     this.disco = '';
-    this.ram = '';
     this.tipoSeleccionado = null;
     this.marcaSeleccionada = null;
     this.modeloSeleccionado = null;

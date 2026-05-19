@@ -1,0 +1,64 @@
+package com.sistemas_inventario_backend.servicios;
+
+import com.sistemas_inventario_backend.entidades.*;
+import com.sistemas_inventario_backend.repositorios.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class DispositivoMovilService {
+
+    private final DispositivoMovilRepository dispositivoMovilRepository;
+    private final DispositivoTecnologico_TipoRepository tipoRepository;
+    private final DispositivoTecnologico_MarcaRepository marcaRepository;
+    private final DispositivoTecnologico_ModeloRepository modeloRepository;
+    private final DispositivoTecnologico_SORepository soRepository;
+    private final DispositivoTecnologico_VersionSORepository versionRepository;
+
+    @Transactional
+    public DispositivoMovil registrar(DispositivoMovil dispositivo) {
+
+        // Validar que el serial no exista
+        if (dispositivoMovilRepository.existsById(dispositivo.getSerial())) {
+            throw new RuntimeException("Ya existe un dispositivo con el serial: " + dispositivo.getSerial());
+        }
+
+        // Validar y cargar las entidades relacionadas
+        if (dispositivo.getTipo() != null && dispositivo.getTipo().getCodigo() != null) {
+            DispositivoTecnologico_Tipo tipo = tipoRepository.findById(dispositivo.getTipo().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Tipo no encontrado"));
+            dispositivo.setTipo(tipo);
+        }
+
+        if (dispositivo.getMarca() != null && dispositivo.getMarca().getCodigo() != null) {
+            DispositivoTecnologico_Marca marca = marcaRepository.findById(dispositivo.getMarca().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Marca no encontrada"));
+            dispositivo.setMarca(marca);
+        }
+
+        if (dispositivo.getModelo() != null && dispositivo.getModelo().getCodigo() != null) {
+            DispositivoTecnologico_Modelo modelo = modeloRepository.findById(dispositivo.getModelo().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Modelo no encontrado"));
+            dispositivo.setModelo(modelo);
+        }
+
+        if (dispositivo.getSistemaOperativo() != null && dispositivo.getSistemaOperativo().getCodigo() != null) {
+            DispositivoTecnologico_SO so = soRepository.findById(dispositivo.getSistemaOperativo().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Sistema Operativo no encontrado"));
+            dispositivo.setSistemaOperativo(so);
+        }
+
+        if (dispositivo.getVersionSO() != null && dispositivo.getVersionSO().getCodigo() != null) {
+            DispositivoTecnologico_VersionSO version = versionRepository.findById(dispositivo.getVersionSO().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
+            dispositivo.setVersionSO(version);
+        }
+
+        // Por defecto activo = true
+        dispositivo.setActivo(true);
+
+        return dispositivoMovilRepository.save(dispositivo);
+    }
+}

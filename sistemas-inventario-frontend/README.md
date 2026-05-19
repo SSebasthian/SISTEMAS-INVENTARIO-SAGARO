@@ -44,7 +44,6 @@
 `Se crea interface LlamarDatos AreaRespuesta manualmente` (Interface AreaRespuesta LLAMAR DATOS AREA)<br>
 `Se crea interface LlamarDatos CargoRespuesta manualmente` (Interface CargoRespuesta LLAMAR DATOS CARGO)<br>
 
-`Se crea interface Registro EquipoDeComputoRegistro manualmente` (Interface EquipoDeComputoRegistro REGISTRAR EQUIPO DE COMPUTO)<br>
 `Se crea interface LlamarDatos Catalogo manualmente` (Interface Catalogo LLAMAR DATOS CATALOGO)<br>
 `Se crea interface LlamarDatos DispositivoTecnologico_Tipo manualmente` (Interface DispositivoTecnologico_Tipo LLAMAR DATOS TIPOS)<br>
 `Se crea interface LlamarDatos DispositivoTecnologico_Marca manualmente` (Interface DispositivoTecnologico_Marca LLAMAR DATOS MARCA)<br>
@@ -58,5 +57,9 @@
 `ng generate service arquitectura/servicio/LlamarDatos/Catalogo` (Servicio LLAMAR DATOS CATALOGO)<br>
 
 
-`Se crea interface Registro EquipoComputoRegistro manualmente` (Interface EquipoComputoRegistro REGISTRAR EMPLEADO)<br>
+`Se crea interface Registro EquipoComputoRegistro manualmente` (Interface EquipoComputoRegistro REGISTRAR EQUIPO DE COMPUTO)<br>
+`Se crea interface Registro EquipoComputoRespuesta manualmente` (Interface EquipoComputoRegistro RESPUESTA EQUIPO DE COMPUTO)<br>
+`Se crea interface Registro DispositivoMovilRegistro manualmente` (Interface DispositivoMovilRegistro REGISTRAR DISPOSITIVOS MOVILES)<br>
+`Se crea interface Registro DispositivoMovilRespuesta manualmente` (Interface DispositivoMovilRegistro RESPUESTA DISPOSITIVOS MOVILES)<br>
 `ng generate service arquitectura/servicio/Registro/RegistroEquipo` (Servicio REGISTRAR EQUIPO)<br>
+`ng generate service arquitectura/servicio/Registro/RegistroDispositivo` (Servicio REGISTRAR TELEFONOS)<br>
