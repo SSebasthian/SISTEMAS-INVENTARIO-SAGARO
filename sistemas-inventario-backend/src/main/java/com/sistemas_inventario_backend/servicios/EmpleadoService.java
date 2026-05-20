@@ -11,7 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +21,8 @@ public class EmpleadoService {
     private final EmpleadoRepository empleadoRepository;
     private final AreaRepository areaRepository;
     private final CargoRepository cargoRepository;
+
+    // ========== METODO PARA REGISTRAR ==========
 
     @Transactional
     public Empleado registrarEmpleado(EmpleadoSolicitud solicitud) {
@@ -59,5 +61,61 @@ public class EmpleadoService {
 
         return empleadoRepository.save(empleado);
     }
+
+
+    // ========== METODO PARA EDITAR ==========
+
+    @Transactional
+    public Empleado editarEmpleado(String cedula, EmpleadoSolicitud solicitud) {
+
+        // Buscar el empleado existente
+        Empleado empleadoExistente = empleadoRepository.findById(cedula)
+                .orElseThrow(() -> new RuntimeException("No se encontró un empleado con la cédula: " + cedula));
+
+        // Obtener el área
+        Area area = areaRepository.findById(solicitud.getAreaCodigo())
+                .orElseThrow(() -> new RuntimeException("Area no encontrada con codigo: " + solicitud.getAreaCodigo()));
+
+        // Obtener el cargo
+        Cargo cargo = cargoRepository.findById(solicitud.getCargoCodigo())
+                .orElseThrow(() -> new RuntimeException("Cargo no encontrado con codigo: " + solicitud.getCargoCodigo()));
+
+        // Validación: el cargo debe estar asociado al área
+        if (!area.getCargos().contains(cargo)) {
+            throw new RuntimeException(
+                    String.format("El cargo '%s' no pertenece al area '%s'",
+                            cargo.getDescripcion(),
+                            area.getDescripcion())
+            );
+        }
+
+        // Actualizar campos
+        empleadoExistente.setNombre(solicitud.getNombre());
+        empleadoExistente.setApellido(solicitud.getApellido());
+        empleadoExistente.setFechaIngreso(solicitud.getFechaIngreso());
+        empleadoExistente.setArea(area);
+        empleadoExistente.setCargo(cargo);
+
+        // Si se envía el campo activo, actualizarlo
+        if (solicitud.getActivo() != null) {
+            empleadoExistente.setActivo(solicitud.getActivo());
+        }
+
+        return empleadoRepository.save(empleadoExistente);
+    }
+
+    // ========== METODO PARA OBTENER POR CEDULA ==========
+
+    public Empleado obtenerPorCedula(String cedula) {
+        return empleadoRepository.findById(cedula)
+                .orElseThrow(() -> new RuntimeException("No se encontró un empleado con la cédula: " + cedula));
+    }
+
+    // ========== METODO PARA LISTAR TODOS ==========
+    public List<Empleado> listarTodos() {
+        return empleadoRepository.findAll();
+    }
+
+
 }
 

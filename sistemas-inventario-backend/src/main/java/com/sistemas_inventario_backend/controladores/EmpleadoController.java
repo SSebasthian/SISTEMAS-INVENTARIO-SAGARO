@@ -6,6 +6,7 @@ import com.sistemas_inventario_backend.entidades.Cargo;
 import com.sistemas_inventario_backend.entidades.Empleado;
 import com.sistemas_inventario_backend.repositorios.AreaRepository;
 import com.sistemas_inventario_backend.repositorios.CargoRepository;
+import com.sistemas_inventario_backend.repositorios.EmpleadoRepository;
 import com.sistemas_inventario_backend.servicios.EmpleadoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class EmpleadoController {
     private final AreaRepository areaRepository;
     private final CargoRepository cargoRepository;
     private final EmpleadoService empleadoService;
+    private final EmpleadoRepository empleadoRepository;
 
     //============================================================
     // Endpoint 1: Listar todas las áreas (para el primer combo)
@@ -178,6 +180,57 @@ public class EmpleadoController {
                     .body(Map.of("message", "Error interno: " + e.getMessage()));
         }
     }
+
+
+    // ========== METODO PARA EDITAR ==========
+
+    @PutMapping("/editar/{cedula}")
+    public ResponseEntity<?> editarEmpleado(@PathVariable String cedula, @RequestBody EmpleadoSolicitud solicitud) {
+        try {
+            Empleado empleadoEditado = empleadoService.editarEmpleado(cedula, solicitud);
+            return ResponseEntity.ok(empleadoEditado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // ========== METODO PARA OBTENER POR CEDULA ==========
+
+    @GetMapping("/{cedula}")
+    public ResponseEntity<?> obtenerPorCedula(@PathVariable String cedula) {
+        try {
+            Empleado empleado = empleadoService.obtenerPorCedula(cedula);
+            return ResponseEntity.ok(empleado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // ========== METODO PARA LISTAR TODOS ==========
+
+    @GetMapping("/listar")
+    public ResponseEntity<?> listarTodos() {
+        try {
+            List<Empleado> empleados = empleadoService.listarTodos();
+            return ResponseEntity.ok(empleados);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // ========== ENDPOINT PARA BUSCAR EMPLEADOS POR CEDULA NOMBRE O APELLIDO ==========
+
+    @GetMapping("/buscar")
+    public ResponseEntity<?> buscarEmpleados(@RequestParam String termino) {
+        try {
+            List<Empleado> empleados = empleadoRepository.buscarPorCedulaONombre(termino);
+            return ResponseEntity.ok(empleados);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+
 }
 
 /// //////////////////////////////////////////////////////////////////////////////

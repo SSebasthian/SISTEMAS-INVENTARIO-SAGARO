@@ -13,4 +13,5 @@ public class EmpleadoSolicitud {
     private LocalDate fechaIngreso;
     private Long areaCodigo;
     private Long cargoCodigo;
+    private Boolean activo;
 }

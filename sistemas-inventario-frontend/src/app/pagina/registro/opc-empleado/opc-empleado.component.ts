@@ -7,17 +7,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSelectModule } from '@angular/material/select';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RegistroEmpleadoService } from '../../../arquitectura/servicio/registro/RegistroEmpleado.service';
 import { EmpleadoRegistro } from '../../../arquitectura/interface/Registro/EmpleadoRegistro.interface';
 import { EmpleadoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/EmpleadoRespuesta.interface';
 import { AreaLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/AreaRespuesta.interface';
 import { CargoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/CargoRespuesta.interface';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
+import { A11yModule } from "@angular/cdk/a11y";
 
 
 @Component({
   selector: 'app-opc-empleado',
-  imports: [MatIconModule, FormsModule, CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatAutocompleteModule, MatSelectModule],
+  imports: [MatIconModule, FormsModule, CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatAutocompleteModule, MatSelectModule, A11yModule],
   templateUrl: './opc-empleado.component.html',
   styleUrl: './opc-empleado.component.css'
 })
@@ -49,17 +51,34 @@ export class OpcEmpleadoComponent implements OnInit {
   cargoSeleccionadoId: number | null = null;
   todosLosCargos: CargoLlamarDatos[] = [];
 
+  // ========== MODO EDICIÓN ==========
+  modoEdicion: boolean = false;
+  cedulaOriginal: string = '';
+
+  // ========== VARIABLES PARA BUSCADOR ==========
+  mostrarModalBuscarCedula: boolean = false;
+  busquedaCedulaModal: string = '';
+  resultadosBusquedaModal: EmpleadoLlamarDatos[] = [];
+  buscandoModal: boolean = false;
 
 
   constructor(
     private registroEmpleadoService: RegistroEmpleadoService,
-    private notificacionSnackbarService: NotificacionSnackbarService
+    private notificacionSnackbarService: NotificacionSnackbarService,
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
 
   ngOnInit(): void {
     this.cargarAreas();
     this.cargarTodosLosCargos();
+
+    // Verificar si viene una cédula en la URL para editar
+    const cedulaParam = this.route.snapshot.paramMap.get('cedula');
+    if (cedulaParam) {
+      this.cargarEmpleadoParaEditar(cedulaParam);
+    }
   }
 
   cargarAreas(): void {
@@ -160,6 +179,7 @@ export class OpcEmpleadoComponent implements OnInit {
   }
 
   limpiarFormulario(): void {
+    // Limpiar datos del empleado
     this.empleado = {
       cedula: '',
       nombre: '',
@@ -168,10 +188,19 @@ export class OpcEmpleadoComponent implements OnInit {
       areaCodigo: 0,
       cargoCodigo: 0
     };
+    // Limpiar listas
     this.cargos = [];
+    // Resetear modo edición
+    this.modoEdicion = false;
+    this.cedulaOriginal = '';
+    // Limpiar variables de búsqueda
+    this.mostrarModalBuscarCedula = false;
+    this.busquedaCedulaModal = ''; //
+    this.resultadosBusquedaModal = [];
+    // Recargar áreas
     this.cargarAreas();
-  }
 
+  }
 
   // ========== MÉTODOS PARA CREAR ÁREA ==========
   abrirModalArea(): void {
@@ -344,5 +373,148 @@ export class OpcEmpleadoComponent implements OnInit {
     const cargo = this.todosLosCargos.find(c => c.codigo === this.cargoSeleccionadoId);
     return cargo ? cargo.descripcion : '';
   }
+
+
+
+  // ========== CARGAR EMPLEADO PARA EDITAR ==========
+
+  cargarEmpleadoParaEditar(cedula: string): void {
+    this.registroEmpleadoService.obtenerEmpleado(cedula).subscribe({
+      next: (empleado: EmpleadoLlamarDatos) => {
+        this.modoEdicion = true;
+        this.cedulaOriginal = empleado.cedula;
+
+        this.empleado.cedula = empleado.cedula;
+        this.empleado.nombre = empleado.nombre;
+        this.empleado.apellido = empleado.apellido;
+        this.empleado.fechaIngreso = empleado.fechaIngreso;
+        this.empleado.areaCodigo = empleado.area?.codigo || 0;
+        this.empleado.cargoCodigo = empleado.cargo?.codigo || 0;
+
+        // Cargar cargos del área seleccionada
+        if (this.empleado.areaCodigo && this.empleado.areaCodigo !== 0) {
+          this.registroEmpleadoService.getCargosPorArea(this.empleado.areaCodigo).subscribe({
+            next: (data) => {
+              this.cargos = data;
+            },
+            error: (err) => console.error('Error al cargar cargos', err)
+          });
+        }
+
+        this.notificacionSnackbarService.info('Modo edición', `Editando: ${empleado.nombre} ${empleado.apellido}`);
+      },
+      error: (error) => {
+        this.notificacionSnackbarService.error('Error', 'No se pudo cargar el empleado');
+        this.router.navigate(['/empleados']);
+      }
+    });
+  }
+
+
+  // ========== EDITAR EMPLEADO ==========
+  editar(): void {
+    if (this.enviando) return;
+
+    if (!this.empleado.nombre || !this.empleado.apellido ||
+      !this.empleado.fechaIngreso || !this.empleado.areaCodigo || !this.empleado.cargoCodigo) {
+      this.notificacionSnackbarService.warning('Campos incompletos', 'Todos los campos son obligatorios');
+      return;
+    }
+
+    this.enviando = true;
+
+    this.registroEmpleadoService.editarEmpleado(this.cedulaOriginal, this.empleado).subscribe({
+      next: (respuesta: EmpleadoLlamarDatos) => {
+        this.notificacionSnackbarService.success('Empleado actualizado', `${respuesta.nombre} ${respuesta.apellido}`);
+        this.limpiarFormulario();
+        this.enviando = false;
+      },
+      error: (err) => {
+        console.error('Error al actualizar', err);
+        const mensaje = err.error?.message || 'Error en el servidor';
+        this.notificacionSnackbarService.error('Error al actualizar empleado', mensaje);
+        this.enviando = false;
+      }
+    });
+  }
+
+  // ========== METODOS PARA BUSCADOR DE CEDULA ==========
+
+  //abrir modal
+  abrirModalBuscarCedula(): void {
+    this.mostrarModalBuscarCedula = true;
+    this.busquedaCedulaModal = '';
+    this.resultadosBusquedaModal = [];
+  }
+
+  // Cerrar modal
+  cerrarModalBuscarCedula(): void {
+    this.mostrarModalBuscarCedula = false;
+    this.busquedaCedulaModal = '';
+    this.resultadosBusquedaModal = [];
+  }
+
+
+  // Buscar empleados en el modal
+  buscarEmpleadosEnModal(): void {
+    if (!this.busquedaCedulaModal || this.busquedaCedulaModal.length < 2) {
+      this.resultadosBusquedaModal = [];
+      return;
+    }
+
+    this.buscandoModal = true;
+
+    // Un solo método que busca en cédula, nombre y apellido
+    this.registroEmpleadoService.buscarEmpleados(this.busquedaCedulaModal).subscribe({
+      next: (empleados) => {
+        this.resultadosBusquedaModal = empleados;
+        this.buscandoModal = false;
+      },
+      error: (err) => {
+        console.error('Error al buscar empleados', err);
+        this.resultadosBusquedaModal = [];
+        this.buscandoModal = false;
+        this.notificacionSnackbarService.error('Error', 'No se pudieron buscar los empleados');
+      }
+    });
+  }
+
+  // Seleccionar empleado desde el modal y cargar en el formulario
+  seleccionarEmpleadoDelModal(empleado: EmpleadoLlamarDatos): void {
+    this.modoEdicion = true;
+    this.cedulaOriginal = empleado.cedula;
+
+    this.empleado.cedula = empleado.cedula;
+    this.empleado.nombre = empleado.nombre;
+    this.empleado.apellido = empleado.apellido;
+    this.empleado.fechaIngreso = empleado.fechaIngreso;
+    this.empleado.areaCodigo = empleado.area?.codigo || 0;
+    this.empleado.cargoCodigo = empleado.cargo?.codigo || 0;
+    this.cargos = [];
+
+    // Cargar cargos del área seleccionada
+    if (this.empleado.areaCodigo && this.empleado.areaCodigo !== 0) {
+      this.registroEmpleadoService.getCargosPorArea(this.empleado.areaCodigo).subscribe({
+        next: (data) => {
+          this.cargos = data;
+        },
+        error: (err) => console.error('Error al cargar cargos', err)
+      });
+    }
+
+    // Mensaje de éxito al seleccionar usuario
+    this.notificacionSnackbarService.success('Usuario seleccionado', `${empleado.nombre} ${empleado.apellido}`);
+
+    this.cerrarModalBuscarCedula();
+  }
+
+  limpiarFormularioEditar(): void {
+    this.limpiarFormulario();
+
+    // Mensaje de éxito al limpiar formulario
+    this.notificacionSnackbarService.info('Formulario limpiado',
+      'Todos los campos han sido restablecidos');
+  }
+
 
 }

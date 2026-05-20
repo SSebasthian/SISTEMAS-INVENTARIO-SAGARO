@@ -47,4 +47,23 @@ export class RegistroEmpleadoService {
   crearCargo(descripcion: string, areaCodigo: number): Observable<CargoLlamarDatos> {
     return this.http.post<CargoLlamarDatos>(`${this.apiUrlRegistroEmpleado}/cargos/crear`, { descripcion, areaCodigo });
   }
+
+
+  // ========== METODOS PARA EDICIÓN ==========
+
+  // Obtener un empleado por su cédula
+  obtenerEmpleado(cedula: string): Observable<EmpleadoLlamarDatos> {
+    return this.http.get<EmpleadoLlamarDatos>(`${this.apiUrlRegistroEmpleado}/${cedula}`);
+  }
+
+  // Editar un empleado existente
+  editarEmpleado(cedula: string, empleado: EmpleadoRegistro): Observable<EmpleadoLlamarDatos> {
+    return this.http.put<EmpleadoLlamarDatos>(`${this.apiUrlRegistroEmpleado}/editar/${cedula}`, empleado);
+  }
+
+  // Buscar empleados por cédula (para autocomplete)
+  buscarEmpleados(termino: string): Observable<EmpleadoLlamarDatos[]> {
+    return this.http.get<EmpleadoLlamarDatos[]>(`${this.apiUrlRegistroEmpleado}/buscar?termino=${termino}`);
+  }
+
 }

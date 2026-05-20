@@ -1,12 +1,13 @@
 <div class="contenedor-regUsuario">
-  <form id="form-registro-producto" (ngSubmit)="registrar()">
+  <form id="form-registro-producto" (ngSubmit)="modoEdicion ? editar() : registrar()">
     <div class="contenido">
 
       <!-- Nueva fila con 3 columnas -->
       <div class="fila-de-tres">
         <p>
           <label>CEDULA</label>
-          <input class="opcionForm" type="text" [(ngModel)]="empleado.cedula" name="cedula" required>
+          <input class="opcionForm" type="text" [(ngModel)]="empleado.cedula" name="cedula" required
+            [readonly]="modoEdicion">
         </p>
         <p>
           <label>FECHA DE INGRESO</label>
@@ -14,11 +15,13 @@
         </p>
         <p>
           <label>NOMBRE</label>
-          <input class="opcionForm" type="text" [(ngModel)]="empleado.nombre" name="nombre" required>
+          <input class="opcionForm" type="text" [(ngModel)]="empleado.nombre" name="nombre"
+            (input)="empleado.nombre = empleado.nombre.toUpperCase()" required>
         </p>
         <p>
           <label>APELLIDO</label>
-          <input class="opcionForm" type="text" [(ngModel)]="empleado.apellido" name="apellido" required>
+          <input class="opcionForm" type="text" [(ngModel)]="empleado.apellido" name="apellido"
+            (input)="empleado.apellido = empleado.apellido.toUpperCase()" required>
         </p>
         <p>
           <label>AREA</label>
@@ -52,12 +55,35 @@
         </p>
       </div>
 
-      <div>
-        <input type="submit" id="checkboxInput">
-        <label for="checkboxInput" class="bookmark">
-          <mat-icon>bookmark</mat-icon>
-        </label>
+      <div class="botones-registroeditar">
+
+
+        <!-- Botón Registrar/Actualizar -->
+        <div>
+          <input type="submit" id="checkboxInput" [value]="modoEdicion ? 'Actualizar' : 'Registrar'">
+          <label for="checkboxInput" class="bookmark">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+        </div>
+
+        <!-- Botón Buscar (se oculta en modo edición) -->
+        <div *ngIf="!modoEdicion">
+          <input id="checkboxInput2" (click)="abrirModalBuscarCedula()">
+          <label for="checkboxInput2" class="bookmark2">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+        </div>
+
+        <!-- Botón Buscar (se oculta en modo edición) -->
+        <div *ngIf="modoEdicion" (click)="limpiarFormularioEditar()">
+          <input id="checkboxInput3">
+          <label for="checkboxInput3" class="bookmark3">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+        </div>
+
       </div>
+
     </div>
   </form>
 </div>
@@ -65,7 +91,6 @@
 
 
 
-<!-- Modal para crear Area -->
 <!-- Modal para crear Area -->
 <div class="modal" [class.show]="mostrarModalArea" *ngIf="mostrarModalArea">
   <div class="modal-contenido">
@@ -148,6 +173,70 @@
         <mat-icon>done_all</mat-icon> Asignar
       </button>
       <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalCargo()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- Modal para buscar cédula -->
+<div class="modal" [class.show]="mostrarModalBuscarCedula" *ngIf="mostrarModalBuscarCedula">
+  <div class="modal-contenido">
+    <div class="modal-cabezera">
+      <div class="titulo">
+        <h2>
+          <mat-icon class="cargoicon">search</mat-icon>
+          Buscar Empleado
+        </h2>
+      </div>
+    </div>
+
+    <div class="buscar-contenido">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Buscar Empleado</mat-label>
+        <input matInput [(ngModel)]="busquedaCedulaModal" (input)="buscarEmpleadosEnModal()" placeholder="Ingrese cedula, nombre o apellido"
+          autocomplete="off">
+        <mat-icon matSuffix>badge</mat-icon>
+      </mat-form-field>
+
+      <!-- Resultados de búsqueda -->
+      <div class="resultados-modal" *ngIf="resultadosBusquedaModal.length > 0">
+        <div class="resultado-item-modal" *ngFor="let empleado of resultadosBusquedaModal"
+          (click)="seleccionarEmpleadoDelModal( empleado)">
+          <div class="resultado-info-modal">
+            <strong>{{ empleado.cedula }}</strong><br>
+            <span>{{ empleado.nombre }} {{ empleado.apellido }}</span><br>
+            <small>{{ empleado.area?.descripcion }} - {{ empleado.cargo?.descripcion }}</small>
+          </div>
+          <mat-icon>touch_app</mat-icon>
+        </div>
+      </div>
+
+
+      <!-- Sin resultados -->
+      <div class="sin-resultados"
+        *ngIf="!buscandoModal && busquedaCedulaModal.length >= 2 && resultadosBusquedaModal.length === 0">
+        <mat-icon>info</mat-icon>
+        <p>
+          No se encontraron empleados con cedula: <br>
+          {{ busquedaCedulaModal }}
+        </p>
+      </div>
+
+
+      <!-- Mensaje para menos de 2 dígitos -->
+      <div class="sin-resultados" *ngIf="busquedaCedulaModal.length < 2 && busquedaCedulaModal.length > 0">
+        <mat-icon>info</mat-icon>
+        <p>Ingrese al menos 2 dígitos para buscar</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalBuscarCedula()">
         <mat-icon>cancel</mat-icon> Cancelar
       </button>
     </div>

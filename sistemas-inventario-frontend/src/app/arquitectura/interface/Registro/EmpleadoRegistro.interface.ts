@@ -5,4 +5,5 @@ export interface EmpleadoRegistro{
     areaCodigo: number;               
     cargoCodigo: number;             
     fechaIngreso: string; 
+    activo?: boolean;
 }
