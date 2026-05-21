@@ -15,6 +15,7 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 
 import { ImpresoraService } from '../../../arquitectura/servicio/registro/RegistroImpresora.service';
 import { ImpresoraRegistro } from './../../../arquitectura/interface/Registro/ImpresoraRegistro.interface';
+import { ImpresoraLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/ImpresoraRespuesta.interface';
 
 
 @Component({
@@ -49,6 +50,10 @@ export class OpcImpresoraComponent implements OnInit {
   marcaSeleccionada: MarcaLlamarDatos | null = null;
   modeloSeleccionado: ModeloLlamarDatos | null = null;
 
+  // =========== VARIABLES DE ESTADO ==============
+  enviando = false;
+
+
   // ========== VARIABLES PARA MODAL DE MARCA ==========
   mostrarModalMarca = false;
   nuevaMarcaDescripcion = '';
@@ -61,6 +66,15 @@ export class OpcImpresoraComponent implements OnInit {
   modelosFiltrados: ModeloLlamarDatos[] = [];
   todasLasModelo: ModeloLlamarDatos[] = [];
 
+  // ========== MODO EDICIÓN ==========
+  modoEdicion: boolean = false;
+  serialOriginal: string = '';
+
+  // ========== VARIABLES PARA BUSCADOR ==========
+  mostrarModalBuscarImpresora: boolean = false;
+  busquedaImpresoraModal: string = '';
+  resultadosBusquedaModal: ImpresoraLlamarDatos[] = [];
+  buscandoModal: boolean = false;
 
 
   constructor(
@@ -75,11 +89,16 @@ export class OpcImpresoraComponent implements OnInit {
   }
 
   cargarDatosIniciales(): void {
-    this.registroCatalogoService
-      .getTiposPorCatalogo(this.CATALOGO_IMPRESORA_ID)
-      .subscribe(data => {
-        this.tipos = data;
-      });
+
+    const catalogoId = this.CATALOGO_IMPRESORA_ID;
+
+    // Cargar tipos
+    this.registroCatalogoService.getTiposPorCatalogo(catalogoId).subscribe(data => {
+      this.tipos = data;
+    });
+
+    this.registroCatalogoService.getTiposPorCatalogo(catalogoId).subscribe(data => this.tipos = data);
+
   }
 
   // Cambio de tipo
@@ -373,6 +392,16 @@ export class OpcImpresoraComponent implements OnInit {
 
   registrarImpresora(): void {
 
+    // Si está en modo edición, llamar a editarImpresora()
+    if (this.modoEdicion) {
+      this.editarImpresora();
+      return;
+    }
+
+
+    if (this.enviando) return; // Evitar envíos múltiples
+
+
     // ===== VALIDACIONES DE CAMPOS OBLIGATORIOS =====
 
     // Serial
@@ -498,7 +527,164 @@ export class OpcImpresoraComponent implements OnInit {
     this.modelos = [];
     this.imagenModeloSeleccionado = '';
 
+    this.modoEdicion = false;  // ← Asegúrate que esta línea existe
+    this.serialOriginal = '';  // ← También resetear serialOriginal
+
     // Recargar datos iniciales
     this.cargarDatosIniciales();
   }
+
+
+  // ========== MÉTODOS PARA BUSCADOR ==========
+
+  compararPorCodigo(obj1: any, obj2: any): boolean {
+    if (!obj1 || !obj2) return obj1 === obj2;
+    return obj1.codigo === obj2.codigo;
+  }
+
+
+  abrirModalBuscarImpresora(): void {
+    this.mostrarModalBuscarImpresora = true;
+    this.busquedaImpresoraModal = '';
+    this.resultadosBusquedaModal = [];
+  }
+
+  cerrarModalBuscarImpresora(): void {
+    this.mostrarModalBuscarImpresora = false;
+    this.busquedaImpresoraModal = '';
+    this.resultadosBusquedaModal = [];
+  }
+
+  buscarImpresorasEnModal(): void {
+    if (!this.busquedaImpresoraModal || this.busquedaImpresoraModal.length < 2) {
+      this.resultadosBusquedaModal = [];
+      return;
+    }
+
+    this.buscandoModal = true;
+
+    this.impresoraService.buscarImpresoras(this.busquedaImpresoraModal).subscribe({
+      next: (impresoras) => {
+        this.resultadosBusquedaModal = impresoras;
+        this.buscandoModal = false;
+      },
+      error: (err) => {
+        console.error('Error al buscar impresoras', err);
+        this.resultadosBusquedaModal = [];
+        this.buscandoModal = false;
+        this.notificacionSnackbarService.error('Error', 'No se pudieron buscar las impresoras');
+      }
+    });
+  }
+
+  seleccionarImpresoraDelModal(impresora: ImpresoraLlamarDatos): void {
+    this.modoEdicion = true;
+    this.serialOriginal = impresora.serial;
+
+    this.serial = impresora.serial;
+    this.propiedad = impresora.propiedad;
+    this.plaqueta = impresora.plaqueta || 'NO TIENE';
+    this.tipoRecarga = impresora.tipoRecarga;
+    this.facturaCompra = impresora.facturaCompra || 'NO TIENE';
+    this.fechaCompra = impresora.fechaCompra || '';
+    this.descripcion = impresora.descripcion || '';
+    this.estado = impresora.estado;
+
+    // Cargar selecciones
+    this.tipoSeleccionado = impresora.tipo;
+    this.marcaSeleccionada = impresora.marca;
+    this.modeloSeleccionado = impresora.modelo;
+
+    // Cargar listas dependientes
+    if (this.tipoSeleccionado) {
+      this.registroCatalogoService.getMarcasPorTipo(this.tipoSeleccionado.codigo)
+        .subscribe(data => this.marcas = data);
+    }
+
+    if (this.marcaSeleccionada && this.tipoSeleccionado) {
+      this.registroCatalogoService.getModelosPorMarcaYTipo(
+        this.marcaSeleccionada.codigo,
+        this.tipoSeleccionado.codigo
+      ).subscribe(data => this.modelos = data);
+    }
+
+    // Cargar imagen del modelo
+    if (impresora.modelo?.rutaImagen) {
+      let urlLimpia = impresora.modelo.rutaImagen.split('&token=')[0];
+      this.imagenModeloSeleccionado = this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
+    } else {
+      this.imagenModeloSeleccionado = '';
+    }
+
+    this.notificacionSnackbarService.success('Impresora cargada', `Editando: ${impresora.serial}`);
+    this.cerrarModalBuscarImpresora();
+  }
+
+  // ========== EDITAR IMPRESORA ==========
+  editarImpresora(): void {
+    if (this.enviando) return;
+
+    // Validaciones
+    if (!this.serial || !this.propiedad || !this.tipoSeleccionado || !this.marcaSeleccionada ||
+      !this.modeloSeleccionado || !this.tipoRecarga || !this.estado) {
+      this.notificacionSnackbarService.warning('Campos incompletos', 'Todos los campos son obligatorios');
+      return;
+    }
+
+    this.enviando = true;
+
+    const plaquetaFinal = this.plaqueta?.toUpperCase() || 'NO TIENE';
+    const descripcionFinal = this.descripcion?.toUpperCase() || 'SIN DESCRIPCIÓN';
+    const facturaFinal = this.facturaCompra?.toUpperCase() || 'NO TIENE';
+    const fechaFinal = this.fechaCompra || null;
+
+    const impresoraData: ImpresoraRegistro = {
+      serial: this.serialOriginal,
+      propiedad: this.propiedad.toUpperCase(),
+      plaqueta: plaquetaFinal,
+      tipoRecarga: this.tipoRecarga.toUpperCase(),
+      facturaCompra: facturaFinal,
+      fechaCompra: fechaFinal,
+      estado: this.estado,
+      descripcion: descripcionFinal,
+      tipo: { codigo: this.tipoSeleccionado.codigo },
+      marca: { codigo: this.marcaSeleccionada.codigo },
+      modelo: { codigo: this.modeloSeleccionado.codigo }
+    };
+
+    this.impresoraService.editarImpresora(this.serialOriginal, impresoraData).subscribe({
+      next: (respuesta) => {
+        this.notificacionSnackbarService.success('Impresora actualizada', `Serial: ${respuesta.serial}`);
+        this.limpiarFormulario();
+        this.enviando = false;
+      },
+      error: (err) => {
+        console.error('Error al actualizar', err);
+        const mensaje = err.error?.message || 'Error al actualizar la impresora';
+        this.notificacionSnackbarService.error('Error', mensaje);
+        this.enviando = false;
+      }
+    });
+  }
+
+
+  limpiarFormularioEditar(): void {
+    this.limpiarFormulario();
+
+    // Mensaje de éxito al limpiar formulario
+    this.notificacionSnackbarService.info('Formulario limpiado',
+      'Todos los campos han sido restablecidos');
+  }
+
+
+  // ========== MÉTODO PARA SANITIZAR IMÁGENES ==========
+  imagenImpresorasFiltradas(url: string | undefined): SafeResourceUrl {
+    if (!url || url === '') {
+      return '';
+    }
+    // Limpiar la URL de tokens si es necesario
+    let urlLimpia = url.split('&token=')[0];
+    return this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
+  }
+
 }

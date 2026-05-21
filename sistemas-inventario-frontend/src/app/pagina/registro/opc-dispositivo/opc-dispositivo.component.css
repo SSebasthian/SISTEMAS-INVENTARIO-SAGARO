@@ -608,4 +608,29 @@
         color: rgb(153, 153, 153);
     }
 
+    .botones-registroeditar {
+        width: 95%;
+    }
+
+    .contenedor-regTelefono .contenido .bookmark {
+        right: 95px;
+        bottom: 0px;
+    }
+
+    .contenedor-regTelefono .contenido .bookmark2,
+    .contenedor-regTelefono .contenido .bookmark3 {
+        right: 15px;
+        bottom: 0px;
+    }
+
+
+    /* Estilo del ícono */
+    .contenedor-regTelefono .contenido .bookmark mat-icon,
+    .contenedor-regTelefono .contenido .bookmark2 mat-icon,
+    .contenedor-regTelefono .contenido .bookmark3 mat-icon {
+        height: 60px;
+        width: 60px;
+        font-size: 60px;
+    }
+
 }

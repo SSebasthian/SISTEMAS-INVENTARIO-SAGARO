@@ -19,5 +19,24 @@ export class ImpresoraService {
     return this.http.post<ImpresoraLlamarDatos>(`${this.apiUrlImpresora}/registrar`, impresora);
   }
 
+
+  /** EDITAR IMPRESORA */
+  editarImpresora(serial: string, impresora: ImpresoraRegistro): Observable<ImpresoraLlamarDatos> {
+    return this.http.put<ImpresoraLlamarDatos>(`${this.apiUrlImpresora}/editar/${serial}`, impresora);
+  }
+
+  /** OBTENER IMPRESORA POR SERIAL */
+  obtenerImpresora(serial: string): Observable<ImpresoraLlamarDatos> {
+    return this.http.get<ImpresoraLlamarDatos>(`${this.apiUrlImpresora}/${serial}`);
+  }
+
+  /** BUSCAR IMPRESORAS POR TERMINO */
+  buscarImpresoras(termino: string): Observable<ImpresoraLlamarDatos[]> {
+    return this.http.get<ImpresoraLlamarDatos[]>(`${this.apiUrlImpresora}/buscar?termino=${termino}`);
+  }
+
+  /** LISTAR TODAS LAS IMPRESORAS */
+  listarImpresoras(): Observable<ImpresoraLlamarDatos[]> {
+    return this.http.get<ImpresoraLlamarDatos[]>(`${this.apiUrlImpresora}/listar`);
+  }
 }
-  

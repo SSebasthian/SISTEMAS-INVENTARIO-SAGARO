@@ -1,5 +1,5 @@
 <div class="contenedor-regImpresora">
-    <form id="form-registro-impresora" (ngSubmit)="registrarImpresora()">
+    <form id="form-registro-impresora" (ngSubmit)="modoEdicion ? editarImpresora() : registrarImpresora()">
         <div class="contenido">
 
             <div class="fila-de-tres">
@@ -33,7 +33,7 @@
                 <div class="contenido-opcion">
                     <label>TIPO DE IMPRESORA</label><br>
                     <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo"
-                        (change)="onTipoChange()">
+                        (change)="onTipoChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">
                         <option [ngValue]="null"></option>
                         <option *ngFor="let t of tipos" [ngValue]="t">{{ t.descripcion }}</option>
                     </select>
@@ -49,7 +49,7 @@
                     <label>MARCA</label><br>
 
                     <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca"
-                        (change)="onMarcaChange()">
+                        (change)="onMarcaChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">
                         <option [ngValue]="null"></option>
                         <option *ngFor="let m of marcas" [ngValue]="m">{{ m.descripcion }}</option>
                         <!-- SOLO aparece NUEVA MARCA si hay un tipo seleccionado -->
@@ -69,7 +69,7 @@
                     <label>MODELO:</label><br>
 
                     <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo"
-                        (change)="onModeloChange()">
+                        (change)="onModeloChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">
                         <option [ngValue]="null"></option>
                         <option *ngFor="let mod of modelos" [ngValue]="mod">{{ mod.descripcion }}</option>
                         <!-- SOLO aparece NUEVO MODELO si hay tipo Y marca seleccionados -->
@@ -83,13 +83,15 @@
 
                 <div class="contenido-opcion">
                     <label>SERIAL:</label><br>
-                    <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial">
+                    <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial" [disabled]="modoEdicion"
+                        (input)="serial = serial.toUpperCase()">
                 </div>
 
 
                 <div class="contenido-opcion">
                     <label>NUMERO DE PLACA</label><br>
-                    <input class="opcionForm" type="text" [(ngModel)]="plaqueta" name="plaqueta">
+                    <input class="opcionForm" type="text" [(ngModel)]="plaqueta" name="plaqueta"
+                        (input)="plaqueta = plaqueta.toUpperCase()">
                 </div>
 
                 <!-----------------------  ----------------------->
@@ -173,16 +175,39 @@
 
                 <div class="contenido-opcion textarea">
                     <label for="descripcion">DESCRIPCION:</label><br>
-                    <textarea [(ngModel)]="descripcion" name="descripcion"></textarea>
+                    <textarea [(ngModel)]="descripcion" name="descripcion"
+                        (input)="descripcion = descripcion.toUpperCase()"></textarea>
                 </div>
 
 
 
-                <div>
-                    <input type="submit" id="submitInput" value="Enviar">
-                    <label for="submitInput" class="bookmark">
-                        <mat-icon>bookmark</mat-icon>
-                    </label>
+                <div class="botones-registroeditar">
+
+                    <!-- Botón Registrar/Actualizar -->
+                    <div>
+                        <input type="submit" id="checkboxInput" [value]="modoEdicion ? 'Actualizar' : 'Registrar'">
+                        <label for="checkboxInput" class="bookmark">
+                            <mat-icon>bookmark</mat-icon>
+                        </label>
+                    </div>
+
+                    <!-- Botón Buscar (se oculta en modo edición) -->
+                    <div *ngIf="!modoEdicion">
+                        <input id="checkboxInput2" (click)="abrirModalBuscarImpresora()">
+                        <label for="checkboxInput2" class="bookmark2">
+                            <mat-icon>bookmark</mat-icon>
+                        </label>
+                    </div>
+
+                    <!-- Botón Buscar (se oculta en modo edición) -->
+                    <div *ngIf="modoEdicion" (click)="limpiarFormularioEditar()">
+                        <input id="checkboxInput3">
+                        <label for="checkboxInput3" class="bookmark3">
+                            <mat-icon>bookmark</mat-icon>
+                        </label>
+                    </div>
+
+
                 </div>
 
 
@@ -215,8 +240,9 @@
         <div class="crear">
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Nueva Marca</mat-label>
-                <input matInput [(ngModel)]="nuevaMarcaDescripcion" [matAutocomplete]="autoMarca" (input)="convertirMayusculas()" 
-                    (input)="filtrarMarcas()" placeholder="Ejemplo: Epson, Kyocera, Canon" autocomplete="off">
+                <input matInput [(ngModel)]="nuevaMarcaDescripcion" [matAutocomplete]="autoMarca"
+                    (input)="convertirMayusculas()" (input)="filtrarMarcas()"
+                    placeholder="Ejemplo: Epson, Kyocera, Canon" autocomplete="off">
 
                 <mat-autocomplete #autoMarca="matAutocomplete" (optionSelected)="seleccionarMarcaExistente($event)">
                     <!-- Mostrar marcas existentes en este tipo -->
@@ -267,18 +293,18 @@
         <div class="crear">
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Nueva Modelo</mat-label>
-                <input matInput [(ngModel)]="nuevaModeloDescripcion" [matAutocomplete]="autoModelo" (input)="convertirMayusculas()"
-                (input)="filtrarModelos()" placeholder="Ejemplo: L3210, 3250"
+                <input matInput [(ngModel)]="nuevaModeloDescripcion" [matAutocomplete]="autoModelo"
+                    (input)="convertirMayusculas()" (input)="filtrarModelos()" placeholder="Ejemplo: L3210, 3250"
                     autocomplete="off">
 
-                    <!-- Autocompletado para modelos existentes -->
-                    <mat-autocomplete #autoModelo="matAutocomplete" (optionSelected)="seleccionarModeloExistente($event)">
-                        <mat-option *ngFor="let modelo of modelosFiltrados" [value]="modelo.descripcion">
+                <!-- Autocompletado para modelos existentes -->
+                <mat-autocomplete #autoModelo="matAutocomplete" (optionSelected)="seleccionarModeloExistente($event)">
+                    <mat-option *ngFor="let modelo of modelosFiltrados" [value]="modelo.descripcion">
                         {{ modelo.descripcion }}
                         <small class="ya-existe"> - Ya existe</small>
-                        </mat-option>
-                    </mat-autocomplete>
-                    
+                    </mat-option>
+                </mat-autocomplete>
+
             </mat-form-field>
         </div>
 
@@ -292,4 +318,74 @@
             </button>
         </div>
     </div>
+</div>
+
+
+
+<!-- Modal para buscar impresora -->
+<div class="modal" [class.show]="mostrarModalBuscarImpresora" *ngIf="mostrarModalBuscarImpresora">
+  <div class="modal-contenido">
+    <div class="modal-cabezera">
+      <div class="titulo">
+        <h2>
+          <mat-icon class="cargoicon">search</mat-icon>
+          Buscar Impresora
+        </h2>
+      </div>
+    </div>
+
+    <div class="buscar-contenido">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Buscar Impresora</mat-label>
+        <input matInput [(ngModel)]="busquedaImpresoraModal" (input)="buscarImpresorasEnModal()"
+          placeholder="Ingrese serial, marca o modelo" autocomplete="off">
+        <mat-icon matSuffix>local_printshop</mat-icon>
+      </mat-form-field>
+
+      <div class="filtro" [class.con-resultados]="resultadosBusquedaModal.length > 0">
+        <!-- Resultados de búsqueda -->
+        <div class="resultado-item-modal" *ngFor="let impresora of resultadosBusquedaModal"
+          (click)="seleccionarImpresoraDelModal(impresora)">
+
+          <!-- Imagen a la izquierda -->
+          <div class="resultado-imagen">
+            <img *ngIf="impresora.modelo?.rutaImagen" [src]="imagenImpresorasFiltradas(impresora.modelo.rutaImagen)"
+              alt="Imagen del modelo" class="imagen-resultado">
+            <mat-icon *ngIf="!impresora.modelo?.rutaImagen" class="icono-imagen-default">image</mat-icon>
+          </div>
+
+          <!-- Contenido a la derecha (apilado verticalmente) -->
+          <div class="resultado-info-modal">
+            <strong>{{ impresora.serial }}</strong>
+            <span>{{ impresora.marca?.descripcion }} - {{ impresora.modelo?.descripcion }}</span>
+            <small>{{ impresora.tipo?.descripcion }} | {{ impresora.estado }}</small>
+          </div>
+
+          <!-- Icono de selección -->
+          <mat-icon>touch_app</mat-icon>
+        </div>
+      </div>
+
+
+      <div class="sin-resultados"
+        *ngIf="!buscandoModal && busquedaImpresoraModal.length >= 2 && resultadosBusquedaModal.length === 0">
+        <mat-icon>info</mat-icon>
+        <p>
+          No se encontraron impresoras con: <br>
+          <strong>{{ busquedaImpresoraModal }}</strong>
+        </p>
+      </div>
+
+      <div class="sin-resultados" *ngIf="busquedaImpresoraModal.length < 2 && busquedaImpresoraModal.length > 0">
+        <mat-icon>info</mat-icon>
+        <p>Ingrese al menos 2 caracteres para buscar</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalBuscarImpresora()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
 </div>

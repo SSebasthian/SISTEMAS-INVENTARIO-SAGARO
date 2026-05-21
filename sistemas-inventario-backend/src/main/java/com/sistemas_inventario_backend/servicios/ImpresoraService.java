@@ -5,6 +5,7 @@ import com.sistemas_inventario_backend.repositorios.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +15,10 @@ public class ImpresoraService {
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final DispositivoTecnologico_MarcaRepository marcaRepository;
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
+
+
+    // ========== REGISTRAR ==========
+
 
     @Transactional
     public Impresora registrar(Impresora impresora) {
@@ -58,5 +63,60 @@ public class ImpresoraService {
         impresora.setActivo(true);
 
         return impresoraRepository.save(impresora);
+    }
+
+
+    // ========== EDITAR ==========
+    @Transactional
+    public Impresora editar(String serial, Impresora impresoraActualizada) {
+        Impresora impresoraExistente = impresoraRepository.findById(serial)
+                .orElseThrow(() -> new RuntimeException("No se encontro el serial: " + serial));
+
+        // Actualizar relaciones
+        if (impresoraActualizada.getTipo() != null && impresoraActualizada.getTipo().getCodigo() != null) {
+            DispositivoTecnologico_Tipo tipo = tipoRepository.findById(impresoraActualizada.getTipo().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Tipo no encontrado"));
+            impresoraExistente.setTipo(tipo);
+        }
+
+        if (impresoraActualizada.getMarca() != null && impresoraActualizada.getMarca().getCodigo() != null) {
+            DispositivoTecnologico_Marca marca = marcaRepository.findById(impresoraActualizada.getMarca().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Marca no encontrada"));
+            impresoraExistente.setMarca(marca);
+        }
+
+        if (impresoraActualizada.getModelo() != null && impresoraActualizada.getModelo().getCodigo() != null) {
+            DispositivoTecnologico_Modelo modelo = modeloRepository.findById(impresoraActualizada.getModelo().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Modelo no encontrado"));
+            impresoraExistente.setModelo(modelo);
+        }
+
+        // Actualizar campos simples
+        impresoraExistente.setPropiedad(impresoraActualizada.getPropiedad());
+        impresoraExistente.setPlaqueta(impresoraActualizada.getPlaqueta());
+        impresoraExistente.setTipoRecarga(impresoraActualizada.getTipoRecarga());
+        impresoraExistente.setFacturaCompra(impresoraActualizada.getFacturaCompra());
+        impresoraExistente.setFechaCompra(impresoraActualizada.getFechaCompra());
+        impresoraExistente.setDescripcion(impresoraActualizada.getDescripcion());
+        impresoraExistente.setEstado(impresoraActualizada.getEstado());
+        impresoraExistente.setActivo(impresoraActualizada.getActivo());
+
+        return impresoraRepository.save(impresoraExistente);
+    }
+
+    // ========== OBTENER POR SERIAL ==========
+    public Impresora obtenerPorSerial(String serial) {
+        return impresoraRepository.findById(serial)
+                .orElseThrow(() -> new RuntimeException("No se encontró una impresora con el serial: " + serial));
+    }
+
+    // ========== LISTAR TODOS ==========
+    public List<Impresora> listarTodos() {
+        return impresoraRepository.findAll();
+    }
+
+    // ========== BUSCAR POR TERMINO ==========
+    public List<Impresora> buscarPorTermino(String termino) {
+        return impresoraRepository.buscarPorTermino(termino);
     }
 }
