@@ -17,4 +17,24 @@ export class RegistroDispositivoService {
   registrarDispositivo(telefono: DispositivoMovilRegistro): Observable<DispositivoMovilLlamarDatos> {
     return this.http.post<DispositivoMovilLlamarDatos>(`${this.apiUrlTelefono}/registrar`, telefono);
   }
+
+  /** EDITAR DISPOSITIVO MÓVIL */
+  editarDispositivo(serial: string, dispositivo: DispositivoMovilRegistro): Observable<DispositivoMovilLlamarDatos> {
+    return this.http.put<DispositivoMovilLlamarDatos>(`${this.apiUrlTelefono}/editar/${serial}`, dispositivo);
+  }
+
+  /** OBTENER DISPOSITIVO POR SERIAL */
+  obtenerDispositivo(serial: string): Observable<DispositivoMovilLlamarDatos> {
+    return this.http.get<DispositivoMovilLlamarDatos>(`${this.apiUrlTelefono}/${serial}`);
+  }
+
+  /** BUSCAR DISPOSITIVOS POR TERMINO (serial, marca, modelo, IMEI) */
+  buscarDispositivos(termino: string): Observable<DispositivoMovilLlamarDatos[]> {
+    return this.http.get<DispositivoMovilLlamarDatos[]>(`${this.apiUrlTelefono}/buscar?termino=${termino}`);
+  }
+
+  /** LISTAR TODOS LOS DISPOSITIVOS */
+  listarDispositivos(): Observable<DispositivoMovilLlamarDatos[]> {
+    return this.http.get<DispositivoMovilLlamarDatos[]>(`${this.apiUrlTelefono}/listar`);
+  }
 }

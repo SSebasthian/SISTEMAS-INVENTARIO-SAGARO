@@ -17,6 +17,8 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 
 import { RegistroDispositivoService } from '../../../arquitectura/servicio/registro/registroDispositivo.service';
 import { DispositivoMovilRegistro } from './../../../arquitectura/interface/Registro/DispositivoMovilRegistro.interface';
+import { DispositivoMovilLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/DispositivoMovilRespuesta.interface';
+
 
 
 @Component({
@@ -66,6 +68,9 @@ export class OpcDispositivoComponent implements OnInit {
   marcasFiltradas: MarcaLlamarDatos[] = [];
   todasLasMarcas: MarcaLlamarDatos[] = [];
 
+  // =========== VARIABLES DE ESTADO ==============
+  enviando = false;
+
   // ========== VARIABLES PARA MODAL DE MODELO ==========
   mostrarModalModelo = false;
   nuevaModeloDescripcion = '';
@@ -78,6 +83,15 @@ export class OpcDispositivoComponent implements OnInit {
   versionesFiltradas: VersionSOLlamarDatos[] = [];
   todasLasVersionesSo: VersionSOLlamarDatos[] = [];
 
+  // ========== MODO EDICIÓN ==========
+  modoEdicion: boolean = false;
+  serialOriginal: string = '';
+
+  // ========== VARIABLES PARA BUSCADOR ==========
+  mostrarModalBuscarDispositivo: boolean = false;
+  busquedaDispositivoModal: string = '';
+  resultadosBusquedaModal: DispositivoMovilLlamarDatos[] = [];
+  buscandoModal: boolean = false;
 
 
   constructor(
@@ -573,6 +587,14 @@ export class OpcDispositivoComponent implements OnInit {
 
   registrarDispositivo(): void {
 
+    // Si está en modo edición, llamar a editarDispositivo()
+    if (this.modoEdicion) {
+      this.editarDispositivo();
+      return;
+    }
+
+    if (this.enviando) return; // Evitar envíos múltiples
+
     // ========== VALIDACIONES DE CAMPOS OBLIGATORIOS ==========
 
     // Serial
@@ -612,14 +634,8 @@ export class OpcDispositivoComponent implements OnInit {
       return;
     }
 
-    // IMEI 1
-    if (!this.imei1 || this.imei1.trim() === '') {
-      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el IMEI 1 del dispositivo');
-      return;
-    }
-
     // Validar formato IMEI 1 (15 dígitos)
-    if (!this.validarIMEI(this.imei1)) {
+    if (this.imei1 && this.imei1.trim() !== '' && !this.validarIMEI(this.imei1)) {
       this.notificacionSnackbarService.warning('IMEI inválido', 'El IMEI 1 debe tener 15 dígitos numéricos');
       return;
     }
@@ -692,6 +708,9 @@ export class OpcDispositivoComponent implements OnInit {
     // Fecha Compra - Si está vacío, poner "NO TIENE"
     const fechaFinal = this.fechaCompra && this.fechaCompra.trim() !== '' ? this.fechaCompra : null;
 
+    // IMEI 1 - Si está vacío, poner "NO TIENE"
+    const imei1Final = this.imei1 && this.imei1.trim() !== '' ? this.imei1 : 'NO TIENE';
+
     // IMEI 2 - Si está vacío, poner "NO TIENE"
     const imei2Final = this.imei2 && this.imei2.trim() !== '' ? this.imei2 : 'NO TIENE';
 
@@ -711,7 +730,7 @@ export class OpcDispositivoComponent implements OnInit {
       pulgadas: pulgadasFinal,
       ram: this.ram,
       almacenamiento: this.almacenamiento,
-      imei1: this.imei1.trim(),
+      imei1: imei1Final,
       imei2: imei2Final,
       procesador: this.procesador.trim(),
       tipo: { codigo: this.tipoSeleccionado.codigo },
@@ -778,7 +797,183 @@ export class OpcDispositivoComponent implements OnInit {
     this.versionesSO = [];
     this.imagenModeloSeleccionado = '';
 
+
+    // Resetear modo edición
+    this.modoEdicion = false;
+    this.serialOriginal = '';
+
+
     // Recargar datos iniciales (opcional)
     this.cargarDatosIniciales();
+  }
+
+
+
+  // ========== MÉTODOS PARA BUSCADOR ==========
+
+  compararPorCodigo(obj1: any, obj2: any): boolean {
+    if (!obj1 || !obj2) return obj1 === obj2;
+    return obj1.codigo === obj2.codigo;
+  }
+
+  abrirModalBuscarDispositivo(): void {
+    this.mostrarModalBuscarDispositivo = true;
+    this.busquedaDispositivoModal = '';
+    this.resultadosBusquedaModal = [];
+  }
+
+  cerrarModalBuscarDispositivo(): void {
+    this.mostrarModalBuscarDispositivo = false;
+    this.busquedaDispositivoModal = '';
+    this.resultadosBusquedaModal = [];
+  }
+
+  buscarDispositivosEnModal(): void {
+    if (!this.busquedaDispositivoModal || this.busquedaDispositivoModal.length < 2) {
+      this.resultadosBusquedaModal = [];
+      return;
+    }
+
+    this.buscandoModal = true;
+
+    this.registroDispositivoService.buscarDispositivos(this.busquedaDispositivoModal).subscribe({
+      next: (dispositivos) => {
+        this.resultadosBusquedaModal = dispositivos;
+        this.buscandoModal = false;
+      },
+      error: (err) => {
+        console.error('Error al buscar dispositivos', err);
+        this.resultadosBusquedaModal = [];
+        this.buscandoModal = false;
+        this.notificacionSnackbarService.error('Error', 'No se pudieron buscar los dispositivos');
+      }
+    });
+  }
+
+
+  seleccionarDispositivoDelModal(dispositivo: DispositivoMovilLlamarDatos): void {
+    this.modoEdicion = true;
+    this.serialOriginal = dispositivo.serial;
+
+    this.serial = dispositivo.serial;
+    this.plaqueta = dispositivo.plaqueta || 'NO TIENE';
+    this.facturaCompra = dispositivo.facturaCompra || 'NO TIENE';
+    this.fechaCompra = dispositivo.fechaCompra || '';
+    this.descripcion = dispositivo.descripcion || '';
+    this.estado = dispositivo.estado;
+    this.pulgadas = dispositivo.pulgadas || 'NO ESPECIFICADO';
+    this.ram = dispositivo.ram;
+    this.almacenamiento = dispositivo.almacenamiento;
+    this.imei1 = dispositivo.imei1;
+    this.imei2 = dispositivo.imei2 || 'NO TIENE';
+    this.procesador = dispositivo.procesador;
+
+    // Cargar selecciones
+    this.tipoSeleccionado = dispositivo.tipo;
+    this.marcaSeleccionada = dispositivo.marca;
+    this.modeloSeleccionado = dispositivo.modelo;
+    this.soSeleccionado = dispositivo.sistemaOperativo;
+    this.versionSOSeleccionada = dispositivo.versionSO;
+
+    // Cargar listas dependientes
+    if (this.tipoSeleccionado) {
+      this.registroCatalogoService.getMarcasPorTipo(this.tipoSeleccionado.codigo)
+        .subscribe(data => this.marcas = data);
+    }
+
+    if (this.marcaSeleccionada && this.tipoSeleccionado) {
+      this.registroCatalogoService.getModelosPorMarcaYTipo(
+        this.marcaSeleccionada.codigo,
+        this.tipoSeleccionado.codigo
+      ).subscribe(data => this.modelos = data);
+    }
+
+    if (this.soSeleccionado) {
+      this.registroCatalogoService.getVersionesPorSO(this.soSeleccionado.codigo)
+        .subscribe(data => this.versionesSO = data);
+    }
+
+    // Cargar imagen del modelo
+    if (dispositivo.modelo?.rutaImagen) {
+      let urlLimpia = dispositivo.modelo.rutaImagen.split('&token=')[0];
+      this.imagenModeloSeleccionado = this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
+    } else {
+      this.imagenModeloSeleccionado = '';
+    }
+
+    this.notificacionSnackbarService.success('Dispositivo cargado', `Editando: ${dispositivo.serial}`);
+    this.cerrarModalBuscarDispositivo();
+  }
+
+
+  // ========== EDITAR DISPOSITIVO ==========
+  editarDispositivo(): void {
+    if (this.enviando) return;
+
+    // Validaciones de campos obligatorios
+    if (!this.serial || !this.tipoSeleccionado || !this.marcaSeleccionada ||
+      !this.modeloSeleccionado || !this.soSeleccionado || !this.versionSOSeleccionada ||
+      !this.imei1 || !this.ram || !this.almacenamiento || !this.procesador || !this.estado) {
+      this.notificacionSnackbarService.warning('Campos incompletos', 'Todos los campos son obligatorios');
+      return;
+    }
+
+    this.enviando = true;
+
+    // Convertir a mayúsculas
+    const plaquetaFinal = this.plaqueta?.toUpperCase() || 'NO TIENE';
+    const facturaFinal = this.facturaCompra?.toUpperCase() || 'NO TIENE';
+    const pulgadasFinal = this.pulgadas?.toUpperCase() || 'NO ESPECIFICADO';
+    const descripcionFinal = this.descripcion?.toUpperCase() || 'SIN DESCRIPCION';
+    const imei2Final = this.imei2?.toUpperCase() || 'NO TIENE';
+
+    // Armar objeto para enviar
+    const dispositivoData: DispositivoMovilRegistro = {
+      serial: this.serialOriginal, // Usar el serial original, no el campo editable
+      plaqueta: plaquetaFinal,
+      facturaCompra: facturaFinal,
+      fechaCompra: this.fechaCompra || null,
+      activo: true,
+      descripcion: descripcionFinal,
+      estado: this.estado,
+      pulgadas: pulgadasFinal,
+      ram: this.ram,
+      almacenamiento: this.almacenamiento,
+      imei1: this.imei1,
+      imei2: imei2Final,
+      procesador: this.procesador?.toUpperCase() || '',
+      tipo: { codigo: this.tipoSeleccionado.codigo },
+      marca: { codigo: this.marcaSeleccionada.codigo },
+      modelo: { codigo: this.modeloSeleccionado.codigo },
+      sistemaOperativo: { codigo: this.soSeleccionado.codigo },
+      versionSO: { codigo: this.versionSOSeleccionada.codigo }
+    };
+
+    this.registroDispositivoService.editarDispositivo(this.serialOriginal, dispositivoData).subscribe({
+      next: (respuesta) => {
+        this.notificacionSnackbarService.success('Dispositivo actualizado', `Serial: ${respuesta.serial}`);
+        this.limpiarFormulario();
+        this.enviando = false;
+      },
+      error: (err) => {
+        console.error('Error al actualizar', err);
+        const mensaje = err.error?.message || 'Error al actualizar el dispositivo';
+        this.notificacionSnackbarService.error('Error', mensaje);
+        this.enviando = false;
+      }
+    });
+  }
+
+  limpiarFormularioEditar(): void {
+    this.limpiarFormulario();
+    this.notificacionSnackbarService.info('Formulario limpiado', 'Todos los campos han sido restablecidos');
+  }
+
+  imagenDispositivosFiltrados(url: string | undefined): SafeResourceUrl {
+    if (!url || url === '') {
+      return '';
+    }
+    let urlLimpia = url.split('&token=')[0];
+    return this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
   }
 }

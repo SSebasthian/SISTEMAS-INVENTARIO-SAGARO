@@ -388,7 +388,7 @@
 }
 
 .filtro.con-resultados {
-    max-height: 440px;  /* 4 elementos * 77px aprox = 308px */
+    max-height: 220px;  
     min-height: 77px;   /* Altura mínima para 1 elemento */
 }
 
