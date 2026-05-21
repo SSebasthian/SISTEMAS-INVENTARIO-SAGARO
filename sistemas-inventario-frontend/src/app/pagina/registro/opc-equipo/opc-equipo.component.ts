@@ -17,6 +17,7 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 
 import { RegistroEquipoService } from './../../../arquitectura/servicio/registro/RegistroEquipo.service';
 import { EquipoComputoRegistro } from './../../../arquitectura/interface/Registro/EquipoComputoRegistro.interface';
+import { EquipoDeComputoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/EquipoDeComputoRespuesta.interface';
 
 
 
@@ -62,7 +63,8 @@ export class OpcEquipoComponent implements OnInit {
   soSeleccionado: SOLlamarDatos | null = null;
   versionSOSeleccionada: VersionSOLlamarDatos | null = null;
 
-
+  // =========== VARIABLES DE ESTADO ==============
+  enviando = false;
 
 
   // ========== VARIABLES PARA MODAL DE MARCA ==========
@@ -83,6 +85,16 @@ export class OpcEquipoComponent implements OnInit {
   versionesFiltradas: VersionSOLlamarDatos[] = [];
   todasLasVersionesSo: VersionSOLlamarDatos[] = [];
 
+  // ========== MODO EDICIÓN ==========
+  modoEdicion: boolean = false;
+  serialOriginal: string = '';
+
+  // ========== VARIABLES PARA BUSCADOR ==========
+  mostrarModalBuscarEquipo: boolean = false;
+  busquedaEquipoModal: string = '';
+  resultadosBusquedaModal: EquipoDeComputoLlamarDatos[] = [];
+  buscandoModal: boolean = false;
+
 
   constructor(
     private registroCatalogoService: RegistroCatalogoService,
@@ -98,11 +110,20 @@ export class OpcEquipoComponent implements OnInit {
   cargarDatosIniciales(): void {
     const catalogoId = this.CATALOGO_EQUIPO_COMPUTO_ID;
 
+    // Cargar tipos
+    this.registroCatalogoService.getTiposPorCatalogo(catalogoId).subscribe(data => {
+      this.tipos = data;
+    });
+
+    // Cargar sistemas operativos
+    this.registroCatalogoService.getSistemasOperativosPorCatalogo(catalogoId).subscribe(data => {
+      this.sistemasOperativos = data;
+    });
+
     // Cargar tipos y sistemas operativos del catálogo
     this.registroCatalogoService.getTiposPorCatalogo(catalogoId).subscribe(data => this.tipos = data);
     this.registroCatalogoService.getSistemasOperativosPorCatalogo(catalogoId).subscribe(data => this.sistemasOperativos = data);
   }
-
 
 
   // Cuando cambia el tipo, carga las marcas asociadas a ese tipo
@@ -604,6 +625,16 @@ export class OpcEquipoComponent implements OnInit {
 
 
   registrarEquipo(): void {
+
+    // Si está en modo edición, llamar a editarEquipo()
+    if (this.modoEdicion) {
+      this.editarEquipo();
+      return;
+    }
+
+
+    if (this.enviando) return; // Evitar envíos múltiples
+
     // ========== VALIDACIONES DE CAMPOS OBLIGATORIOS ==========
 
     // Serial
@@ -787,8 +818,188 @@ export class OpcEquipoComponent implements OnInit {
     this.versionesSO = [];
     this.imagenModeloSeleccionado = '';
 
+    // Resetear modo edición
+    this.modoEdicion = false;
+    this.serialOriginal = '';
     // Recargar datos iniciales
     this.cargarDatosIniciales();
+  }
+
+
+
+  // ========== MÉTODOS PARA BUSCADOR ==========
+
+  compararPorCodigo(obj1: any, obj2: any): boolean {
+    if (!obj1 || !obj2) return obj1 === obj2;
+    return obj1.codigo === obj2.codigo;
+  }
+
+
+  abrirModalBuscarEquipo(): void {
+    this.mostrarModalBuscarEquipo = true;
+    this.busquedaEquipoModal = '';
+    this.resultadosBusquedaModal = [];
+  }
+
+  cerrarModalBuscarEquipo(): void {
+    this.mostrarModalBuscarEquipo = false;
+    this.busquedaEquipoModal = '';
+    this.resultadosBusquedaModal = [];
+  }
+
+  buscarEquiposEnModal(): void {
+    if (!this.busquedaEquipoModal || this.busquedaEquipoModal.length < 2) {
+      this.resultadosBusquedaModal = [];
+      return;
+    }
+
+    this.buscandoModal = true;
+
+    this.registroEquipoService.buscarEquipos(this.busquedaEquipoModal).subscribe({
+      next: (equipos) => {
+        this.resultadosBusquedaModal = equipos;
+        this.buscandoModal = false;
+      },
+      error: (err) => {
+        console.error('Error al buscar equipos', err);
+        this.resultadosBusquedaModal = [];
+        this.buscandoModal = false;
+        this.notificacionSnackbarService.error('Error', 'No se pudieron buscar los equipos');
+      }
+    });
+  }
+
+  seleccionarEquipoDelModal(equipo: EquipoDeComputoLlamarDatos): void {
+    this.modoEdicion = true;
+    this.serialOriginal = equipo.serial;
+
+    this.serial = equipo.serial;
+    this.plaqueta = equipo.plaqueta || 'NO TIENE';
+    this.facturaCompra = equipo.facturaCompra || 'NO TIENE';
+    this.fechaCompra = equipo.fechaCompra || '';
+    this.descripcion = equipo.descripcion || '';
+    this.estado = equipo.estado;
+    this.ram = equipo.ram;
+    this.tipoRam = equipo.tipoRam;
+    this.procesador = equipo.procesador;
+    this.disco = equipo.disco;
+    this.tipoDisco = equipo.tipoDisco;
+    this.bits = equipo.bits;
+
+    // Cargar selecciones (los objetos completos)
+    this.tipoSeleccionado = equipo.tipo;
+    this.marcaSeleccionada = equipo.marca;
+    this.modeloSeleccionado = equipo.modelo;
+    this.soSeleccionado = equipo.sistemaOperativo;
+    this.versionSOSeleccionada = equipo.versionSO;
+
+
+    // Cargar listas dependientes
+    if (this.tipoSeleccionado) {
+      this.registroCatalogoService.getMarcasPorTipo(this.tipoSeleccionado.codigo)
+        .subscribe(data => {
+          this.marcas = data;
+        });
+    }
+
+    if (this.marcaSeleccionada && this.tipoSeleccionado) {
+      this.registroCatalogoService.getModelosPorMarcaYTipo(
+        this.marcaSeleccionada.codigo,
+        this.tipoSeleccionado.codigo
+      ).subscribe(data => {
+        this.modelos = data;
+      });
+    }
+
+    if (this.soSeleccionado) {
+      this.registroCatalogoService.getVersionesPorSO(this.soSeleccionado.codigo)
+        .subscribe(data => {
+          this.versionesSO = data;
+        });
+    }
+
+    // Cargar imagen del modelo
+    if (equipo.modelo?.rutaImagen) {
+      let urlLimpia = equipo.modelo.rutaImagen.split('&token=')[0];
+      this.imagenModeloSeleccionado = this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
+    } else {
+      this.imagenModeloSeleccionado = '';
+    }
+
+    this.notificacionSnackbarService.success('Equipo cargado', `Editando: ${equipo.serial}`);
+    this.cerrarModalBuscarEquipo();
+  }
+
+
+  // ========== EDITAR EQUIPO ==========
+  editarEquipo(): void {
+    if (this.enviando) return;
+
+    // Validaciones similares a registrar
+    if (!this.serial || !this.tipoSeleccionado || !this.marcaSeleccionada ||
+      !this.modeloSeleccionado || !this.soSeleccionado || !this.versionSOSeleccionada ||
+      !this.bits || !this.ram || !this.tipoRam || !this.procesador ||
+      !this.disco || !this.tipoDisco || !this.estado) {
+      this.notificacionSnackbarService.warning('Campos incompletos', 'Todos los campos son obligatorios');
+      return;
+    }
+
+    this.enviando = true;
+
+    // ========== ARMAR OBJETO PARA ENVIAR ==========
+    const equipoData: EquipoComputoRegistro = {
+      serial: this.serial,
+      plaqueta: this.plaqueta || 'NO TIENE',
+      facturaCompra: this.facturaCompra || 'NO TIENE',
+      fechaCompra: this.fechaCompra || null,
+      activo: true,
+      descripcion: this.descripcion || 'SIN DESCRIPCION',
+      estado: this.estado,
+      ram: this.ram,
+      tipoRam: this.tipoRam,
+      procesador: this.procesador,
+      disco: this.disco,
+      tipoDisco: this.tipoDisco,
+      bits: this.bits,
+      tipo: { codigo: this.tipoSeleccionado.codigo },
+      marca: { codigo: this.marcaSeleccionada.codigo },
+      modelo: { codigo: this.modeloSeleccionado.codigo },
+      sistemaOperativo: { codigo: this.soSeleccionado.codigo },
+      versionSO: { codigo: this.versionSOSeleccionada.codigo }
+    };
+
+    this.registroEquipoService.editarEquipo(this.serialOriginal, equipoData).subscribe({
+      next: (respuesta) => {
+        this.notificacionSnackbarService.success('Equipo actualizado', `Serial: ${respuesta.serial}`);
+        this.limpiarFormulario();
+        this.enviando = false;
+      },
+      error: (err) => {
+        console.error('Error al actualizar', err);
+        const mensaje = err.error?.message || 'Error al actualizar el equipo';
+        this.notificacionSnackbarService.error('Error', mensaje);
+        this.enviando = false;
+      }
+    });
+  }
+
+
+  limpiarFormularioEditar(): void {
+    this.limpiarFormulario();
+
+    // Mensaje de éxito al limpiar formulario
+    this.notificacionSnackbarService.info('Formulario limpiado',
+      'Todos los campos han sido restablecidos');
+  }
+
+  // ========== MÉTODO PARA SANITIZAR IMÁGENES ==========
+  imagenEquiposFiltrados(url: string | undefined): SafeResourceUrl {
+    if (!url || url === '') {
+      return '';
+    }
+    // Limpiar la URL de tokens si es necesario
+    let urlLimpia = url.split('&token=')[0];
+    return this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
   }
 
 }

@@ -298,13 +298,15 @@
 
 
 .contenedor-regUsuario .contenido #checkboxInput:active+.bookmark mat-icon,
-.contenedor-regUsuario .contenido #checkboxInput2:active+.bookmark2 mat-icon {
-    color: rgb(204, 204, 204);
+.contenedor-regUsuario .contenido #checkboxInput2:active+.bookmark2 mat-icon,
+.contenedor-regUsuario .contenido #checkboxInput3:active+.bookmark3 mat-icon {
+    color: #4a61e2;
 
 }
 
 .contenedor-regUsuario .contenido .bookmark:active,
-.contenedor-regUsuario .contenido .bookmark2:active {
+.contenedor-regUsuario .contenido .bookmark2:active,
+.contenedor-regUsuario .contenido .bookmark3:active {
     transform: translateY(4px);
 }
 
@@ -590,6 +592,31 @@
         width: 60px;
         font-size: 60px;
         color: rgb(153, 153, 153);
+    }
+
+    .botones-registroeditar {
+        width: 95%;
+    }
+
+    .contenedor-regUsuario .contenido .bookmark {
+        right: 95px;
+        bottom: 5px;
+    }
+
+    .contenedor-regUsuario .contenido .bookmark2,
+    .contenedor-regUsuario .contenido .bookmark3 {
+        right: 15px;
+        bottom: 5px;
+    }
+
+
+    /* Estilo del ícono */
+    .contenedor-regUsuario .contenido .bookmark mat-icon,
+    .contenedor-regUsuario .contenido .bookmark2 mat-icon,
+    .contenedor-regUsuario .contenido .bookmark3 mat-icon {
+        height: 60px;
+        width: 60px;
+        font-size: 60px;
     }
 
 }

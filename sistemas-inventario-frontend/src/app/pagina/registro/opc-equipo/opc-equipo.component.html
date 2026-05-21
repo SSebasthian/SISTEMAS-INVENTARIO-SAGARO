@@ -1,5 +1,5 @@
 <div class="contenedor-regEquipo">
-  <form id="form-registro-equipo" (ngSubmit)="registrarEquipo()">
+  <form id="form-registro-equipo" (ngSubmit)="modoEdicion ? editarEquipo() : registrarEquipo()">
     <div class="contenido">
 
       <div class="fila-de-tres">
@@ -15,7 +15,7 @@
 
         <div class="contenido-opcion">
           <label>TIPO DE EQUIPO<br></label>
-          <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo" (change)="onTipoChange()">
+          <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo" (change)="onTipoChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">
             <option [ngValue]="null"></option>
             <option *ngFor="let t of tipos" [ngValue]="t">{{ t.descripcion }}</option>
           </select>
@@ -23,12 +23,12 @@
 
         <div class="contenido-opcion">
           <label>SERIAL:<br></label>
-          <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial">
+          <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial" [disabled]="modoEdicion" (input)="serial = serial.toUpperCase()">
         </div>
 
         <div class="contenido-opcion">
           <label>MARCA<br></label>
-          <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()">
+          <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">
             <option [ngValue]="null"></option>
             <option *ngFor="let m of marcas" [ngValue]="m">{{ m.descripcion }}</option>
             <!-- SOLO aparece NUEVA MARCA si hay un tipo seleccionado -->
@@ -41,7 +41,7 @@
 
         <div class="contenido-opcion">
           <label>MODELO:<br></label>
-          <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo" (change)="onModeloChange()">
+          <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo" (change)="onModeloChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">
             <option [ngValue]="null"></option>
             <option *ngFor="let mod of modelos" [ngValue]="mod">{{ mod.descripcion }}</option>
             <!-- SOLO aparece NUEVO MODELO si hay tipo Y marca seleccionados -->
@@ -54,7 +54,7 @@
 
         <div class="contenido-opcion">
           <label>SISTEMA OPERATIVO<br></label>
-          <select class="opcionForm select" [(ngModel)]="soSeleccionado" name="so" (change)="onSOChange()">
+          <select class="opcionForm select" [(ngModel)]="soSeleccionado" name="so" (change)="onSOChange()" [compareWith]="compararPorCodigo">
             <option [ngValue]="null"></option>
             <option *ngFor="let so of sistemasOperativos" [ngValue]="so">{{ so.descripcion }}</option>
           </select>
@@ -63,7 +63,7 @@
         <div class="contenido-opcion">
           <label>VERSION S.O.<br></label>
           <select class="opcionForm select" [(ngModel)]="versionSOSeleccionada" name="versionSO"
-            (change)="onVersionSOChange()">
+            (change)="onVersionSOChange()" [compareWith]="compararPorCodigo">
             <option [ngValue]="null"></option>
             <option *ngFor="let v of versionesSO" [ngValue]="v">{{ v.descripcion }}</option>
             <!-- SOLO aparece NUEVA VERSION si hay SO seleccionado -->
@@ -86,8 +86,8 @@
         <div class="contenido-opcion">
           <label>TAMAÑO RAM<br></label>
           <div class="input-group">
-            <input class="opcionForm" type="text" [(ngModel)]="ram" name="ram" 
-              (input)="formatearRam()" (keydown)="soloNumeros($event)">
+            <input class="opcionForm" type="text" [(ngModel)]="ram" name="ram" (input)="formatearRam()"
+              (keydown)="soloNumeros($event)">
           </div>
         </div>
 
@@ -104,10 +104,10 @@
 
         <div class="contenido-opcion">
           <label>PROCESADOR<br></label>
-          <input class="opcionForm" type="text" [(ngModel)]="procesador" name="procesador">
+          <input class="opcionForm" type="text" [(ngModel)]="procesador" name="procesador" (input)="procesador = procesador.toUpperCase()">
         </div>
 
-        <div class="contenido-opcion"  *ngIf="tipoSeleccionado?.codigo !== 4">
+        <div class="contenido-opcion" *ngIf="tipoSeleccionado?.codigo !== 4">
           <label>TAMAÑO DISCO<br></label>
           <select class="opcionForm select" [(ngModel)]="disco" name="disco">
             <option value=""></option>
@@ -119,11 +119,11 @@
         </div>
 
 
-        <div class="contenido-opcion"  *ngIf="tipoSeleccionado?.codigo === 4">
+        <div class="contenido-opcion" *ngIf="tipoSeleccionado?.codigo === 4">
           <label>TAMAÑO DISCO<br></label>
           <div class="input-group">
-            <input class="opcionForm" type="text" [(ngModel)]="disco" name="disco"
-              (input)="formatearDisco()" (keydown)="soloNumerosDisco($event)">
+            <input class="opcionForm" type="text" [(ngModel)]="disco" name="disco" (input)="formatearDisco()"
+              (keydown)="soloNumerosDisco($event)">
           </div>
         </div>
 
@@ -140,7 +140,7 @@
 
         <div class="contenido-opcion">
           <label>NUMERO DE PLACA<br></label>
-          <input class="opcionForm" type="text" [(ngModel)]="plaqueta" name="plaqueta">
+          <input class="opcionForm" type="text" [(ngModel)]="plaqueta" name="plaqueta" (input)="plaqueta = plaqueta.toUpperCase()">
         </div>
 
         <div class="contenido-opcion">
@@ -176,16 +176,37 @@
 
         <div class="contenido-opcion textarea">
           <label for="descripcion">DESCRIPCION:<br></label>
-          <textarea [(ngModel)]="descripcion" name="descripcion"> </textarea>
+          <textarea [(ngModel)]="descripcion" name="descripcion" (input)="descripcion = descripcion.toUpperCase()"> </textarea>
         </div>
 
-        <div>
-          <input type="submit" id="submitInput" value="Enviar">
-          <label for="submitInput" class="bookmark">
-            <mat-icon>bookmark</mat-icon>
-          </label>
-        </div>
+        <div class="botones-registroeditar">
 
+          <!-- Botón Registrar/Actualizar -->
+          <div>
+            <input type="submit" id="checkboxInput" [value]="modoEdicion ? 'Actualizar' : 'Registrar'">
+            <label for="checkboxInput" class="bookmark">
+              <mat-icon>bookmark</mat-icon>
+            </label>
+          </div>
+
+          <!-- Botón Buscar (se oculta en modo edición) -->
+          <div *ngIf="!modoEdicion">
+            <input id="checkboxInput2" (click)="abrirModalBuscarEquipo()">
+            <label for="checkboxInput2" class="bookmark2">
+              <mat-icon>bookmark</mat-icon>
+            </label>
+          </div>
+
+          <!-- Botón Buscar (se oculta en modo edición) -->
+          <div *ngIf="modoEdicion" (click)="limpiarFormularioEditar()">
+            <input id="checkboxInput3">
+            <label for="checkboxInput3" class="bookmark3">
+              <mat-icon>bookmark</mat-icon>
+            </label>
+          </div>
+
+
+        </div>
       </div>
     </div>
   </form>
@@ -212,8 +233,8 @@
     <div class="crear">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nueva Marca</mat-label>
-        <input matInput [(ngModel)]="nuevaMarcaDescripcion" [matAutocomplete]="autoMarca" (input)="convertirMayusculas()" 
-           placeholder="Ejemplo: HP, Dell, Lenovo" autocomplete="off">
+        <input matInput [(ngModel)]="nuevaMarcaDescripcion" [matAutocomplete]="autoMarca"
+          (input)="convertirMayusculas()" placeholder="Ejemplo: HP, Dell, Lenovo" autocomplete="off">
 
         <mat-autocomplete #autoMarca="matAutocomplete" (optionSelected)="seleccionarMarcaExistente($event)">
           <!-- Mostrar marcas existentes en este tipo -->
@@ -263,16 +284,16 @@
     <div class="crear">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nueva Modelo</mat-label>
-        <input matInput [(ngModel)]="nuevaModeloDescripcion" [matAutocomplete]="autoModelo" (input)="convertirMayusculas()" 
-        placeholder="Ejemplo: Vostro, Optiplex, Latitude" autocomplete="off">
+        <input matInput [(ngModel)]="nuevaModeloDescripcion" [matAutocomplete]="autoModelo"
+          (input)="convertirMayusculas()" placeholder="Ejemplo: Vostro, Optiplex, Latitude" autocomplete="off">
 
-          <!-- Autocompletado para modelos existentes -->
-          <mat-autocomplete #autoModelo="matAutocomplete" (optionSelected)="seleccionarModeloExistente($event)">
-            <mat-option *ngFor="let modelo of modelosFiltrados" [value]="modelo.descripcion">
-              {{ modelo.descripcion }}
-              <small class="ya-existe"> - Ya existe</small>
-            </mat-option>
-          </mat-autocomplete>
+        <!-- Autocompletado para modelos existentes -->
+        <mat-autocomplete #autoModelo="matAutocomplete" (optionSelected)="seleccionarModeloExistente($event)">
+          <mat-option *ngFor="let modelo of modelosFiltrados" [value]="modelo.descripcion">
+            {{ modelo.descripcion }}
+            <small class="ya-existe"> - Ya existe</small>
+          </mat-option>
+        </mat-autocomplete>
 
       </mat-form-field>
     </div>
@@ -306,16 +327,16 @@
     <div class="crear">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Nueva Versión</mat-label>
-        <input matInput [(ngModel)]="nuevaVersionSODescripcion" [matAutocomplete]="autoVersion" (input)="convertirMayusculas()"
-        placeholder="Ejemplo: Windows 10, Windows 11" autocomplete="off">
+        <input matInput [(ngModel)]="nuevaVersionSODescripcion" [matAutocomplete]="autoVersion"
+          (input)="convertirMayusculas()" placeholder="Ejemplo: Windows 10, Windows 11" autocomplete="off">
 
         <!-- Autocompletado para las versiones so existentes -->
-          <mat-autocomplete #autoVersion="matAutocomplete"  (optionSelected)="seleccionarVersionSOExistente($event)">
-            <mat-option *ngFor="let version of versionesFiltradas" [value]="version.descripcion">
-              {{ version.descripcion }}
-            </mat-option>
-          </mat-autocomplete>
-          
+        <mat-autocomplete #autoVersion="matAutocomplete" (optionSelected)="seleccionarVersionSOExistente($event)">
+          <mat-option *ngFor="let version of versionesFiltradas" [value]="version.descripcion">
+            {{ version.descripcion }}
+          </mat-option>
+        </mat-autocomplete>
+
       </mat-form-field>
     </div>
 
@@ -325,6 +346,77 @@
         <mat-icon>done_all</mat-icon> Crear
       </button>
       <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalVersionSO()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- Modal para buscar equipo -->
+<div class="modal" [class.show]="mostrarModalBuscarEquipo" *ngIf="mostrarModalBuscarEquipo">
+  <div class="modal-contenido">
+    <div class="modal-cabezera">
+      <div class="titulo">
+        <h2>
+          <mat-icon class="cargoicon">search</mat-icon>
+          Buscar Equipo
+        </h2>
+      </div>
+    </div>
+
+    <div class="buscar-contenido">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Buscar Equipo</mat-label>
+        <input matInput [(ngModel)]="busquedaEquipoModal" (input)="buscarEquiposEnModal()"
+          placeholder="Ingrese serial, marca o modelo" autocomplete="off">
+        <mat-icon matSuffix>devices</mat-icon>
+      </mat-form-field>
+
+      <div class="filtro" [class.con-resultados]="resultadosBusquedaModal.length > 0">
+        <!-- Resultados de búsqueda -->
+        <div class="resultado-item-modal" *ngFor="let equipo of resultadosBusquedaModal"
+          (click)="seleccionarEquipoDelModal(equipo)">
+
+          <!-- Imagen a la izquierda -->
+          <div class="resultado-imagen">
+            <img *ngIf="equipo.modelo?.rutaImagen" [src]="imagenEquiposFiltrados(equipo.modelo.rutaImagen)"
+              alt="Imagen del modelo" class="imagen-resultado">
+            <mat-icon *ngIf="!equipo.modelo?.rutaImagen" class="icono-imagen-default">image</mat-icon>
+          </div>
+
+          <!-- Contenido a la derecha (apilado verticalmente) -->
+          <div class="resultado-info-modal">
+            <strong>{{ equipo.serial }}</strong>
+            <span>{{ equipo.marca?.descripcion }} - {{ equipo.modelo?.descripcion }}</span>
+            <small>{{ equipo.tipo?.descripcion }} | {{ equipo.estado }}</small>
+          </div>
+
+          <!-- Icono de selección -->
+          <mat-icon>touch_app</mat-icon>
+        </div>
+      </div>
+
+
+      <div class="sin-resultados"
+        *ngIf="!buscandoModal && busquedaEquipoModal.length >= 2 && resultadosBusquedaModal.length === 0">
+        <mat-icon>info</mat-icon>
+        <p>
+          No se encontraron equipos con: <br>
+          <strong>{{ busquedaEquipoModal }}</strong>
+        </p>
+      </div>
+
+      <div class="sin-resultados" *ngIf="busquedaEquipoModal.length < 2 && busquedaEquipoModal.length > 0">
+        <mat-icon>info</mat-icon>
+        <p>Ingrese al menos 2 caracteres para buscar</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalBuscarEquipo()">
         <mat-icon>cancel</mat-icon> Cancelar
       </button>
     </div>

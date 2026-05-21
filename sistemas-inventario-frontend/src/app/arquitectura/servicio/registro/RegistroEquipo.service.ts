@@ -19,4 +19,24 @@ export class RegistroEquipoService {
     return this.http.post<EquipoDeComputoLlamarDatos>(`${this.apiUrl}/registrar`, equipo);
   }
 
+  /** EDITAR EQUIPO EXISTENTE */
+  editarEquipo(serial: string, equipo: EquipoComputoRegistro): Observable<EquipoDeComputoLlamarDatos> {
+    return this.http.put<EquipoDeComputoLlamarDatos>(`${this.apiUrl}/editar/${serial}`, equipo);
+  }
+
+  /** OBTENER EQUIPO POR SERIAL */
+  obtenerEquipo(serial: string): Observable<EquipoDeComputoLlamarDatos> {
+    return this.http.get<EquipoDeComputoLlamarDatos>(`${this.apiUrl}/${serial}`);
+  }
+
+  /** BUSCAR EQUIPOS POR SERIAL, MARCA O MODELO */
+  buscarEquipos(termino: string): Observable<EquipoDeComputoLlamarDatos[]> {
+    return this.http.get<EquipoDeComputoLlamarDatos[]>(`${this.apiUrl}/buscar?termino=${termino}`);
+  }
+
+  /** LISTAR TODOS LOS EQUIPOS */
+  listarEquipos(): Observable<EquipoDeComputoLlamarDatos[]> {
+    return this.http.get<EquipoDeComputoLlamarDatos[]>(`${this.apiUrl}/listar`);
+  }
+
 }

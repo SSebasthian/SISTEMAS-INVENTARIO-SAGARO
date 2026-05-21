@@ -7,7 +7,7 @@
         <p>
           <label>CEDULA</label>
           <input class="opcionForm" type="text" [(ngModel)]="empleado.cedula" name="cedula" required
-            [readonly]="modoEdicion">
+            [disabled]="modoEdicion">
         </p>
         <p>
           <label>FECHA DE INGRESO</label>

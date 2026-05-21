@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -22,6 +22,55 @@ public class EquipoDeComputoController {
         try {
             EquipoDeComputo nuevoEquipo = equipoService.registrar(equipo);
             return ResponseEntity.ok(nuevoEquipo);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+
+    // ========== EDITAR ==========
+    @PutMapping("/editar/{serial}")
+    public ResponseEntity<?> editarEquipo(@PathVariable String serial, @RequestBody EquipoDeComputo equipo) {
+        try {
+            EquipoDeComputo equipoEditado = equipoService.editar(serial, equipo);
+            return ResponseEntity.ok(equipoEditado);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // ========== OBTENER POR SERIAL ==========
+    @GetMapping("/{serial}")
+    public ResponseEntity<?> obtenerPorSerial(@PathVariable String serial) {
+        try {
+            EquipoDeComputo equipo = equipoService.obtenerPorSerial(serial);
+            return ResponseEntity.ok(equipo);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // ========== LISTAR TODOS ==========
+    @GetMapping("/listar")
+    public ResponseEntity<?> listarTodos() {
+        try {
+            List<EquipoDeComputo> equipos = equipoService.listarTodos();
+            return ResponseEntity.ok(equipos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // ========== BUSCAR POR TÉRMINO (serial, marca, modelo) ==========
+    @GetMapping("/buscar")
+    public ResponseEntity<?> buscarEquipos(@RequestParam String termino) {
+        try {
+            List<EquipoDeComputo> equipos = equipoService.buscarPorTermino(termino);
+            return ResponseEntity.ok(equipos);
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", e.getMessage()));

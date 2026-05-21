@@ -5,6 +5,7 @@ import com.sistemas_inventario_backend.repositorios.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +61,82 @@ public class EquipoDeComputoService {
         equipo.setActivo(true);
 
         return equipoRepository.save(equipo);
+    }
+
+
+    // ========== EDITAR ==========
+    @Transactional
+    public EquipoDeComputo editar(String serial, EquipoDeComputo equipoActualizado) {
+        // Buscar el equipo existente
+        EquipoDeComputo equipoExistente = equipoRepository.findById(serial)
+                .orElseThrow(() -> new RuntimeException("No se encontró un equipo con el serial: " + serial));
+
+        // Validar y cargar Tipo
+        if (equipoActualizado.getTipo() != null && equipoActualizado.getTipo().getCodigo() != null) {
+            DispositivoTecnologico_Tipo tipo = tipoRepository.findById(equipoActualizado.getTipo().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Tipo no encontrado"));
+            equipoExistente.setTipo(tipo);
+        }
+
+        // Validar y cargar Marca
+        if (equipoActualizado.getMarca() != null && equipoActualizado.getMarca().getCodigo() != null) {
+            DispositivoTecnologico_Marca marca = marcaRepository.findById(equipoActualizado.getMarca().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Marca no encontrada"));
+            equipoExistente.setMarca(marca);
+        }
+
+        // Validar y cargar Modelo
+        if (equipoActualizado.getModelo() != null && equipoActualizado.getModelo().getCodigo() != null) {
+            DispositivoTecnologico_Modelo modelo = modeloRepository.findById(equipoActualizado.getModelo().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Modelo no encontrado"));
+            equipoExistente.setModelo(modelo);
+        }
+
+        // Validar y cargar SO
+        if (equipoActualizado.getSistemaOperativo() != null && equipoActualizado.getSistemaOperativo().getCodigo() != null) {
+            DispositivoTecnologico_SO so = soRepository.findById(equipoActualizado.getSistemaOperativo().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Sistema Operativo no encontrado"));
+            equipoExistente.setSistemaOperativo(so);
+        }
+
+        // Validar y cargar Versión SO
+        if (equipoActualizado.getVersionSO() != null && equipoActualizado.getVersionSO().getCodigo() != null) {
+            DispositivoTecnologico_VersionSO version = versionRepository.findById(equipoActualizado.getVersionSO().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
+            equipoExistente.setVersionSO(version);
+        }
+
+        // Actualizar campos simples
+        equipoExistente.setPlaqueta(equipoActualizado.getPlaqueta());
+        equipoExistente.setFacturaCompra(equipoActualizado.getFacturaCompra());
+        equipoExistente.setFechaCompra(equipoActualizado.getFechaCompra());
+        equipoExistente.setDescripcion(equipoActualizado.getDescripcion());
+        equipoExistente.setEstado(equipoActualizado.getEstado());
+        equipoExistente.setRam(equipoActualizado.getRam());
+        equipoExistente.setTipoRam(equipoActualizado.getTipoRam());
+        equipoExistente.setProcesador(equipoActualizado.getProcesador());
+        equipoExistente.setDisco(equipoActualizado.getDisco());
+        equipoExistente.setTipoDisco(equipoActualizado.getTipoDisco());
+        equipoExistente.setBits(equipoActualizado.getBits());
+        equipoExistente.setActivo(equipoActualizado.getActivo());
+
+        return equipoRepository.save(equipoExistente);
+    }
+
+    // ========== OBTENER POR SERIAL ==========
+    public EquipoDeComputo obtenerPorSerial(String serial) {
+        return equipoRepository.findById(serial)
+                .orElseThrow(() -> new RuntimeException("No se encontró un equipo con el serial: " + serial));
+    }
+
+    // ========== LISTAR TODOS ==========
+    public List<EquipoDeComputo> listarTodos() {
+        return equipoRepository.findAll();
+    }
+
+    // ========== BUSCAR POR TÉRMINO (serial, marca, modelo) ==========
+    public List<EquipoDeComputo> buscarPorTermino(String termino) {
+        return equipoRepository.buscarPorSerialMarcaModelo(termino);
     }
 
 }
