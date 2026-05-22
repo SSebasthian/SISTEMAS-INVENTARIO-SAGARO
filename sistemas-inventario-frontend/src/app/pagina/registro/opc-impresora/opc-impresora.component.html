@@ -155,9 +155,6 @@
                     <label>ESTADO</label><br>
                     <select class="opcionForm select" [(ngModel)]="estado" name="estado">
                         <option value=""></option>
-                        <option value="NUEVO"
-                            title="El equipo está en perfectas condiciones, puede ser un equipo recién adquirido o recién salido de la fábrica.">
-                            NUEVO</option>
                         <option value="BUEN ESTADO"
                             title="El equipo está funcionando correctamente, Es un equipo que todavía cumple su función de manera eficiente.">
                             BUEN ESTADO</option>
@@ -191,16 +188,16 @@
                         </label>
                     </div>
 
-                    <!-- Botón Buscar (se oculta en modo edición) -->
-                    <div *ngIf="!modoEdicion">
-                        <input id="checkboxInput2" (click)="abrirModalBuscarImpresora()">
+                    <!-- Botón Editar (solo si tiene permiso) -->
+                    <div *ngIf="puedeEditarRegistro && !modoEdicion" (click)="abrirModalBuscarImpresora()">
+                        <input id="checkboxInput2">
                         <label for="checkboxInput2" class="bookmark2">
                             <mat-icon>bookmark</mat-icon>
                         </label>
                     </div>
 
-                    <!-- Botón Buscar (se oculta en modo edición) -->
-                    <div *ngIf="modoEdicion" (click)="limpiarFormularioEditar()">
+                    <!-- Botón Limpiar (se oculta en modo edición) -->
+                    <div *ngIf="!puedeEditarRegistro || modoEdicion" (click)="limpiarFormularioEditar()">
                         <input id="checkboxInput3">
                         <label for="checkboxInput3" class="bookmark3">
                             <mat-icon>bookmark</mat-icon>

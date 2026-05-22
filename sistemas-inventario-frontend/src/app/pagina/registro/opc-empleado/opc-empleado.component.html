@@ -66,16 +66,16 @@
           </label>
         </div>
 
-        <!-- Botón Buscar (se oculta en modo edición) -->
-        <div *ngIf="!modoEdicion">
-          <input id="checkboxInput2" (click)="abrirModalBuscarCedula()">
+        <!-- Botón Editar (solo si tiene permiso) -->
+        <div *ngIf="puedeEditarRegistro && !modoEdicion" (click)="abrirModalBuscarCedula()">
+          <input id="checkboxInput2">
           <label for="checkboxInput2" class="bookmark2">
             <mat-icon>bookmark</mat-icon>
           </label>
         </div>
 
-        <!-- Botón Buscar (se oculta en modo edición) -->
-        <div *ngIf="modoEdicion" (click)="limpiarFormularioEditar()">
+         <!-- Botón Limpiar (se oculta en modo edición) -->
+        <div *ngIf="!puedeEditarRegistro || modoEdicion" (click)="limpiarFormularioEditar()">
           <input id="checkboxInput3">
           <label for="checkboxInput3" class="bookmark3">
             <mat-icon>bookmark</mat-icon>

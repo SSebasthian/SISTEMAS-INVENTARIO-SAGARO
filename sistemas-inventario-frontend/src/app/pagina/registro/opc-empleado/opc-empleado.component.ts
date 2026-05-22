@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { A11yModule } from "@angular/cdk/a11y";
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,7 +15,8 @@ import { EmpleadoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos
 import { AreaLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/AreaRespuesta.interface';
 import { CargoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/CargoRespuesta.interface';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
-import { A11yModule } from "@angular/cdk/a11y";
+
+import { PermisoModuloService } from '../../../arquitectura/servicio/autenticacion/permiso-modulo.service';
 
 
 @Component({
@@ -54,6 +56,7 @@ export class OpcEmpleadoComponent implements OnInit {
   // ========== MODO EDICIÓN ==========
   modoEdicion: boolean = false;
   cedulaOriginal: string = '';
+  equipoSeleccionado: any = null;
 
   // ========== VARIABLES PARA BUSCADOR ==========
   mostrarModalBuscarCedula: boolean = false;
@@ -66,10 +69,37 @@ export class OpcEmpleadoComponent implements OnInit {
     private registroEmpleadoService: RegistroEmpleadoService,
     private notificacionSnackbarService: NotificacionSnackbarService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private permisoModuloService: PermisoModuloService
   ) { }
 
 
+  // Propiedad computada para el permiso
+  get puedeEditarRegistro(): boolean {
+    return this.permisoModuloService.puede('registro', 'editar');
+  }
+
+  // Determina si debe mostrar el botón Editar
+  get mostrarBotonEditar(): boolean {
+    // SOLO si tiene permiso Y no está editando
+    if (this.puedeEditarRegistro && !this.modoEdicion) {
+      return true;
+    }
+    return false;
+  }
+
+  // Determina si debe mostrar el botón Limpiar
+  get mostrarBotonLimpiar(): boolean {
+    // Muestra Limpiar en dos casos:
+    // 1. Está en modo edición (cualquier usuario)
+    // 2. No tiene permiso de editar (siempre)
+    if (this.modoEdicion || !this.puedeEditarRegistro) {
+      return true;
+    }
+    return false;
+  }
+
+  
   ngOnInit(): void {
     this.cargarAreas();
     this.cargarTodosLosCargos();

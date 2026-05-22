@@ -6,6 +6,8 @@ import { OpcEquipoComponent } from '../opc-equipo/opc-equipo.component';
 import { OpcDispositivoComponent } from '../opc-dispositivo/opc-dispositivo.component';
 import { OpcImpresoraComponent } from '../opc-impresora/opc-impresora.component';
 import { Location } from '@angular/common'; // Importar Location
+import { PermisoModuloService } from '../../../arquitectura/servicio/autenticacion/permiso-modulo.service';
+
 
 
 @Component({
@@ -18,7 +20,14 @@ export class OpcionesComponent {
 
   componenteActivo: string = '';
 
-  constructor(private location: Location) { }
+  // Propiedad computada para el permiso
+  get puedeCrearRegistro(): boolean {
+    return this.permisoModuloService.puede('registro', 'crear');
+  }
+
+  constructor(
+    private location: Location,
+    private permisoModuloService: PermisoModuloService) { }
 
   // Método para alternar la visibilidad del componente de registro
   mostrarComponenteRegistroEmpleado() {

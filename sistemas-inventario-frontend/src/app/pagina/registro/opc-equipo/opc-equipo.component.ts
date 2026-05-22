@@ -19,6 +19,8 @@ import { RegistroEquipoService } from './../../../arquitectura/servicio/registro
 import { EquipoComputoRegistro } from './../../../arquitectura/interface/Registro/EquipoComputoRegistro.interface';
 import { EquipoDeComputoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/EquipoDeComputoRespuesta.interface';
 
+import { PermisoModuloService } from '../../../arquitectura/servicio/autenticacion/permiso-modulo.service';
+
 
 
 @Component({
@@ -88,6 +90,7 @@ export class OpcEquipoComponent implements OnInit {
   // ========== MODO EDICIÓN ==========
   modoEdicion: boolean = false;
   serialOriginal: string = '';
+  equipoSeleccionado: any = null;
 
   // ========== VARIABLES PARA BUSCADOR ==========
   mostrarModalBuscarEquipo: boolean = false;
@@ -100,8 +103,34 @@ export class OpcEquipoComponent implements OnInit {
     private registroCatalogoService: RegistroCatalogoService,
     private sanitizer: DomSanitizer,
     private notificacionSnackbarService: NotificacionSnackbarService,
-    private registroEquipoService: RegistroEquipoService
+    private registroEquipoService: RegistroEquipoService,
+    private permisoModuloService: PermisoModuloService
   ) { }
+
+  // Propiedad computada para el permiso
+  get puedeEditarRegistro(): boolean {
+    return this.permisoModuloService.puede('registro', 'editar');
+  }
+
+  // Determina si debe mostrar el botón Editar
+  get mostrarBotonEditar(): boolean {
+    // SOLO si tiene permiso Y no está editando
+    if (this.puedeEditarRegistro && !this.modoEdicion) {
+      return true;
+    }
+    return false;
+  }
+
+  // Determina si debe mostrar el botón Limpiar
+  get mostrarBotonLimpiar(): boolean {
+    // Muestra Limpiar en dos casos:
+    // 1. Está en modo edición (cualquier usuario)
+    // 2. No tiene permiso de editar (siempre)
+    if (this.modoEdicion || !this.puedeEditarRegistro) {
+      return true;
+    }
+    return false;
+  }
 
   ngOnInit(): void {
     this.cargarDatosIniciales();
@@ -801,6 +830,7 @@ export class OpcEquipoComponent implements OnInit {
     this.facturaCompra = '';
     this.fechaCompra = '';
     this.descripcion = '';
+    this.estado = '';
     this.procesador = '';
     this.ram = '';
     this.tipoRam = '';

@@ -17,6 +17,8 @@ import { ImpresoraService } from '../../../arquitectura/servicio/registro/Regist
 import { ImpresoraRegistro } from './../../../arquitectura/interface/Registro/ImpresoraRegistro.interface';
 import { ImpresoraLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/ImpresoraRespuesta.interface';
 
+import { PermisoModuloService } from '../../../arquitectura/servicio/autenticacion/permiso-modulo.service';
+
 
 @Component({
   selector: 'app-opc-impresora',
@@ -69,6 +71,7 @@ export class OpcImpresoraComponent implements OnInit {
   // ========== MODO EDICIÓN ==========
   modoEdicion: boolean = false;
   serialOriginal: string = '';
+  equipoSeleccionado: any = null;
 
   // ========== VARIABLES PARA BUSCADOR ==========
   mostrarModalBuscarImpresora: boolean = false;
@@ -81,8 +84,36 @@ export class OpcImpresoraComponent implements OnInit {
     private registroCatalogoService: RegistroCatalogoService,
     private sanitizer: DomSanitizer,
     private notificacionSnackbarService: NotificacionSnackbarService,
-    private impresoraService: ImpresoraService
+    private impresoraService: ImpresoraService,
+    private permisoModuloService: PermisoModuloService
   ) { }
+
+  
+  // Propiedad computada para el permiso
+  get puedeEditarRegistro(): boolean {
+    return this.permisoModuloService.puede('registro', 'editar');
+  }
+
+  // Determina si debe mostrar el botón Editar
+  get mostrarBotonEditar(): boolean {
+    // SOLO si tiene permiso Y no está editando
+    if (this.puedeEditarRegistro && !this.modoEdicion) {
+      return true;
+    }
+    return false;
+  }
+
+  // Determina si debe mostrar el botón Limpiar
+  get mostrarBotonLimpiar(): boolean {
+    // Muestra Limpiar en dos casos:
+    // 1. Está en modo edición (cualquier usuario)
+    // 2. No tiene permiso de editar (siempre)
+    if (this.modoEdicion || !this.puedeEditarRegistro) {
+      return true;
+    }
+    return false;
+  }
+
 
   ngOnInit(): void {
     this.cargarDatosIniciales();
