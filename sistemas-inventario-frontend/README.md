@@ -67,3 +67,7 @@
 `ng generate service arquitectura/servicio/Registro/RegistroDispositivo` (Servicio REGISTRAR TELEFONOS)<br>
 `ng generate service arquitectura/servicio/Registro/RegistroImpresora` (Servicio REGISTRAR IMPRESORA)<br>
 
+
+
+
+`ng generate component pagina/compartida/empleados` (Opciones de Empleados vista)<br>
