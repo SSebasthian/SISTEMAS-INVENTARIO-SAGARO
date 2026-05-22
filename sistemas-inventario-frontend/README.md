@@ -72,5 +72,6 @@
 `ng generate component pagina/compartida/empleados` (Empleados vista)<br>
 `ng generate component pagina/compartida/equipos` (Equipo vista)<br>
 `ng generate component pagina/compartida/dispositivos` (Dispositivos vista)<br>
+`ng generate component pagina/compartida/impresoras` (Impresoras vista)<br>
 
 
