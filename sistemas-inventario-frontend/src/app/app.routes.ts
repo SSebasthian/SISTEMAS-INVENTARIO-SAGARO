@@ -7,6 +7,11 @@ import { OpcEmpleadoComponent } from './pagina/registro/opc-empleado/opc-emplead
 import { OpcEquipoComponent } from './pagina/registro/opc-equipo/opc-equipo.component';
 import { OpcDispositivoComponent } from './pagina/registro/opc-dispositivo/opc-dispositivo.component';
 import { OpcImpresoraComponent } from './pagina/registro/opc-impresora/opc-impresora.component';
+import { EmpleadosComponent } from './pagina/compartida/empleados/empleados.component';
+import { EquiposComponent } from './pagina/compartida/equipos/equipos.component';
+import { DispositivosComponent } from './pagina/compartida/dispositivos/dispositivos.component';
+import { ImpresorasComponent } from './pagina/compartida/impresoras/impresoras.component';
+
 
 
 export const routes: Routes = [
@@ -59,6 +64,26 @@ export const routes: Routes = [
                 canActivate: [estadoPrivado],
             },
         ],
+    },
+    {
+        path: 'usuarios',
+        component: EmpleadosComponent,
+        canActivate: [estadoPrivado],
+    },
+    {
+        path: 'equipos',
+        component: EquiposComponent,
+        canActivate: [estadoPrivado]
+    },
+    {
+        path: 'dispositivos',
+        component: DispositivosComponent,
+        canActivate: [estadoPrivado]
+    },
+    {
+        path: 'impresoras',
+        component: ImpresorasComponent,
+        canActivate: [estadoPrivado]
     },
     {
         path: '**',

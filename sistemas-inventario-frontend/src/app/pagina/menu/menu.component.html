@@ -7,7 +7,7 @@
             <div class="perfil-info">
                 <span class="perfil-nombre">Nombre Usuario</span>
                 <div class="perfil-opciones">
-                    <mat-icon matTooltip="Perfil" [routerLink]="['autenticacion/perfil']"> person_pin</mat-icon>
+                    <mat-icon matTooltip="Perfil" [routerLink]="['/autenticacion/perfil']"> person_pin</mat-icon>
                     <mat-icon (click)="confirmarCierreSesion()" matTooltip="Cerrar sesión">exit_to_app</mat-icon>
                 </div>
             </div>
@@ -16,7 +16,7 @@
     <div class="navigation">
         <ul>
             <li>
-                <a [routerLink]="['inicio']" routerLinkActive="activa">
+                <a [routerLink]="['#']" routerLinkActive="activa">
                     <span class="icon">
                         <mat-icon>public</mat-icon>
                     </span>
@@ -24,7 +24,7 @@
                 </a>
             </li>
             <li>
-                <a [routerLink]="['#']" routerLinkActive="activa">
+                <a [routerLink]="['/usuarios']" routerLinkActive="activa">
                     <span class="icon">
                         <mat-icon>people</mat-icon>
                     </span>
@@ -32,7 +32,7 @@
                 </a>
             </li>
             <li>
-                <a [routerLink]="['#']" routerLinkActive="activa">
+                <a [routerLink]="['/equipos']" routerLinkActive="activa">
                     <span class="icon">
                         <mat-icon>desktop_mac</mat-icon>
                     </span>
@@ -40,23 +40,15 @@
                 </a>
             </li>
             <li>
-                <a [routerLink]="['#']" routerLinkActive="activa">
+                <a [routerLink]="['/dispositivos']" routerLinkActive="activa">
                     <span class="icon">
-                        <mat-icon>phone_android</mat-icon>
+                        <mat-icon>smartphone</mat-icon>
                     </span>
-                    <span class="title" routerLinkActive="activa">Telefonos</span>
+                    <span class="title" routerLinkActive="activa">Dispositivos</span>
                 </a>
             </li>
             <li>
-                <a [routerLink]="['#']" routerLinkActive="activa">
-                    <span class="icon">
-                        <mat-icon>tablet_mac</mat-icon>
-                    </span>
-                    <span class="title" routerLinkActive="activa">Tablet</span>
-                </a>
-            </li>
-            <li>
-                <a [routerLink]="['#']" routerLinkActive="activa">
+                <a [routerLink]="['/impresoras']" routerLinkActive="activa">
                     <span class="icon">
                         <mat-icon> local_printshop</mat-icon>
                     </span>
