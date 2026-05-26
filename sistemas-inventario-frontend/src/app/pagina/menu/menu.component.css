@@ -88,9 +88,7 @@ body {
     border-top-left-radius: 30px;
     border-bottom-left-radius: 30px;
     margin-left: -15px;
-
 }
-
 
 .contenido-menu .navigation ul li:hover,
 .contenido-menu .navigation ul li.hovered {
@@ -173,11 +171,19 @@ body {
 } 
 
 .navigation ul li a.activa::before{
-    box-shadow: 35px 35px 0 10px #393e7f;
+    top: 10px;
+    box-shadow: 35px 35px 0 10px #f3f4f6;
+    z-index: 1;
 }
 .navigation ul li a.activa::after{
-    box-shadow: 35px -35px 0 10px #393e7f;
-} 
+    top: 0px;
+    box-shadow: 35px -35px 0 10px #f3f4f6;
+}  
+
+.navigation ul li:hover a::before,
+.navigation ul li:hover a::after {
+    z-index: 2;
+}
 
 /* Estilos generales del modal */
 .mostrar-modal {

@@ -549,6 +549,14 @@
 }
 
 
+@media (max-width: 1370px) {
+    .modal {
+        top: -80px;
+        height: 130%;
+    }
+}
+
+
 @media (max-width: 1250px) {
     .contenedor-regImpresora {
         max-width: 650px;

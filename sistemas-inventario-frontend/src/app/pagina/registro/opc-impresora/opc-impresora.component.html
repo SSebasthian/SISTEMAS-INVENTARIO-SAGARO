@@ -346,16 +346,16 @@
 
           <!-- Imagen a la izquierda -->
           <div class="resultado-imagen">
-            <img *ngIf="impresora.modelo?.rutaImagen" [src]="imagenImpresorasFiltradas(impresora.modelo.rutaImagen)"
+            <img *ngIf="impresora.modelo.rutaImagen" [src]="imagenImpresorasFiltradas(impresora.modelo.rutaImagen)"
               alt="Imagen del modelo" class="imagen-resultado">
-            <mat-icon *ngIf="!impresora.modelo?.rutaImagen" class="icono-imagen-default">image</mat-icon>
+            <mat-icon *ngIf="!impresora.modelo.rutaImagen" class="icono-imagen-default">image</mat-icon>
           </div>
 
           <!-- Contenido a la derecha (apilado verticalmente) -->
           <div class="resultado-info-modal">
             <strong>{{ impresora.serial }}</strong>
-            <span>{{ impresora.marca?.descripcion }} - {{ impresora.modelo?.descripcion }}</span>
-            <small>{{ impresora.tipo?.descripcion }} | {{ impresora.estado }}</small>
+            <span>{{ impresora.marca.descripcion }} - {{ impresora.modelo.descripcion }}</span>
+            <small>{{ impresora.tipo.descripcion }} | {{ impresora.estado }}</small>
           </div>
 
           <!-- Icono de selección -->

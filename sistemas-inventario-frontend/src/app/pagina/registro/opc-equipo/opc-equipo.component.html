@@ -379,16 +379,16 @@
 
           <!-- Imagen a la izquierda -->
           <div class="resultado-imagen">
-            <img *ngIf="equipo.modelo?.rutaImagen" [src]="imagenEquiposFiltrados(equipo.modelo.rutaImagen)"
+            <img *ngIf="equipo.modelo.rutaImagen" [src]="imagenEquiposFiltrados(equipo.modelo.rutaImagen)"
               alt="Imagen del modelo" class="imagen-resultado">
-            <mat-icon *ngIf="!equipo.modelo?.rutaImagen" class="icono-imagen-default">image</mat-icon>
+            <mat-icon *ngIf="!equipo.modelo.rutaImagen" class="icono-imagen-default">image</mat-icon>
           </div>
 
           <!-- Contenido a la derecha (apilado verticalmente) -->
           <div class="resultado-info-modal">
             <strong>{{ equipo.serial }}</strong>
-            <span>{{ equipo.marca?.descripcion }} - {{ equipo.modelo?.descripcion }}</span>
-            <small>{{ equipo.tipo?.descripcion }} | {{ equipo.estado }}</small>
+            <span>{{ equipo.marca.descripcion }} - {{ equipo.modelo.descripcion }}</span>
+            <small>{{ equipo.tipo.descripcion }} | {{ equipo.estado }}</small>
           </div>
 
           <!-- Icono de selección -->

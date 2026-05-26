@@ -377,16 +377,16 @@
 
           <!-- Imagen a la izquierda -->
           <div class="resultado-imagen">
-            <img *ngIf="dispositivo.modelo?.rutaImagen" [src]="imagenDispositivosFiltrados(dispositivo.modelo.rutaImagen)"
+            <img *ngIf="dispositivo.modelo.rutaImagen" [src]="imagenDispositivosFiltrados(dispositivo.modelo.rutaImagen)"
               alt="Imagen del modelo" class="imagen-resultado">
-            <mat-icon *ngIf="!dispositivo.modelo?.rutaImagen" class="icono-imagen-default">image</mat-icon>
+            <mat-icon *ngIf="!dispositivo.modelo.rutaImagen" class="icono-imagen-default">image</mat-icon>
           </div>
 
           <!-- Contenido a la derecha (apilado verticalmente) -->
           <div class="resultado-info-modal">
             <strong>{{ dispositivo.serial }}</strong>
-            <span>{{ dispositivo.marca?.descripcion }} - {{ dispositivo.modelo?.descripcion }}</span>
-            <small>{{ dispositivo.tipo?.descripcion }} | {{ dispositivo.estado }}</small>
+            <span>{{ dispositivo.marca.descripcion }} - {{ dispositivo.modelo.descripcion }}</span>
+            <small>{{ dispositivo.tipo.descripcion }} | {{ dispositivo.estado }}</small>
           </div>
 
           <!-- Icono de selección -->
