@@ -1,1 +1,296 @@
-<p>empleados works!</p>
+<br><br>
+<div class="contenido">
+    <!-- RESUMEN EMPLEADOS -->
+    <div class="resumen-empleados">
+        <div class="tarjeta-resumen total">
+            <mat-icon>people</mat-icon>
+            <div class="info">
+                <span class="numero">{{ empleados.length }}</span>
+                <span class="etiqueta">Total Empleados</span>
+            </div>
+        </div>
+        <div class="tarjeta-resumen activos">
+            <mat-icon>person</mat-icon>
+            <div class="info">
+                <span class="numero">{{ obtenerEmpleadosActivos() }}</span>
+                <span class="etiqueta">Activos</span>
+            </div>
+        </div>
+        <div class="tarjeta-resumen inactivos">
+            <mat-icon>person_off</mat-icon>
+            <div class="info">
+                <span class="numero">{{ obtenerEmpleadosInactivos() }}</span>
+                <span class="etiqueta">Inactivos</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTRO GENERAL -->
+    <div class="botones-inicio">
+        <button class="btn-limpiar-filtros" (click)="limpiarTodosLosFiltros()">
+            <mat-icon>clear_all</mat-icon>
+            Limpiar filtros
+        </button>
+        <div class="input-busqueda">
+            <mat-icon class="icono-busqueda">search</mat-icon>
+            <input type="text" [(ngModel)]="terminoBusqueda" (input)="buscarEmpleados()"
+                placeholder="Buscar empleado...">
+            <mat-icon class="icono-limpiar" *ngIf="busqueda" (click)="limpiarBusqueda()">close</mat-icon>
+        </div>
+    </div>
+
+
+    <div class="tabla-container">
+        <table class="tabla-empleados">
+            <thead>
+                <tr>
+                    <th [class.filtro-activo]="filtroTieneValor('area')">
+                        AREA
+                        <a (click)="abrirFiltro('area')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'area'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('cargo')">
+                        CARGO
+                        <a (click)="abrirFiltro('cargo')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'cargo'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('cedula')">
+                        CEDULA
+                        <a (click)="abrirFiltro('cedula')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'cedula'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('nombre')">
+                        NOMBRE COMPLETO
+                        <a (click)="abrirFiltro('nombre')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'nombre'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('ingreso')">
+                        INGRESO
+                        <a (click)="abrirFiltro('ingreso')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'ingreso'">
+                            <ng-container *ngTemplateOutlet="templateFiltroFecha"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('retiro')">
+                        RETIRO
+                        <a (click)="abrirFiltro('retiro')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'retiro'">
+                            <ng-container *ngTemplateOutlet="templateFiltroFecha"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('estado')">
+                        ESTADO
+                        <a (click)="abrirFiltro('estado')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'estado'">
+                            <ng-container *ngTemplateOutlet="templateFiltroEstado"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('asignaciones')">
+                        ASIGNACIONES
+                        <a (click)="abrirFiltro('asignaciones')"><mat-icon>filter_list</mat-icon></a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let empleado of empleadosPaginados">
+                    <td class="area">
+                        <span class="badge-area">{{ empleado.area.descripcion }}</span>
+                    </td>
+                    <td class="cargo">{{ empleado.cargo.descripcion }}</td>
+                    <td class="cedula">{{ formatearCedula(empleado.cedula) }}</td>
+                    <td class="nombre">
+                        <div class="info-nombre">
+                            <div class="avatar" [style.backgroundColor]="getAvatarColor(empleado.nombre)">
+                                {{ empleado.nombre.charAt(0) }}{{ empleado.apellido.charAt(0) }}
+                            </div>
+                            <div>
+                                <div class="nombre-completo">{{ empleado.nombre }} {{ empleado.apellido }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="fecha">{{ empleado.fechaIngreso | date:'dd/MM/yyyy' }}</td>
+                    <td class="fecha">{{ empleado.fechaRetiro ? (empleado.fechaRetiro | date:'dd/MM/yyyy') : '—' }}</td>
+                    <td class="estado">
+                        <span class="badge" [class.activo]="empleado.activo" [class.inactivo]="!empleado.activo">
+                            {{ empleado.activo ? 'ACTIVO' : 'INACTIVO' }}
+                        </span>
+                    </td>
+                    <td class="asignaciones">
+                    </td>
+                <tr *ngIf="empleadosFiltrados.length === 0">
+                    <td colspan="8" class="sin-datos">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <mat-icon>search_off</mat-icon>
+                            </div>
+                            <h3>No se encontraron resultados</h3>
+                            <p>No hay empleados que coincidan con los filtros aplicados.</p>
+                            <button class="btn-limpiar-filtros" (click)="limpiarTodosLosFiltros()">
+                                <mat-icon>clear_all</mat-icon>
+                                Limpiar filtros
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="paginacion-container" *ngIf="empleadosFiltrados.length > 0">
+        <div class="info-paginacion">
+            Mostrando {{ (paginaActual - 1) * registrosPorPagina + 1 }} -
+            {{ calcularHasta() }}
+            de {{ empleadosFiltrados.length }} empleados
+        </div>
+
+        <div class="controles-paginacion">
+            <div class="registros-por-pagina">
+                <label>Mostrar:</label>
+                <select [(ngModel)]="registrosPorPagina" (change)="cambiarRegistrosPorPagina()">
+                    <option [value]="10">10</option>
+                    <option [value]="25">25</option>
+                    <option [value]="50">50</option>
+                    <option [value]="100">100</option>
+                    <option [value]="empleadosFiltrados.length">Todo</option>
+                </select>
+            </div>
+
+            <div class="botones-paginacion">
+                <button class="btn-paginacion" (click)="primeraPagina()" [disabled]="paginaActual === 1">
+                    <mat-icon>first_page</mat-icon>
+                </button>
+                <button class="btn-paginacion" (click)="paginaAnterior()" [disabled]="paginaActual === 1">
+                    <mat-icon>chevron_left</mat-icon>
+                </button>
+
+                <span class="pagina-info">
+                    Página {{ paginaActual }} de {{ totalPaginas }}
+                </span>
+
+                <button class="btn-paginacion" (click)="paginaSiguiente()" [disabled]="paginaActual === totalPaginas">
+                    <mat-icon>chevron_right</mat-icon>
+                </button>
+                <button class="btn-paginacion" (click)="ultimaPagina()" [disabled]="paginaActual === totalPaginas">
+                    <mat-icon>last_page</mat-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+    <br><br>
+
+
+
+
+
+    <ng-template #templateFiltro>
+        <!-- SOLO UNA VEZ - Operador AND/OR -->
+        <select class="select-operador" [(ngModel)]="filtros[filtroActivo!].operador">
+            <option value="AND">Todo (AND)</option>
+            <option value="OR">Cualquiera (OR)</option>
+        </select>
+
+        <!-- REGLAS - Ahora itera sobre .reglas -->
+        <div *ngFor="let regla of filtros[filtroActivo!].reglas; let i = index">
+
+            <select class="select-filtro" [(ngModel)]="regla.condicion">
+                <option>Empieza con</option>
+                <option>Contiene</option>
+                <option>No contiene</option>
+                <option>Termina con</option>
+                <option>Iguales</option>
+                <option>No es igual</option>
+            </select>
+
+            <input class="select-filtro-text" type="text" [(ngModel)]="regla.valor">
+
+            <button class="btn-eliminar" *ngIf="filtros[filtroActivo!].reglas.length > 1"
+                (click)="eliminarReglaTexto(filtroActivo!, i)">
+                <mat-icon>delete_forever</mat-icon> Eliminar regla
+            </button>
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="acciones-filtro">
+            <button class="btn-agregar" *ngIf="filtros[filtroActivo!].reglas.length < 2"
+                (click)="agregarReglaTexto(filtroActivo!)">
+                <mat-icon>add</mat-icon> Añadir regla
+            </button>
+
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro(filtroActivo!)">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+
+
+
+    <ng-template #templateFiltroFecha>
+        <!-- SOLO UNA VEZ - Operador AND/OR -->
+        <select class="select-operador" [(ngModel)]="filtros[filtroActivo!].operador">
+            <option value="AND">Todo (AND)</option>
+            <option value="OR">Cualquiera (OR)</option>
+        </select>
+
+        <!-- REGLAS -->
+        <div *ngFor="let regla of filtros[filtroActivo!].reglas; let i = index">
+
+            <select class="select-filtro" [(ngModel)]="regla.condicion">
+                <option>La fecha es</option>
+                <option>La fecha no es</option>
+                <option>La fecha es anterior</option>
+                <option>La fecha es despues</option>
+            </select>
+
+            <input class="select-filtro-text" type="date" [(ngModel)]="regla.valor">
+
+            <button class="btn-eliminar" *ngIf="filtros[filtroActivo!].reglas.length > 1"
+                (click)="eliminarReglaFecha(filtroActivo!, i)">
+                <mat-icon>delete_forever</mat-icon> Eliminar regla
+            </button>
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="acciones-filtro">
+            <button class="btn-agregar" *ngIf="filtros[filtroActivo!].reglas.length < 2"
+                (click)="agregarReglaFecha(filtroActivo!)">
+                <mat-icon>add</mat-icon> Añadir regla
+            </button>
+
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro(filtroActivo!)">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+
+
+
+    <ng-template #templateFiltroEstado>
+        <select class="select-operador" [(ngModel)]="filtros.estado.valor">
+            <option value="">TODOS</option>
+            <option value="ACTIVO">ACTIVO</option>
+            <option value="INACTIVO">INACTIVO</option>
+        </select>
+        <div class="acciones-filtro">
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro('estado')">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+    <br>
+
+</div>

@@ -209,13 +209,9 @@ public class EmpleadoController {
     // ========== METODO PARA LISTAR TODOS ==========
 
     @GetMapping("/listar")
-    public ResponseEntity<?> listarTodos() {
-        try {
-            List<Empleado> empleados = empleadoService.listarTodos();
-            return ResponseEntity.ok(empleados);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        }
+    public List<Empleado> listarTodos() {
+        return empleadoRepository
+                .findAllByOrderByAreaCodigoAscCargoCodigoAsc();
     }
 
     // ========== ENDPOINT PARA BUSCAR EMPLEADOS POR CEDULA NOMBRE O APELLIDO ==========
@@ -229,8 +225,6 @@ public class EmpleadoController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
-
-
 }
 
 /// //////////////////////////////////////////////////////////////////////////////

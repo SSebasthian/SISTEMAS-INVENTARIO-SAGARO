@@ -1,0 +1,615 @@
+.contenido{
+  position: relative;
+}
+/* RESUMEN EMPLEADOS */
+
+.resumen-empleados {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 50px;
+    margin-bottom: 10px;
+    padding: 10px 0;
+}
+
+.tarjeta-resumen {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    transition: .25s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.05),
+        0 1px 3px rgba(0,0,0,0.08);
+}
+
+.tarjeta-resumen::before {
+    content: "";
+    position: absolute;
+    right: -25px;
+    top: -25px;
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+}
+
+
+.tarjeta-resumen.total {
+    background: #5856D6;
+}
+
+.tarjeta-resumen.activos {
+    background: #3399FF;
+}
+
+.tarjeta-resumen.inactivos {
+    background: #E55353;
+}
+
+.tarjeta-resumen mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: white;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    color: white;
+}
+
+.numero {
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.etiqueta {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+
+
+
+/* FILTRO GENERAL */
+
+.botones-inicio{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 10px;
+  padding-bottom: 20px;
+}
+
+.botones-inicio .input-busqueda {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 270px;
+}
+
+.botones-inicio .icono-busqueda {
+    position: absolute;
+    left: 12px;
+    color: #6c757d;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+}
+
+.botones-inicio .input-busqueda input {
+    width: 100%;
+    padding: 10px 35px 10px 40px;
+    border: 1px solid #ced4da;
+    border-radius: 13px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.botones-inicio .input-busqueda input:focus {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.botones-inicio .input-busqueda input:hover {
+    border-color: #1976d2;
+}
+
+.botones-inicio .icono-limpiar {
+    position: absolute;
+    right: 12px;
+    color: #6c757d;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.botones-inicio .icono-limpiar:hover {
+    color: #dc3545;
+}
+
+.botones-inicio .input-busqueda input::placeholder {
+    color: #adb5bd;
+    font-size: 14px;
+}
+
+
+/* TABLA EMPLEADOS */
+
+.tabla-container {
+  background: white;
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e8e8e8;
+  /* min-height: 420px; */
+}
+
+.tabla-empleados {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+
+}
+
+/* Encabezado */
+.tabla-empleados thead tr {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.tabla-empleados th {
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  letter-spacing: 0.3px;
+}
+
+.tabla-empleados .filtro-activo {
+  color: #1e3a8a;
+}
+
+.tabla-empleados th a {
+  cursor: pointer;
+  position: relative;
+}
+
+.tabla-empleados th a mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  position: absolute;
+  top: -2px;
+  left: 5px;
+}
+.tabla-empleados th a mat-icon.filtro-activo {
+  color: #1976d2; /* Color azul cuando hay filtro */
+  filter: drop-shadow(0 0 2px rgba(25, 118, 210, 0.3));
+}
+
+.tabla-empleados th a {
+  cursor: pointer;
+  position: relative;
+}
+
+/* Celdas */
+.tabla-empleados td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+  font-size: 14px;
+  color: #495057;
+}
+
+.tabla-empleados tbody tr:hover {
+  background: #f8f9fa;
+  transition: background 0.2s;
+}
+
+/* Área */
+.badge-area {
+  display: inline-block;
+  color: #393e7f;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Cargo */
+.cargo {
+  font-size: 13px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+/* Cedula */
+.cedula {
+  font-weight: 500;
+  color: #3f51b5;
+}
+
+
+/* Nombre con avatar */
+.info-nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: white;
+  text-transform: uppercase;
+}
+
+.nombre-completo {
+  font-weight: 500;
+  color: #212529;
+}
+
+/* Fechas */
+.fecha {
+  font-size: 13px;
+  font-family: monospace;
+}
+
+/* Badge estado */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge.activo {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.badge.inactivo {
+  background: #ffebee;
+  color: #f44336;
+}
+
+/* Botón asignaciones */
+.btn-asignaciones {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-asignaciones:hover {
+  background: #e8eaf6;
+  transform: scale(1.05);
+}
+
+.filtro {
+  position: absolute;
+  background: #f8f9fa;
+  border: 1px solid #e8e8e8;
+  border-radius: 5px;
+  z-index: 2;
+  padding: 0 10px;
+  margin-top: 13px;
+  margin-left: -10px;
+}
+
+.select-operador,
+.select-filtro,
+.select-filtro-text {
+  margin-top: 10px;
+  width: 180px;
+  height: 35px;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  padding: 5px 12px;
+  font-size: 12px;
+  background: #f8f9fb;
+  outline: none;
+  transition: .2s;
+}
+
+.select-filtro-text {
+  padding: 0;
+  display: block;
+  padding-left: 10px;
+  padding-right: 10px;
+  box-sizing: border-box;
+}
+
+.select-operador:focus,
+.select-filtro:focus,
+.select-filtro-text:focus {
+  border-color: #1e3a8a;
+}
+
+.btn-eliminar,
+.btn-agregar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b30202;
+  background-color: transparent;
+  border: none;
+  text-align: center;
+  width: 100%;
+  padding: 5px 0;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+
+.btn-agregar {
+  color: #1e3a8a;
+}
+
+.btn-eliminar:hover {
+  background-color: rgba(252, 169, 169, 0.24);
+  cursor: pointer;
+}
+
+.btn-agregar:hover {
+  background-color: rgba(174, 186, 255, 0.24);
+  cursor: pointer;
+}
+
+.acciones-filtro .opc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.acciones-filtro .opc .btn-limpiar,
+.acciones-filtro .opc .btn-filtrar {
+  padding: 3px;
+  width: 60px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.acciones-filtro .opc .btn-limpiar {
+  border: solid 1px #adb5bd;
+
+}
+
+.acciones-filtro .opc .btn-filtrar {
+  background: #1e3a8a;
+  color: #fff;
+  border: solid 1px #1e3a8a;
+}
+
+/* ========== ESTADO VACÍO (SIN RESULTADOS) ========== */
+.sin-datos {
+  text-align: center;
+  padding: 60px 20px !important;
+  background: white;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  background: #f5f5f5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.empty-icon mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #9e9e9e;
+}
+
+.empty-state h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+  color: #757575;
+  line-height: 1.5;
+}
+
+.btn-limpiar-filtros {
+  background: #3f51b5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.btn-limpiar-filtros:hover {
+  background: #233294;
+}
+
+.btn-limpiar-filtros mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+
+/* PAGINACION */
+
+.paginacion-container {
+    margin-top: 20px;
+    padding: 15px 20px;
+}
+
+.info-paginacion {
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+ 
+.controles-paginacion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.registros-por-pagina {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.registros-por-pagina label {
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.registros-por-pagina select {
+    padding: 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+}
+
+.registros-por-pagina select:hover {
+    border-color: #1e3a8a;
+}
+
+.botones-paginacion {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-paginacion {
+    background-color: transparent;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-paginacion mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    color: #495057;
+}
+
+.btn-paginacion:hover:not(:disabled) {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.btn-paginacion:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagina-info {
+    padding: 0 15px;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+} 
+
+
+
+@media (max-width: 1400px) {
+
+  .tabla-empleados {
+    width: 98.5%;
+  }
+
+  .tabla-empleados th a mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    top: 0px;
+    left: 3px;
+  }
+
+  .tabla-empleados td {
+    padding: 14px 10px;
+    font-size: 13px;
+  }
+
+  .badge-area {
+    font-size: 13px;
+  }
+
+  .cargo {
+    font-size: 12px;
+  }
+
+  .info-nombre {
+    gap: 6px;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+}
+

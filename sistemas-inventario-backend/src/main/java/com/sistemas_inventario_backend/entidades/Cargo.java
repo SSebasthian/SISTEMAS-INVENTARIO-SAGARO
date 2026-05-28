@@ -33,6 +33,7 @@ INSERT INTO cargo (descripcion, activo) VALUES
     ('DIRECTOR', 1),
     ('GERENTE', 1),
     ('JEFE', 1),
+    ('CUMPLIMIENTO', 1),
     ('SUPERVISOR', 1),
     ('MEDICO', 1),
     ('ASISTENTE', 1),
@@ -41,6 +42,8 @@ INSERT INTO cargo (descripcion, activo) VALUES
     ('ASEGURAMIENTO', 1),
     ('FACILITADOR', 1),
     ('OPERARIO', 1),
+    ('SUPERVISOR CLAVEL', 1),
+    ('SUPERVISOR ROSAS', 1),
     ('TRABAJADOR CLAVEL', 1),
     ('TRABAJADOR ROSAS', 1),
     ('PASANTE', 1);

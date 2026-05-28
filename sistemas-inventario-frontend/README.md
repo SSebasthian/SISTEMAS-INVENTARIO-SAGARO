@@ -75,3 +75,5 @@
 `ng generate component pagina/compartida/impresoras` (Impresoras vista)<br>
 
 
+`ng generate service arquitectura/servicio/consulta/ConsultarEmpleado` (Servicio CONSULTAR EMPLEADO)<br>
+

@@ -26,5 +26,7 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, String> {
             "LOWER(e.nombre) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
             "LOWER(e.apellido) LIKE LOWER(CONCAT('%', :termino, '%'))")
     List<Empleado> buscarPorCedulaONombre(@Param("termino") String termino);
+
+    List<Empleado> findAllByOrderByAreaCodigoAscCargoCodigoAsc();
 }
 
