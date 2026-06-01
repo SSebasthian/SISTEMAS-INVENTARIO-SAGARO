@@ -723,6 +723,22 @@
 
 @media (max-width: 1400px) {
 
+    .detalle-hover h4 {
+        font-size: 13px;
+        top: -7px;
+    }
+
+    .detalle-hover h4 mat-icon {
+        font-size: 16px;
+        height: 16px;
+        width: 16px;
+    }
+
+    .detalle-grid p {
+        font-size: 12px;
+    }
+
+    
     .tabla-equipos th {
         font-size: 11px;
     }

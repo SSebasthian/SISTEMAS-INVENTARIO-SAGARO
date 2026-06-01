@@ -1,1 +1,463 @@
-<p>dispositivos works!</p>
+<br><br>
+<div class="contenido">
+    <div class="resumen-dispositivo">
+
+        <div class="tarjeta-resumen total" [class.activa]="detalleVisible === 'total'">
+            <button class="btn-detalle" (click)="toggleDetalle('total')">
+                <mat-icon>
+                    {{ detalleVisible === 'total' ? 'close' : 'whatshot' }}
+                </mat-icon>
+            </button>
+            <mat-icon [class.oculto]="detalleVisible === 'total'">smartphone</mat-icon>
+            <div class="info" [class.oculto]="detalleVisible === 'total'">
+                <span class="numero">{{ obtenerTotalDispositivos() }}</span>
+                <span class="etiqueta">Total Dispositivos</span>
+            </div>
+            <div class="detalle-hover" [class.visible]="detalleVisible === 'total'">
+                <h4><mat-icon>smartphone</mat-icon>Total Telefonos {{ obtenerTotalDispositivos() }}</h4>
+                <div class="detalle-grid">
+                    <p>Celular: {{ obtenerTotalPorTipo('CELULAR') }}</p>
+                    <p>Tablet: {{ obtenerTotalPorTipo('TABLET') }}</p>
+                    <p>Terminal: {{ obtenerTotalPorTipo('TERMINAL') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tarjeta-resumen activos" [class.activa]="detalleVisible === 'activos'">
+            <button class="btn-detalle" (click)="toggleDetalle('activos')">
+                <mat-icon>
+                    {{ detalleVisible === 'activos' ? 'close' : 'whatshot' }}
+                </mat-icon>
+            </button>
+            <mat-icon [class.oculto]="detalleVisible === 'activos'">check_circle</mat-icon>
+            <div class="info" [class.oculto]="detalleVisible === 'activos'">
+                <span class="numero">{{ obtenerDispositivosActivos() }}</span>
+                <span class="etiqueta">Activos</span>
+            </div>
+            <div class="detalle-hover" [class.visible]="detalleVisible === 'activos'">
+                <h4><mat-icon>check_circle</mat-icon>Total Activos {{ obtenerDispositivosActivos() }}</h4>
+                <div class="detalle-grid">
+                    <p>Celular: {{ obtenerActivosPorTipo('CELULAR') }}</p>
+                    <p>Tablet: {{ obtenerActivosPorTipo('TABLET') }}</p>
+                    <p>Terminal: {{ obtenerActivosPorTipo('TERMINAL') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tarjeta-resumen inactivos" [class.activa]="detalleVisible === 'inactivos'">
+            <button class="btn-detalle" (click)="toggleDetalle('inactivos')">
+                <mat-icon>
+                    {{ detalleVisible === 'inactivos' ? 'close' : 'whatshot' }}
+                </mat-icon>
+            </button>
+            <mat-icon [class.oculto]="detalleVisible === 'inactivos'">cancel</mat-icon>
+            <div class="info" [class.oculto]="detalleVisible === 'inactivos'">
+                <span class="numero">{{ obtenerDispositivosInactivos() }}</span>
+                <span class="etiqueta">Inactivos</span>
+            </div>
+            <div class="detalle-hover" [class.visible]="detalleVisible === 'inactivos'">
+                <h4><mat-icon>cancel</mat-icon>Total Inactivos {{ obtenerDispositivosInactivos() }}</h4>
+                <div class="detalle-grid">
+                    <p>Celular: {{ obtenerInactivosPorTipo('CELULAR') }}</p>
+                    <p>Tablet: {{ obtenerInactivosPorTipo('TABLET') }}</p>
+                    <p>Terminal: {{ obtenerInactivosPorTipo('TERMINAL') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tarjeta-resumen disponibles" [class.activa]="detalleVisible === 'disponibles'">
+            <button class="btn-detalle" (click)="toggleDetalle('disponibles')">
+                <mat-icon>
+                    {{ detalleVisible === 'disponibles' ? 'close' : 'whatshot' }}
+                </mat-icon>
+            </button>
+            <mat-icon [class.oculto]="detalleVisible === 'disponibles'">dns</mat-icon>
+            <div class="info" [class.oculto]="detalleVisible === 'disponibles'">
+                <span class="numero">{{ obtenerDispositivosPorEstado('DISPONIBLE') }}</span>
+                <span class="etiqueta">Disponibles</span>
+            </div>
+            <div class="detalle-hover" [class.visible]="detalleVisible === 'disponibles'">
+                <h4><mat-icon>dns</mat-icon>Total Disponible</h4>
+                <div class="detalle-grid">
+                    <p>Celular: {{ obtenerDisponiblesPorTipo('CELULAR') }}</p>
+                    <p>Tablet: {{ obtenerDisponiblesPorTipo('TABLET') }}</p>
+                    <p>Terminal: {{ obtenerDisponiblesPorTipo('TERMINAL') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTRO GENERAL -->
+    <div class="botones-inicio">
+        <button class="btn-limpiar-filtros" (click)="limpiarTodosLosFiltros()">
+            <mat-icon>clear_all</mat-icon>
+            Limpiar filtros
+        </button>
+        <div class="input-busqueda">
+            <mat-icon class="icono-busqueda">search</mat-icon>
+            <input type="text" [(ngModel)]="terminoBusqueda" (input)="buscarDispositivos()"
+                placeholder="Buscar dispositivo...">
+            <mat-icon class="icono-limpiar" *ngIf="busqueda" (click)="limpiarBusqueda()">close</mat-icon>
+        </div>
+    </div>
+
+    <div class="tabla-container">
+        <table class="tabla-dispositivos">
+            <thead>
+                <tr>
+                    <th [class.filtro-activo]="filtroTieneValor('tipo')">
+                        TIPO
+                        <a (click)="abrirFiltro('tipo')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'tipo'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('marca')">
+                        MARCA
+                        <a (click)="abrirFiltro('marca')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'marca'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('modelo')">
+                        MODELO
+                        <a (click)="abrirFiltro('modelo')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'modelo'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('serial')">
+                        SERIAL
+                        <a (click)="abrirFiltro('serial')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'serial'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+
+                    <th [class.filtro-activo]="filtroTieneValor('ram')">
+                        RAM
+                        <a (click)="abrirFiltro('ram')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'ram'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('almacenamiento')">
+                        DISCO
+                        <a (click)="abrirFiltro('almacenamiento')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'almacenamiento'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('procesador')">
+                        PROCESADOR
+                        <a (click)="abrirFiltro('procesador')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'procesador'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+
+                    <th [class.filtro-activo]="filtroTieneValor('imei1') || filtroTieneValor('imei2')">
+                        IMEI
+                        <a (click)="abrirFiltro('imei')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'imei'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+
+                    <!-- <th [class.filtro-activo]="filtroTieneValor('plaqueta')">
+                        PLAQUETA
+                        <a (click)="abrirFiltro('plaqueta')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'plaqueta'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th> -->
+
+                    <!-- <th [class.filtro-activo]="filtroTieneValor('pulgadas')">
+                        PULGADAS
+                        <a (click)="abrirFiltro('pulgadas')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'pulgadas'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th> -->
+                    <th [class.filtro-activo]="filtroTieneValor('sistemaOperativo')">
+                        SISTEMA OPERATIVO
+                        <a (click)="abrirFiltro('sistemaOperativo')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'sistemaOperativo'">
+                            <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('facturaCompra')">
+                        FACTURA
+                        <a (click)="abrirFiltro('facturaCompra')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'facturaCompra'">
+                            <ng-container *ngTemplateOutlet="templateFiltroFecha"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('estado')">
+                        ESTADO
+                        <a (click)="abrirFiltro('estado')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro" *ngIf="filtroActivo === 'estado'">
+                            <ng-container *ngTemplateOutlet="templateFiltroEstado"></ng-container>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let dispositivo of dispositivosPaginados">
+
+                    <td class="tipo">
+                        {{ dispositivo.tipo.descripcion.split(' ')[0] }}<br>
+                        {{ dispositivo.tipo.descripcion.split(' ').slice(1).join(' ') }}
+                    </td>
+
+                    <td class="marca">
+                        {{ dispositivo.marca.descripcion.split(' ')[0] }}<br>
+                        {{ dispositivo.marca.descripcion.split(' ').slice(1).join(' ') }}
+                    </td>
+
+                    <td class="modelo">
+                        <div class="modelo-texto">
+                            <span>{{ dividirModelo(dispositivo.modelo.descripcion)[0] }}</span>
+                            <span>{{ dividirModelo(dispositivo.modelo.descripcion)[1] }}</span>
+                        </div>
+                    </td>
+
+                    <td class="serial">
+                        <span class="badge-serial">{{ dispositivo.serial }}</span>
+                    </td>
+
+                    <td class="ram">
+                        <div class="spec-info">
+                            <mat-icon>speed</mat-icon>
+                            <span>{{ formatearGB(dispositivo.ram) }}</span>
+                        </div>
+                    </td>
+                    <td class="almacenamiento">
+                        <div class="spec-info">
+                            <mat-icon>storage</mat-icon>
+                            <span>{{ formatearGB(dispositivo.almacenamiento) }}</span>
+                        </div>
+                    </td>
+                    <td class="procesador">
+                        <div class="spec-info">
+                            <mat-icon>memory</mat-icon>
+                            <div class="procesador-texto">
+                                <span>{{ dividirProcesador(dispositivo.procesador)[0] }}</span>
+                                <span>{{ dividirProcesador(dispositivo.procesador)[1] }}</span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="imei">
+                        <div class="imei-info">
+                            <!-- IMEI 1: si es "NO TIENE" o está vacío -->
+                            <ng-container *ngIf="dispositivo.imei1 && dispositivo.imei1 !== 'NO TIENE'; else noImei1">
+                                <span class="imei-principal">{{ dispositivo.imei1 }}</span>
+                            </ng-container>
+                            <ng-template #noImei1>
+                                <span class="imei-no-tiene">NO TIENE</span>
+                            </ng-template>
+
+                            <!-- IMEI 2: solo se muestra si existe, no es "NO TIENE" y no está vacío -->
+                            <span class="imei-secundario"
+                                *ngIf="dispositivo.imei2 && dispositivo.imei2 !== 'NO TIENE' && dispositivo.imei2 !== ''">
+                                {{ dispositivo.imei2 }}
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- <td class="plaqueta">
+                        <span class="badge-plaqueta">{{ dispositivo.plaqueta }}</span>
+                    </td> -->
+
+                    <!-- <td class="pulgadas">
+                        <div class="spec-info">
+                            <mat-icon>crop</mat-icon>
+                            <span>{{ dispositivo.pulgadas }}</span>
+                        </div>
+                    </td> -->
+                    <td class="so">
+                        <div class="spec-info">
+                            <mat-icon>computer</mat-icon>
+                            <div class="so-texto">
+                                <span>{{ dispositivo.versionSO.descripcion }}</span>
+                                <span>({{ dispositivo.sistemaOperativo.descripcion }})</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="fecha">
+                        <div class="fecha-texto">
+                            <span>{{ dispositivo.facturaCompra }}</span>
+                            <span>{{ dispositivo.fechaCompra | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                    </td>
+                    <td class="estado">
+                        <span class="badge-estado" [style.backgroundColor]="obtenerEstadoColor(dispositivo.estado)"
+                            [title]="dispositivo.estado">
+                            <span class="estado-texto" [style.color]="obtenerColorTexto(dispositivo.estado)">
+                                {{ getEstadoCorto(dispositivo.estado) }}
+                            </span>
+                        </span>
+                    </td>
+                </tr>
+                <tr *ngIf="dispositivosFiltrados.length === 0">
+                    <td colspan="13" class="sin-datos">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <mat-icon>search_off</mat-icon>
+                            </div>
+                            <h3>No se encontraron resultados</h3>
+                            <p>No hay dispositivos que coincidan con los filtros aplicados.</p>
+                            <button class="btn-limpiar-filtros" (click)="limpiarTodosLosFiltros()">
+                                <mat-icon>clear_all</mat-icon>
+                                Limpiar filtros
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="paginacion-container" *ngIf="dispositivosFiltrados.length > 0">
+        <div class="info-paginacion">
+            Mostrando {{ (paginaActual - 1) * registrosPorPagina + 1 }} -
+            {{ calcularHasta() }}
+            de {{ dispositivosFiltrados.length }} dispositivos
+        </div>
+
+        <div class="controles-paginacion">
+            <div class="registros-por-pagina">
+                <label>Mostrar:</label>
+                <select [(ngModel)]="registrosPorPagina" (change)="cambiarRegistrosPorPagina()">
+                    <option [value]="10">10</option>
+                    <option [value]="25">25</option>
+                    <option [value]="50">50</option>
+                    <option [value]="100">100</option>
+                    <option [value]="dispositivosFiltrados.length">Todo</option>
+                </select>
+            </div>
+
+            <div class="botones-paginacion">
+                <button class="btn-paginacion" (click)="primeraPagina()" [disabled]="paginaActual === 1">
+                    <mat-icon>first_page</mat-icon>
+                </button>
+                <button class="btn-paginacion" (click)="paginaAnterior()" [disabled]="paginaActual === 1">
+                    <mat-icon>chevron_left</mat-icon>
+                </button>
+
+                <span class="pagina-info">
+                    Página {{ paginaActual }} de {{ totalPaginas }}
+                </span>
+
+                <button class="btn-paginacion" (click)="paginaSiguiente()" [disabled]="paginaActual === totalPaginas">
+                    <mat-icon>chevron_right</mat-icon>
+                </button>
+                <button class="btn-paginacion" (click)="ultimaPagina()" [disabled]="paginaActual === totalPaginas">
+                    <mat-icon>last_page</mat-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+    <br><br>
+
+    <!-- TEMPLATES DE FILTRO -->
+    <ng-template #templateFiltro>
+        <select class="select-operador" [(ngModel)]="filtros[filtroActivo!].operador">
+            <option value="AND">Todo (AND)</option>
+            <option value="OR">Cualquiera (OR)</option>
+        </select>
+
+        <div *ngFor="let regla of filtros[filtroActivo!].reglas; let i = index">
+            <select class="select-filtro" [(ngModel)]="regla.condicion">
+                <option>Empieza con</option>
+                <option>Contiene</option>
+                <option>No contiene</option>
+                <option>Termina con</option>
+                <option>Iguales</option>
+                <option>No es igual</option>
+            </select>
+
+            <input class="select-filtro-text" type="text" [(ngModel)]="regla.valor">
+
+            <button class="btn-eliminar" *ngIf="filtros[filtroActivo!].reglas.length > 1"
+                (click)="eliminarReglaTexto(filtroActivo!, i)">
+                <mat-icon>delete_forever</mat-icon> Eliminar regla
+            </button>
+        </div>
+
+        <div class="acciones-filtro">
+            <button class="btn-agregar" *ngIf="filtros[filtroActivo!].reglas.length < 2"
+                (click)="agregarReglaTexto(filtroActivo!)">
+                <mat-icon>add</mat-icon> Añadir regla
+            </button>
+
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro(filtroActivo!)">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #templateFiltroFecha>
+        <select class="select-operador" [(ngModel)]="filtros[filtroActivo!].operador">
+            <option value="AND">Todo (AND)</option>
+            <option value="OR">Cualquiera (OR)</option>
+        </select>
+
+        <div *ngFor="let regla of filtros[filtroActivo!].reglas; let i = index">
+            <select class="select-filtro" [(ngModel)]="regla.condicion">
+                <option>La fecha es</option>
+                <option>La fecha no es</option>
+                <option>La fecha es anterior</option>
+                <option>La fecha es despues</option>
+                <option>Contiene</option>
+                <option>Empieza con</option>
+                <option>Termina con</option>
+                <option>Iguales</option>
+            </select>
+
+            <input *ngIf="regla.condicion.includes('fecha')" class="select-filtro-text" type="date"
+                [(ngModel)]="regla.valor">
+
+            <input *ngIf="!regla.condicion.includes('fecha')" class="select-filtro-text" type="text"
+                [(ngModel)]="regla.valor" placeholder="Buscar...">
+
+            <button class="btn-eliminar" *ngIf="filtros[filtroActivo!].reglas.length > 1"
+                (click)="eliminarReglaFecha(filtroActivo!, i)">
+                <mat-icon>delete_forever</mat-icon> Eliminar regla
+            </button>
+        </div>
+
+        <div class="acciones-filtro">
+            <button class="btn-agregar" *ngIf="filtros[filtroActivo!].reglas.length < 2"
+                (click)="agregarReglaFecha(filtroActivo!)">
+                <mat-icon>add</mat-icon> Añadir regla
+            </button>
+
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro(filtroActivo!)">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #templateFiltroEstado>
+        <select class="select-operador" [(ngModel)]="filtros.estado.valor">
+            <option value="">TODOS</option>
+            <option value="BUEN ESTADO">OPTIMO</option>
+            <option value="ESTADO REGULAR">REGULAR</option>
+            <option value="ESTADO DEFICIENTE">DEFICIENTE</option>
+            <option value="INOPERATIVO">INOPERATIVO</option>
+        </select>
+        <div class="acciones-filtro">
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro('estado')">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+    <br>
+</div>

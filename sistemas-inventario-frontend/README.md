@@ -77,4 +77,5 @@
 
 `ng generate service arquitectura/servicio/consulta/ConsultarEmpleado` (Servicio CONSULTAR EMPLEADO)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarEquipo` (Servicio CONSULTAR EQUIPO DE COMPUTO)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarDispositivo` (Servicio CONSULTAR DISPOSITIVOS MOVILES)<br>
 

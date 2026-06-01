@@ -13,6 +13,9 @@ public interface DispositivoMovilRepository extends JpaRepository<DispositivoMov
     // Buscar por serial (busqueda parcial)
     List<DispositivoMovil> findBySerialContainingIgnoreCase(String serial);
 
+    // Buscar por factura (búsqueda parcial)
+    List<DispositivoMovil> findByFacturaCompraContainingIgnoreCase(String facturaCompra);
+
     // Buscar por marca
     @Query("SELECT d FROM DispositivoMovil d WHERE LOWER(d.marca.descripcion) LIKE LOWER(CONCAT('%', :termino, '%'))")
     List<DispositivoMovil> findByMarcaDescripcionContainingIgnoreCase(@Param("termino") String termino);
@@ -30,6 +33,7 @@ public interface DispositivoMovilRepository extends JpaRepository<DispositivoMov
             "LOWER(d.marca.descripcion) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
             "LOWER(d.modelo.descripcion) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
             "LOWER(d.imei1) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
-            "LOWER(d.imei2) LIKE LOWER(CONCAT('%', :termino, '%'))")
+            "LOWER(d.imei2) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
+            "LOWER(d.facturaCompra) LIKE LOWER(CONCAT('%', :termino, '%'))")
     List<DispositivoMovil> buscarPorTermino(@Param("termino") String termino);
 }
