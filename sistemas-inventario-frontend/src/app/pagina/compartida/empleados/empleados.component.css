@@ -1,78 +1,79 @@
-.contenido{
+.contenido {
   position: relative;
 }
+
 /* RESUMEN EMPLEADOS */
 
 .resumen-empleados {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 50px;
-    margin-bottom: 10px;
-    padding: 10px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 50px;
+  margin-bottom: 10px;
+  padding: 10px 0;
 }
 
 .tarjeta-resumen {
-    position: relative;
-    overflow: hidden;
-    border-radius: 18px;
-    padding: 22px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    transition: .25s ease;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow:
-        0 4px 10px rgba(0,0,0,0.05),
-        0 1px 3px rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  transition: .25s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .tarjeta-resumen::before {
-    content: "";
-    position: absolute;
-    right: -25px;
-    top: -25px;
-    width: 120px;
-    height: 120px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 50%;
+  content: "";
+  position: absolute;
+  right: -25px;
+  top: -25px;
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
 }
 
 
 .tarjeta-resumen.total {
-    background: #5856D6;
+  background: #5856D6;
 }
 
 .tarjeta-resumen.activos {
-    background: #3399FF;
+  background: #3399FF;
 }
 
 .tarjeta-resumen.inactivos {
-    background: #E55353;
+  background: #E55353;
 }
 
 .tarjeta-resumen mat-icon {
-    font-size: 40px;
-    width: 40px;
-    height: 40px;
-    color: white;
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: white;
 }
 
 .info {
-    display: flex;
-    flex-direction: column;
-    color: white;
+  display: flex;
+  flex-direction: column;
+  color: white;
 }
 
 .numero {
-    font-size: 28px;
-    font-weight: bold;
-    line-height: 1;
-    margin-bottom: 5px;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 5px;
 }
 
 .etiqueta {
-    font-size: 14px;
-    opacity: 0.9;
+  font-size: 14px;
+  opacity: 0.9;
 }
 
 
@@ -80,7 +81,7 @@
 
 /* FILTRO GENERAL */
 
-.botones-inicio{
+.botones-inicio {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -90,59 +91,59 @@
 }
 
 .botones-inicio .input-busqueda {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 270px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 270px;
 }
 
 .botones-inicio .icono-busqueda {
-    position: absolute;
-    left: 12px;
-    color: #6c757d;
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    pointer-events: none;
+  position: absolute;
+  left: 12px;
+  color: #6c757d;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
 }
 
 .botones-inicio .input-busqueda input {
-    width: 100%;
-    padding: 10px 35px 10px 40px;
-    border: 1px solid #ced4da;
-    border-radius: 13px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    outline: none;
+  width: 100%;
+  padding: 10px 35px 10px 40px;
+  border: 1px solid #ced4da;
+  border-radius: 13px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  outline: none;
 }
 
 .botones-inicio .input-busqueda input:focus {
-    border-color: #1e3a8a;
-    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
 }
 
 .botones-inicio .input-busqueda input:hover {
-    border-color: #1976d2;
+  border-color: #1976d2;
 }
 
 .botones-inicio .icono-limpiar {
-    position: absolute;
-    right: 12px;
-    color: #6c757d;
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    transition: color 0.3s ease;
+  position: absolute;
+  right: 12px;
+  color: #6c757d;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
 .botones-inicio .icono-limpiar:hover {
-    color: #dc3545;
+  color: #dc3545;
 }
 
 .botones-inicio .input-busqueda input::placeholder {
-    color: #adb5bd;
-    font-size: 14px;
+  color: #adb5bd;
+  font-size: 14px;
 }
 
 
@@ -162,7 +163,7 @@
   border-collapse: collapse;
   min-width: 900px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  
+
 
 }
 
@@ -198,8 +199,10 @@
   top: -2px;
   left: 5px;
 }
+
 .tabla-empleados th a mat-icon.filtro-activo {
-  color: #1976d2; /* Color azul cuando hay filtro */
+  color: #1976d2;
+  /* Color azul cuando hay filtro */
   filter: drop-shadow(0 0 2px rgba(25, 118, 210, 0.3));
 }
 
@@ -227,13 +230,13 @@
   display: inline-block;
   color: #393e7f;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 /* Cargo */
 .cargo {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #2c3e50;
 }
@@ -268,6 +271,7 @@
 .nombre-completo {
   font-weight: 500;
   color: #212529;
+  font-size: 13px;
 }
 
 /* Fechas */
@@ -278,11 +282,15 @@
 
 /* Badge estado */
 .badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
+  display: inline-grid;
+  place-items: center;
+  width: 55px;
+  padding: 6px;
+  border-radius: 8px;
   font-size: 11px;
   font-weight: 600;
+  cursor: pointer;
+  text-align: center;
 }
 
 .badge.activo {
@@ -486,92 +494,92 @@
 /* PAGINACION */
 
 .paginacion-container {
-    margin-top: 20px;
-    padding: 15px 20px;
+  margin-top: 20px;
+  padding: 15px 20px;
 }
 
 .info-paginacion {
-    text-align: center;
-    color: #6c757d;
-    font-size: 14px;
-    margin-bottom: 15px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 14px;
+  margin-bottom: 15px;
 }
- 
+
 .controles-paginacion {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
 .registros-por-pagina {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .registros-por-pagina label {
-    color: #495057;
-    font-size: 14px;
-    font-weight: 500;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .registros-por-pagina select {
-    padding: 6px 10px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    background-color: white;
-    font-size: 14px;
-    cursor: pointer;
-    outline: none;
+  padding: 6px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
 }
 
 .registros-por-pagina select:hover {
-    border-color: #1e3a8a;
+  border-color: #1e3a8a;
 }
 
 .botones-paginacion {
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .btn-paginacion {
-    background-color: transparent;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    padding: 6px 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  background-color: transparent;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-paginacion mat-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-    color: #495057;
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  color: #495057;
 }
 
 .btn-paginacion:hover:not(:disabled) {
-    background-color: #e9ecef;
-    border-color: #adb5bd;
+  background-color: #e9ecef;
+  border-color: #adb5bd;
 }
 
 .btn-paginacion:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .pagina-info {
-    padding: 0 15px;
-    color: #495057;
-    font-size: 14px;
-    font-weight: 500;
-} 
+  padding: 0 15px;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+}
 
 
 
@@ -581,10 +589,14 @@
     width: 98.5%;
   }
 
+  .tabla-empleados th {
+    font-size: 11px;
+  }
+
   .tabla-empleados th a mat-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
     top: 0px;
     left: 3px;
   }
@@ -612,4 +624,3 @@
     font-size: 10px;
   }
 }
-

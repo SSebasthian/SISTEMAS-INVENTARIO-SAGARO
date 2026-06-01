@@ -136,7 +136,7 @@ public class EquipoDeComputoService {
 
     // ========== BUSCAR POR TÉRMINO (serial, marca, modelo) ==========
     public List<EquipoDeComputo> buscarPorTermino(String termino) {
-        return equipoRepository.buscarPorSerialMarcaModelo(termino);
+        return equipoRepository.buscarPorTermino(termino);
     }
 
 }

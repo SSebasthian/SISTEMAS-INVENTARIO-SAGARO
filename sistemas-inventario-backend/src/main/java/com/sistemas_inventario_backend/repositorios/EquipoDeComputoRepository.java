@@ -15,6 +15,9 @@ public interface EquipoDeComputoRepository extends JpaRepository<EquipoDeComputo
     // Buscar por serial (busqueda parcial)
     List<EquipoDeComputo> findBySerialContainingIgnoreCase(String serial);
 
+    // Buscar por factura (búsqueda parcial)
+    List<EquipoDeComputo> findByFacturaCompraContainingIgnoreCase(String facturaCompra);
+
     // Buscar por marca
     @Query("SELECT e FROM EquipoDeComputo e WHERE LOWER(e.marca.descripcion) LIKE LOWER(CONCAT('%', :termino, '%'))")
     List<EquipoDeComputo> findByMarcaDescripcionContainingIgnoreCase(@Param("termino") String termino);
@@ -27,6 +30,7 @@ public interface EquipoDeComputoRepository extends JpaRepository<EquipoDeComputo
     @Query("SELECT e FROM EquipoDeComputo e WHERE " +
             "LOWER(e.serial) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
             "LOWER(e.marca.descripcion) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
-            "LOWER(e.modelo.descripcion) LIKE LOWER(CONCAT('%', :termino, '%'))")
-    List<EquipoDeComputo> buscarPorSerialMarcaModelo(@Param("termino") String termino);
+            "LOWER(e.modelo.descripcion) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
+            "LOWER(e.facturaCompra) LIKE LOWER(CONCAT('%', :termino, '%'))")
+    List<EquipoDeComputo> buscarPorTermino(@Param("termino") String termino);
 }

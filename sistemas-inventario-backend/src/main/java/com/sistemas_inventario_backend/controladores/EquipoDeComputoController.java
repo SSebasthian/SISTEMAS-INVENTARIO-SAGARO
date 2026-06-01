@@ -3,7 +3,6 @@ package com.sistemas_inventario_backend.controladores;
 import com.sistemas_inventario_backend.entidades.EquipoDeComputo;
 import com.sistemas_inventario_backend.servicios.EquipoDeComputoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -65,7 +64,7 @@ public class EquipoDeComputoController {
         }
     }
 
-    // ========== BUSCAR POR TÉRMINO (serial, marca, modelo) ==========
+    // ========== BUSCAR POR TERMINO (serial, marca, modelo, factura) ==========
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarEquipos(@RequestParam String termino) {
         try {
