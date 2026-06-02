@@ -11,6 +11,7 @@ export interface ImpresoraLlamarDatos{
     facturaCompra: string;
     estado: string;
     descripcion: string;
+    activo: boolean;
     
     // Relaciones ManyToOne con catalogos
     tipo: TipoLlamarDatos;

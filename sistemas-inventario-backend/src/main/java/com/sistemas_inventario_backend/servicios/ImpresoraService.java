@@ -115,6 +115,7 @@ public class ImpresoraService {
         return impresoraRepository.findAll();
     }
 
+
     // ========== BUSCAR POR TERMINO ==========
     public List<Impresora> buscarPorTermino(String termino) {
         return impresoraRepository.buscarPorTermino(termino);
