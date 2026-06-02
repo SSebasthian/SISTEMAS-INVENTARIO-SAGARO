@@ -9,7 +9,7 @@ import { EquipoDeComputoLlamarDatos } from '../../interface/LlamarDatos/EquipoDe
 })
 export class ConsultarEquipoService {
 
-  private apiUrlConsultarEquipo = 'http://localhost:8080/equipos-computo';
+  private apiUrlConsultarEquipo = 'http://192.168.100.4:8080/equipos-computo';
 
   constructor(private http: HttpClient) { }
 

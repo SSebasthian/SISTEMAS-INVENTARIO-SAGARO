@@ -10,7 +10,7 @@ import { ImpresoraLlamarDatos } from '../../interface/LlamarDatos/ImpresoraRespu
 })
 export class ImpresoraService {
 
-  private apiUrlImpresora = 'http://localhost:8080/impresora';
+  private apiUrlImpresora = 'http://192.168.100.4:8080/impresora';
 
   constructor(private http: HttpClient) { }
 

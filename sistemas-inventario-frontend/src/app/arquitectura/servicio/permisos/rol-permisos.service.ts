@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class RolPermisosService {
 
 
-  private apiUrlRoles = 'http://localhost:8080/roles';
+  private apiUrlRoles = 'http://192.168.100.4:8080/roles';
 
   constructor(private http: HttpClient) { }
 

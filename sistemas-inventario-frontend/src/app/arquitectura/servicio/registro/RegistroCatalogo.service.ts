@@ -13,7 +13,7 @@ import { VersionSOLlamarDatos } from '../../interface/LlamarDatos/DispositivoTec
 })
 export class RegistroCatalogoService {
 
-  private apiUrlCatalogo = 'http://localhost:8080/catalogo';
+  private apiUrlCatalogo = 'http://192.168.100.4:8080/catalogo';
 
   constructor(private http: HttpClient) { }
 

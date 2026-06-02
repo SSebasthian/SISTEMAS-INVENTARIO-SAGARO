@@ -10,8 +10,8 @@ import { tap } from 'rxjs/operators';
 export class PermisosxrolPermisosService {
 
 
-  private apiUrlRoles = 'http://localhost:8080/roles';
-  private apiUrlPermisos = 'http://localhost:8080/permisos';
+  private apiUrlRoles = 'http://192.168.100.4:8080/roles';
+  private apiUrlPermisos = 'http://192.168.100.4:8080/permisos';
 
   // Subject para notificar cambios en permisos de roles
   private permisosDeRolActualizadosSource = new Subject<number>(); // Emite el ID del rol modificado

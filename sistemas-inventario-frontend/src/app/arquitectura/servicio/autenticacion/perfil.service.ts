@@ -8,7 +8,7 @@ import { tap } from 'rxjs/operators';
 })
 export class PerfilService {
 
-  private apiUrl = 'http://localhost:8080/usuarios/perfil';
+  private apiUrl = 'http://192.168.100.4:8080/usuarios/perfil';
   private readonly TIEMPO_EXPIRACION_HORAS = 1
 
   // Subject para notificar cambios en el perfil

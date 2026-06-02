@@ -9,7 +9,7 @@ import { DispositivoMovilLlamarDatos } from '../../interface/LlamarDatos/Disposi
 })
 export class RegistroDispositivoService {
 
-  private apiUrlTelefono = 'http://localhost:8080/dispositivos-moviles';
+  private apiUrlTelefono = 'http://192.168.100.4:8080/dispositivos-moviles';
 
   constructor(private http: HttpClient) { }
 

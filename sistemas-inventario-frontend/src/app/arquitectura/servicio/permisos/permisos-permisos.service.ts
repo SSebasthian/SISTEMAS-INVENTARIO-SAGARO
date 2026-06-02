@@ -9,7 +9,7 @@ import { tap } from 'rxjs/operators';
 })
 export class PermisosPermisosService {
 
-  private apiUrlPermisos = 'http://localhost:8080/permisos';
+  private apiUrlPermisos = 'http://192.168.100.4:8080/permisos';
 
 
   // Subject para notificar cambios en permisos

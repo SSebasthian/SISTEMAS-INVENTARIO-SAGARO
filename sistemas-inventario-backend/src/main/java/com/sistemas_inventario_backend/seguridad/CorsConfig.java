@@ -23,7 +23,13 @@ public class CorsConfig {
         // -------------------------------
         // Solo se permite que el backend reciba peticiones desde:http://localhost:4200  (proyecto Angular)
         // Si más adelante usas hosting, debes agregarlo también.
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+
+        config.setAllowedOriginPatterns(List.of("*"));
+
+        //config.setAllowedOrigins(List.of(
+                    //        "http://localhost:4200",
+                    //        "http://192.168.100.4:4200"
+                    //));
 
 
         // -------------------------------
@@ -35,7 +41,9 @@ public class CorsConfig {
         // PUT → Actualizar datos
         // DELETE → Borrar datos
         // OPTIONS → Necesario para preflight de CORS
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        config.setAllowedMethods(List.of("*"));
+
+        //config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
 
 
         // -------------------------------

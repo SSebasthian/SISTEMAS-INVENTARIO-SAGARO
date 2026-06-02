@@ -10,7 +10,7 @@ import { EquipoDeComputoLlamarDatos } from '../../interface/LlamarDatos/EquipoDe
 })
 export class RegistroEquipoService {
 
-  private apiUrl = 'http://localhost:8080/equipos-computo';
+  private apiUrl = 'http://192.168.100.4:8080/equipos-computo';
 
   constructor(private http: HttpClient) { }
 

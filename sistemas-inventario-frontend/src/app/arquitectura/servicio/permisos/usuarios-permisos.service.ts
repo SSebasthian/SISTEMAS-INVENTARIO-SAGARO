@@ -8,7 +8,7 @@ import { registroRespuesta } from '../../interface/Autenticacion/registroRespues
 })
 export class UsuariosPermisosService {
 
-  private apiUrlUsuarios = 'http://localhost:8080/usuarios';
+  private apiUrlUsuarios = 'http://192.168.100.4:8080/usuarios';
 
   constructor(private http: HttpClient) { }
 

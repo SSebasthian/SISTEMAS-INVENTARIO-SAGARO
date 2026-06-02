@@ -10,7 +10,7 @@ import { CargoLlamarDatos } from '../../interface/LlamarDatos/CargoRespuesta.int
 })
 export class ConsultarEmpleadoService {
 
-  private apiUrlConsultarEmpleado = 'http://localhost:8080/registrar/empleado';
+  private apiUrlConsultarEmpleado = 'http://192.168.100.4:8080/registrar/empleado';
 
   constructor(private http: HttpClient) { }
 

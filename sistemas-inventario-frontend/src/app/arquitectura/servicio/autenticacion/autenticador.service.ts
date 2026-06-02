@@ -14,7 +14,9 @@ import { PerfilService } from './perfil.service';
 export class AutenticadorService {
 
   // URL base del backend donde están los endpoints de usuarios
-  private apiUrl = 'http://localhost:8080/';
+
+  private apiUrl = 'http://192.168.100.4:8080/';
+  
   private perfilActualizado = new BehaviorSubject<boolean>(false);
   perfilActualizado$ = this.perfilActualizado.asObservable();
   private isBrowser: boolean;
