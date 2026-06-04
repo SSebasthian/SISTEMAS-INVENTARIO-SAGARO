@@ -5,12 +5,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { ImpresoraLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/ImpresoraRespuesta.interface';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 import { ConsultarImpresoraService } from '../../../arquitectura/servicio/consulta/ConsultarImpresora.service';
+import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 import { A11yModule } from '@angular/cdk/a11y';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { forkJoin } from 'rxjs';
+
 
 
 @Component({
   selector: 'app-impresoras',
-  imports: [CommonModule, FormsModule, MatIconModule, A11yModule],
+  imports: [CommonModule, FormsModule, MatIconModule, A11yModule, MatTooltipModule],
   templateUrl: './impresoras.component.html',
   styleUrl: './impresoras.component.css'
 })
@@ -33,18 +37,52 @@ export class ImpresorasComponent implements OnInit {
   constructor(
     private consultarImpresoraService: ConsultarImpresoraService,
     private notificacionSnackbarService: NotificacionSnackbarService,
+    private consultarAsignacionesService: ConsultarAsignacionesService,
     private elementRef: ElementRef
   ) { }
 
   ngOnInit(): void {
     this.cargarImpresoras();
   }
+
   cargarImpresoras(): void {
     this.consultarImpresoraService.listarImpresoras().subscribe({
-      next: (data) => {
-        this.impresoras = data;
-        this.impresorasFiltradas = [...data];
-        this.actualizarPaginacion();
+      next: (impresoras) => {
+        const peticiones = impresoras.map(impresora =>
+          this.consultarAsignacionesService.obtenerAsignacionActual(impresora.serial)
+        );
+        forkJoin(peticiones).subscribe({
+          next: (respuestas: any[]) => {
+            this.impresoras = impresoras.map((impresora, index) => {
+              const asignacion = respuestas[index];
+              if (asignacion?.activo) {
+                impresora.asignado = true;
+                if (asignacion.empleadoNombre) {
+                  impresora.tipoAsignacion = 'empleado';
+                  impresora.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
+                } else if (asignacion.areaDescripcion) {
+                  impresora.tipoAsignacion = 'area';
+                  impresora.asignadoA = asignacion.areaDescripcion;
+                }
+                impresora.asignacionId = asignacion.codigo;
+              } else {
+                impresora.asignado = false;
+                impresora.tipoAsignacion = null;
+                impresora.asignadoA = null;
+                impresora.asignacionId = null;
+              }
+              return impresora;
+            });
+            this.impresorasFiltradas = [...this.impresoras];
+            this.actualizarPaginacion();
+          },
+          error: (err) => {
+            console.error('Error al obtener asignaciones de impresoras:', err);
+            this.impresoras = impresoras;
+            this.impresorasFiltradas = [...this.impresoras];
+            this.actualizarPaginacion();
+          }
+        });
       },
       error: (err) => {
         console.error('Error al cargar impresoras:', err);
@@ -94,6 +132,9 @@ export class ImpresorasComponent implements OnInit {
     fechaCompra: {
       operador: 'AND',
       reglas: [{ condicion: 'La fecha es', valor: '' }]
+    },
+    asignacion: {
+      valor: ''
     }
   };
 
@@ -120,7 +161,8 @@ export class ImpresorasComponent implements OnInit {
         this.aplicarFiltroTipoRecarga(imp) &&
         this.aplicarFiltroEstado(imp) &&
         this.aplicarFiltroFacturaCompra(imp) &&
-        this.aplicarFiltroFechaCompra(imp);
+        this.aplicarFiltroFechaCompra(imp) &&
+        this.aplicarFiltroAsignacion(imp);
     });
 
     if (this.terminoBusqueda.trim()) {
@@ -139,7 +181,10 @@ export class ImpresorasComponent implements OnInit {
   limpiarFiltro(columna: string): void {
     if (columna === 'estado') {
       this.filtros.estado.valor = '';
+    } else if (columna === 'asignacion') {
+      this.filtros.asignacion.valor = '';
     } else {
+      // Para los filtros con reglas (tipo, marca, etc.)
       this.filtros[columna].reglas = [{ condicion: 'Empieza con', valor: '' }];
       this.filtros[columna].operador = 'AND';
     }
@@ -154,6 +199,7 @@ export class ImpresorasComponent implements OnInit {
       this.filtros[col].operador = 'AND';
     });
     this.filtros.estado.valor = '';
+    this.filtros.asignacion.valor = '';
     this.terminoBusqueda = '';
     this.paginaActual = 1;
     this.registrosPorPagina = 10;
@@ -238,6 +284,16 @@ export class ImpresorasComponent implements OnInit {
     });
     return f.operador === 'AND' ? resultados.every((r: boolean) => r) : resultados.some((r: boolean) => r);
   }
+
+  aplicarFiltroAsignacion(equipo: ImpresoraLlamarDatos): boolean {
+    const filtroValor = this.filtros.asignacion.valor;
+    if (!filtroValor) return true;
+    // Tratar undefined/null como false (disponible)
+    const asignadoReal = equipo.asignado === true;
+    return (filtroValor === 'true') === asignadoReal;
+  }
+
+
 
   // ========== BUSCADOR GLOBAL ==========
   buscarImpresoras(): void {
@@ -356,13 +412,12 @@ export class ImpresorasComponent implements OnInit {
     return this.impresoras.filter(e => e.estado === estado).length;
   }
 
-  obtenerPorEstado(estado: string): number {
-    return this.impresoras.filter(i => i.estado === estado).length;
+
+  obtenerTotalDisponibles(): number {
+    return this.impresoras.filter(e => !e.asignado).length;
   }
 
-  obtenerPorTipoRecarga(tipo: string): number {
-    return this.impresoras.filter(i => i.tipoRecarga === tipo).length;
-  }
+
 
   // DETALLES TARJETAS
   toggleDetalle(tipo: string): void {
@@ -382,10 +437,14 @@ export class ImpresorasComponent implements OnInit {
     return this.impresoras.filter(i => i.tipo?.descripcion === tipo && i.activo === false).length;
   }
 
-  // Disponibles por tipo
+  // Equipos NO asignados por tipo especifico
   obtenerDisponiblesPorTipo(tipo: string): number {
-    return this.impresoras.filter(e => e.tipo?.descripcion === tipo && e.estado === 'DISPONIBLE').length;
+    return this.impresoras.filter(e =>
+      e.tipo?.descripcion === tipo &&
+      !e.asignado
+    ).length;
   }
+
 
 
 
@@ -469,13 +528,14 @@ export class ImpresorasComponent implements OnInit {
 
   filtroTieneValor(columna: string): boolean {
     if (columna === 'estado') return !!this.filtros.estado.valor;
+    if (columna === 'asignacion') return !!this.filtros.asignacion.valor;
     const f = this.filtros[columna];
     return f && f.reglas?.some((r: any) => r.valor?.trim());
   }
 
   hayFiltrosActivos(): boolean {
     const cols = ['tipo', 'marca', 'modelo', 'serial', 'plaqueta', 'tipoRecarga', 'facturaCompra', 'fechaCompra'];
-    return cols.some(c => this.filtroTieneValor(c)) || !!this.filtros.estado.valor;
+    return cols.some(c => this.filtroTieneValor(c)) || !!this.filtros.estado.valor || !!this.filtros.asignacion.valor;
   }
 
   // ========== CIERRE DE FILTRO AL HACER CLICK FUERA ==========

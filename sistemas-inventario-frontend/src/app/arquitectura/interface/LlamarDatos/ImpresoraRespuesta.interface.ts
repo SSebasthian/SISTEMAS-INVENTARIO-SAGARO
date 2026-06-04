@@ -17,4 +17,10 @@ export interface ImpresoraLlamarDatos{
     tipo: TipoLlamarDatos;
     marca: MarcaLlamarDatos;
     modelo: ModeloLlamarDatos;
+
+    // Asignacion
+    asignado: boolean;
+    asignadoA: string | null;
+    tipoAsignacion: 'empleado' | 'area' | null;
+    asignacionId: number | null;
 }

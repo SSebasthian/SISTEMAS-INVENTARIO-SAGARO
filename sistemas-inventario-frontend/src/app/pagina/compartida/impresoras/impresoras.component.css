@@ -109,7 +109,7 @@
     pointer-events: none;
 }
 
-.tarjeta-resumen > mat-icon.oculto {
+.tarjeta-resumen>mat-icon.oculto {
     opacity: 0;
     visibility: hidden;
 }
@@ -145,12 +145,12 @@
     padding: 5px;
     text-align: center;
     border-radius: 8px;
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
     font-size: 14px;
     font-weight: 500;
 }
 
- .btn-detalle {
+.btn-detalle {
     position: absolute;
     top: 0;
     right: 5px;
@@ -387,6 +387,7 @@
     color: #2c3e50;
     line-height: 1.3;
 }
+
 .tipoRecarga mat-icon {
     position: relative;
     top: -3px;
@@ -441,6 +442,26 @@
 }
 
 
+.icon-asignacion-titulo {
+    position: absolute;
+    right: initial;
+    margin-top: -15px;
+    margin-left: -20px;
+}
+
+
+td.asignacion {
+    width: 30px;
+    min-width: 30px;
+    max-width: 30px;
+    padding: 0;
+}
+
+td.asignacion mat-icon {
+    cursor: pointer;
+    margin-left: -20px;
+}
+
 /* Fechas */
 .fecha-texto {
     font-family: monospace;
@@ -470,8 +491,12 @@
     margin-left: -10px;
 }
 
-.tabla-equipos th:nth-child(11) .filtro {
+.tabla-impresoras th:nth-child(9) .filtro {
     margin-left: -50px;
+}
+
+.tabla-impresoras th:nth-child(10) .filtro {
+    margin-left: -150px;
 }
 
 .select-operador,
@@ -780,5 +805,18 @@
         margin-left: -105px;
     }
 
+    th:last-child {
+        left: -13px;
+    }
+
+
+    .icon-asignacion-titulo {
+        margin-left: 5px;
+    }
+
+
+    td.asignacion mat-icon {
+        margin-left: 0px;
+    }
 
 }

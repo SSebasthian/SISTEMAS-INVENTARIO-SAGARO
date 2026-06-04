@@ -24,4 +24,10 @@ export class ConsultarEquipoService {
   buscarEquipos(termino: string): Observable<EquipoDeComputoLlamarDatos[]> {
     return this.http.get<EquipoDeComputoLlamarDatos[]>(`${this.apiUrlConsultarEquipo}/buscar?termino=${termino}`);
   }
+
+
+  // METODO - lista equipos CON asignacion
+  listarEquiposConAsignacion(): Observable<EquipoDeComputoLlamarDatos[]> {
+    return this.http.get<EquipoDeComputoLlamarDatos[]>(`${this.apiUrlConsultarEquipo}/listar-con-asignacion`);
+  }
 }

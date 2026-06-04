@@ -1,10 +1,13 @@
 package com.sistemas_inventario_backend.servicios;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.EquipoDeComputoRespuesta;
 import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.repositorios.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,6 +20,7 @@ public class EquipoDeComputoService {
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
     private final DispositivoTecnologico_SORepository soRepository;
     private final DispositivoTecnologico_VersionSORepository versionRepository;
+    private final AsignacionesRepository asignacionRepository;
 
 
     @Transactional
@@ -134,11 +138,70 @@ public class EquipoDeComputoService {
         return equipoRepository.findAll();
     }
 
-    // ========== BUSCAR POR TÉRMINO (serial, marca, modelo) ==========
+    // ========== BUSCAR POR TERMINO (serial, marca, modelo) ==========
     public List<EquipoDeComputo> buscarPorTermino(String termino) {
         return equipoRepository.buscarPorTermino(termino);
     }
 
+
+    // METODO: listar equipos con estado de asignacion
+    public List<EquipoDeComputoRespuesta> listarConEstadoAsignacion() {
+        List<EquipoDeComputo> equipos = equipoRepository.findAll();
+        List<EquipoDeComputoRespuesta> resultado = new ArrayList<>();
+
+        for (EquipoDeComputo equipo : equipos) {
+            EquipoDeComputoRespuesta dto = new EquipoDeComputoRespuesta();
+
+            // Mapear datos del equipo
+            dto.setSerial(equipo.getSerial());
+            dto.setPlaqueta(equipo.getPlaqueta());
+            dto.setFacturaCompra(equipo.getFacturaCompra());
+            dto.setFechaCompra(equipo.getFechaCompra());
+            dto.setActivo(equipo.getActivo());
+            dto.setDescripcion(equipo.getDescripcion());
+            dto.setEstado(equipo.getEstado());
+            dto.setRam(equipo.getRam());
+            dto.setTipoRam(equipo.getTipoRam());
+            dto.setProcesador(equipo.getProcesador());
+            dto.setDisco(equipo.getDisco());
+            dto.setTipoDisco(equipo.getTipoDisco());
+            dto.setBits(equipo.getBits());
+
+            // Mapear relaciones
+            if (equipo.getTipo() != null) {
+                dto.setTipoDescripcion(equipo.getTipo().getDescripcion());
+            }
+            if (equipo.getMarca() != null) {
+                dto.setMarcaDescripcion(equipo.getMarca().getDescripcion());
+            }
+            if (equipo.getModelo() != null) {
+                dto.setModeloDescripcion(equipo.getModelo().getDescripcion());
+            }
+            if (equipo.getSistemaOperativo() != null) {
+                dto.setSoDescripcion(equipo.getSistemaOperativo().getDescripcion());
+            }
+            if (equipo.getVersionSO() != null) {
+                dto.setVersionSODescripcion(equipo.getVersionSO().getDescripcion());
+            }
+
+            // AGREGAR INFORMACIÓN DE ASIGNACIÓN
+            Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(equipo.getSerial());
+
+            if (asignacion != null) {
+                dto.setAsignado(true);
+                dto.setAsignadoA(asignacion.getEmpleado().getNombre() + " " + asignacion.getEmpleado().getApellido());
+                dto.setAsignacionId(asignacion.getCodigo());
+            } else {
+                dto.setAsignado(false);
+                dto.setAsignadoA(null);
+                dto.setAsignacionId(null);
+            }
+
+            resultado.add(dto);
+        }
+
+        return resultado;
+    }
 }
 
 

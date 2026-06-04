@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { EmpleadoLlamarDatos } from '../../interface/LlamarDatos/EmpleadoRespuesta.interface';
-import { AreaLlamarDatos } from '../../interface/LlamarDatos/AreaRespuesta.interface';
-import { CargoLlamarDatos } from '../../interface/LlamarDatos/CargoRespuesta.interface';
+import { EmpleadoConAsignacionesRespuesta } from '../../interface/LlamarDatos/EmpleadoConAsignaciones.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +24,9 @@ export class ConsultarEmpleadoService {
     return this.http.get<EmpleadoLlamarDatos>(`${this.apiUrlConsultarEmpleado}/${cedula}`);
   }
   
-  
+  /** Listar empleados CON asignaciones */
+  listarEmpleadosConAsignaciones(): Observable<EmpleadoConAsignacionesRespuesta[]> {
+    return this.http.get<EmpleadoConAsignacionesRespuesta[]>(`${this.apiUrlConsultarEmpleado}/listar-con-asignaciones`);
+  }
 
 }

@@ -1,10 +1,13 @@
 package com.sistemas_inventario_backend.servicios;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.ImpresoraRespuesta;
 import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.repositorios.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -15,6 +18,7 @@ public class ImpresoraService {
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final DispositivoTecnologico_MarcaRepository marcaRepository;
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
+    private final AsignacionesRepository asignacionRepository;
 
 
     // ========== REGISTRAR ==========
@@ -119,5 +123,55 @@ public class ImpresoraService {
     // ========== BUSCAR POR TERMINO ==========
     public List<Impresora> buscarPorTermino(String termino) {
         return impresoraRepository.buscarPorTermino(termino);
+    }
+
+
+    // ========== LISTAR CON ESTADO DE ASIGNACION ==========
+    public List<ImpresoraRespuesta> listarConEstadoAsignacion() {
+        List<Impresora> impresoras = impresoraRepository.findAll();
+        List<ImpresoraRespuesta> resultado = new ArrayList<>();
+
+        for (Impresora impresora : impresoras) {
+            ImpresoraRespuesta dto = new ImpresoraRespuesta();
+
+            // Mapear datos de la impresora
+            dto.setSerial(impresora.getSerial());
+            dto.setPropiedad(impresora.getPropiedad());
+            dto.setPlaqueta(impresora.getPlaqueta());
+            dto.setTipoRecarga(impresora.getTipoRecarga());
+            dto.setFacturaCompra(impresora.getFacturaCompra());
+            dto.setFechaCompra(impresora.getFechaCompra());
+            dto.setActivo(impresora.getActivo());
+            dto.setDescripcion(impresora.getDescripcion());
+            dto.setEstado(impresora.getEstado());
+
+            // Mapear relaciones
+            if (impresora.getTipo() != null) {
+                dto.setTipoDescripcion(impresora.getTipo().getDescripcion());
+            }
+            if (impresora.getMarca() != null) {
+                dto.setMarcaDescripcion(impresora.getMarca().getDescripcion());
+            }
+            if (impresora.getModelo() != null) {
+                dto.setModeloDescripcion(impresora.getModelo().getDescripcion());
+            }
+
+            // 🔵 AGREGAR INFORMACION DE ASIGNACION
+            Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(impresora.getSerial());
+
+            if (asignacion != null) {
+                dto.setAsignado(true);
+                dto.setAsignadoA(asignacion.getEmpleado().getNombre() + " " + asignacion.getEmpleado().getApellido());
+                dto.setAsignacionId(asignacion.getCodigo());
+            } else {
+                dto.setAsignado(false);
+                dto.setAsignadoA(null);
+                dto.setAsignacionId(null);
+            }
+
+            resultado.add(dto);
+        }
+
+        return resultado;
     }
 }

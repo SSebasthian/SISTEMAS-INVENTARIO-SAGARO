@@ -1,4 +1,4 @@
-package com.sistemas_inventario_backend.DTOs;
+package com.sistemas_inventario_backend.DTOs.Solicitud;
 import lombok.Data;
 import java.time.LocalDate;
 

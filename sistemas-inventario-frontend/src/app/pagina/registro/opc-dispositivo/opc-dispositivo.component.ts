@@ -17,7 +17,7 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 
 import { RegistroDispositivoService } from '../../../arquitectura/servicio/registro/registroDispositivo.service';
 import { DispositivoMovilRegistro } from './../../../arquitectura/interface/Registro/DispositivoMovilRegistro.interface';
-import { DispositivoMovilLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/DispositivoMovilRespuesta.interface';
+import { DispositivoMovilLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoMovil.interface';
 
 import { PermisoModuloService } from '../../../arquitectura/servicio/autenticacion/permiso-modulo.service';
 

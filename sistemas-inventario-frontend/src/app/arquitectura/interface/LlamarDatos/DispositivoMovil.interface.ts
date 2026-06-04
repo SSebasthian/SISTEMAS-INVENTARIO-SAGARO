@@ -29,5 +29,10 @@ export interface DispositivoMovilLlamarDatos {
     modelo: ModeloLlamarDatos;
     sistemaOperativo: SOLlamarDatos;
     versionSO: VersionSOLlamarDatos;
+
+    // Asignacion
+    asignado: boolean;
+    asignadoA: string | null;
+    asignacionId: number | null;
     
 }

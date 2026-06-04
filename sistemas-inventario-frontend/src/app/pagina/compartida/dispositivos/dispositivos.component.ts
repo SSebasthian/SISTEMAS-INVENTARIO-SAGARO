@@ -2,14 +2,18 @@ import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { DispositivoMovilLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/DispositivoMovilRespuesta.interface';
+import { DispositivoMovilLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoMovil.interface';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 import { ConsultarDispositivoService } from './../../../arquitectura/servicio/consulta/ConsultarDispositivo.service';
+import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 import { A11yModule } from "@angular/cdk/a11y";
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { forkJoin } from 'rxjs';
+
 
 @Component({
   selector: 'app-dispositivos',
-  imports: [CommonModule, FormsModule, MatIconModule, A11yModule],
+  imports: [CommonModule, FormsModule, MatIconModule, A11yModule, MatTooltipModule],
   templateUrl: './dispositivos.component.html',
   styleUrl: './dispositivos.component.css'
 })
@@ -32,6 +36,7 @@ export class DispositivosComponent implements OnInit {
   constructor(
     private consultarDispositivoService: ConsultarDispositivoService,
     private notificacionSnackbarService: NotificacionSnackbarService,
+    private consultarAsignacionesService: ConsultarAsignacionesService,
     private elementRef: ElementRef //CERRAR FILTRO AL DAR CLIC AFUERA
   ) { }
 
@@ -41,10 +46,35 @@ export class DispositivosComponent implements OnInit {
 
   cargarDispositivos(): void {
     this.consultarDispositivoService.listarDispositivos().subscribe({
-      next: (data) => {
-        this.dispositivos = data;
-        this.dispositivosFiltrados = [...data];
-        this.actualizarPaginacion();
+      next: (dispositivos) => {
+        const peticiones = dispositivos.map(dispositivo =>
+          this.consultarAsignacionesService.obtenerAsignacionActual(dispositivo.serial)
+        );
+        forkJoin(peticiones).subscribe({
+          next: (respuestas: any[]) => {
+            this.dispositivos = dispositivos.map((dispositivo, index) => {
+              const asignacion = respuestas[index];
+              if (asignacion?.activo) {
+                dispositivo.asignado = true;
+                dispositivo.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
+                dispositivo.asignacionId = asignacion.codigo;
+              } else {
+                dispositivo.asignado = false;
+                dispositivo.asignadoA = null;
+                dispositivo.asignacionId = null;
+              }
+              return dispositivo;
+            });
+            this.dispositivosFiltrados = [...this.dispositivos];
+            this.actualizarPaginacion();
+          },
+          error: (err) => {
+            console.error('Error al obtener asignaciones para dispositivos:', err);
+            this.dispositivos = dispositivos;
+            this.dispositivosFiltrados = [...this.dispositivos];
+            this.actualizarPaginacion();
+          }
+        });
       },
       error: (err) => {
         console.error('Error al cargar dispositivos:', err);
@@ -73,11 +103,7 @@ export class DispositivosComponent implements OnInit {
       operador: 'AND',
       reglas: [{ condicion: 'Empieza con', valor: '' }]
     },
-    imei1: {
-      operador: 'AND',
-      reglas: [{ condicion: 'Empieza con', valor: '' }]
-    },
-    imei2: {
+    imei: {
       operador: 'AND',
       reglas: [{ condicion: 'Empieza con', valor: '' }]
     },
@@ -111,6 +137,9 @@ export class DispositivosComponent implements OnInit {
     fechaCompra: {
       operador: 'AND',
       reglas: [{ condicion: 'La fecha es', valor: '' }]
+    },
+    asignacion: {
+      valor: ''
     }
   };
 
@@ -133,8 +162,7 @@ export class DispositivosComponent implements OnInit {
         this.aplicarFiltroMarca(dispositivo) &&
         this.aplicarFiltroModelo(dispositivo) &&
         this.aplicarFiltroSerial(dispositivo) &&
-        this.aplicarFiltroImei1(dispositivo) &&
-        this.aplicarFiltroImei2(dispositivo) &&
+        this.aplicarFiltroImei(dispositivo) &&
         this.aplicarFiltroEstado(dispositivo) &&
         this.aplicarFiltroProcesador(dispositivo) &&
         this.aplicarFiltroRam(dispositivo) &&
@@ -142,7 +170,8 @@ export class DispositivosComponent implements OnInit {
         this.aplicarFiltroPulgadas(dispositivo) &&
         this.aplicarFiltroSO(dispositivo) &&
         this.aplicarFiltroFacturaCompra(dispositivo) &&
-        this.aplicarFiltroFechaCompra(dispositivo);
+        this.aplicarFiltroFechaCompra(dispositivo) &&
+        this.aplicarFiltroAsignacion(dispositivo);
     });
 
     if (this.terminoBusqueda && this.terminoBusqueda.trim() !== '') {
@@ -170,7 +199,10 @@ export class DispositivosComponent implements OnInit {
   limpiarFiltro(columna: string): void {
     if (columna === 'estado') {
       this.filtros.estado.valor = '';
+    } else if (columna === 'asignacion') {
+      this.filtros.asignacion.valor = '';
     } else {
+      // Para los filtros con reglas (tipo, marca, etc.)
       this.filtros[columna].reglas = [{ condicion: 'Empieza con', valor: '' }];
       this.filtros[columna].operador = 'AND';
     }
@@ -188,10 +220,8 @@ export class DispositivosComponent implements OnInit {
     this.filtros.modelo.operador = 'AND';
     this.filtros.serial.reglas = [{ condicion: 'Empieza con', valor: '' }];
     this.filtros.serial.operador = 'AND';
-    this.filtros.imei1.reglas = [{ condicion: 'Empieza con', valor: '' }];
-    this.filtros.imei1.operador = 'AND';
-    this.filtros.imei2.reglas = [{ condicion: 'Empieza con', valor: '' }];
-    this.filtros.imei2.operador = 'AND';
+    this.filtros.imei.reglas = [{ condicion: 'Contiene', valor: '' }];
+    this.filtros.imei.operador = 'AND';
     this.filtros.estado.valor = '';
     this.filtros.procesador.reglas = [{ condicion: 'Empieza con', valor: '' }];
     this.filtros.procesador.operador = 'AND';
@@ -207,6 +237,7 @@ export class DispositivosComponent implements OnInit {
     this.filtros.facturaCompra.operador = 'AND';
     this.filtros.fechaCompra.reglas = [{ condicion: 'La fecha es', valor: '' }];
     this.filtros.fechaCompra.operador = 'AND';
+    this.filtros.asignacion.valor = '';
     this.terminoBusqueda = '';
     this.paginaActual = 1;
     this.registrosPorPagina = 10;
@@ -218,44 +249,57 @@ export class DispositivosComponent implements OnInit {
   aplicarFiltroTipo(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.tipo;
     const valor = dispositivo.tipo?.descripcion?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
 
   aplicarFiltroMarca(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.marca;
     const valor = dispositivo.marca?.descripcion?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
 
   aplicarFiltroModelo(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.modelo;
     const valor = dispositivo.modelo?.descripcion?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
 
   aplicarFiltroSerial(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.serial;
     const valor = dispositivo.serial?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
 
-  aplicarFiltroImei1(dispositivo: DispositivoMovilLlamarDatos): boolean {
-    const filtro = this.filtros.imei1;
-    const valor = dispositivo.imei1?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
-    return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
+  aplicarFiltroImei(dispositivo: DispositivoMovilLlamarDatos): boolean {
+    const filtro = this.filtros.imei;
+    const valorImei1 = dispositivo.imei1?.toLowerCase() || '';
+    const valorImei2 = dispositivo.imei2?.toLowerCase() || '';
+
+    // Cada regla se cumple si al menos uno de los dos IMEI la cumple
+    const resultados = filtro.reglas.map((regla: any) => {
+      if (!regla.valor) return true;
+      const filtroValor = regla.valor.toLowerCase();
+      const cumple1 = this.evaluarReglaIndividual(valorImei1, regla.condicion, filtroValor);
+      const cumple2 = this.evaluarReglaIndividual(valorImei2, regla.condicion, filtroValor);
+      return cumple1 || cumple2;
+    });
+    // Tipar 'r' como boolean
+    return filtro.operador === 'AND' ? resultados.every((r: boolean) => r) : resultados.some((r: boolean) => r);
   }
 
-  aplicarFiltroImei2(dispositivo: DispositivoMovilLlamarDatos): boolean {
-    const filtro = this.filtros.imei2;
-    const valor = dispositivo.imei2?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
-    return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
+
+  private evaluarReglaIndividual(valor: string, condicion: string, filtroValor: string): boolean {
+    switch (condicion) {
+      case 'Empieza con': return valor.startsWith(filtroValor);
+      case 'Contiene': return valor.includes(filtroValor);
+      case 'No contiene': return !valor.includes(filtroValor);
+      case 'Termina con': return valor.endsWith(filtroValor);
+      case 'Iguales': return valor === filtroValor;
+      case 'No es igual': return valor !== filtroValor;
+      default: return true;
+    }
   }
+
 
   aplicarFiltroEstado(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtroValor = this.filtros.estado.valor;
@@ -266,42 +310,37 @@ export class DispositivosComponent implements OnInit {
   aplicarFiltroProcesador(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.procesador;
     const valor = dispositivo.procesador?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
 
   aplicarFiltroRam(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.ram;
     const valor = dispositivo.ram?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
 
   aplicarFiltroAlmacenamiento(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.almacenamiento;
     const valor = dispositivo.almacenamiento?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
 
   aplicarFiltroPulgadas(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.pulgadas;
     const valor = dispositivo.pulgadas?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
+
 
   aplicarFiltroSO(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.sistemaOperativo;
     const valor = `${dispositivo.sistemaOperativo?.descripcion || ''} ${dispositivo.versionSO?.descripcion || ''}`.toLowerCase();
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
 
   aplicarFiltroFacturaCompra(dispositivo: DispositivoMovilLlamarDatos): boolean {
     const filtro = this.filtros.facturaCompra;
     const valor = dispositivo.facturaCompra?.toLowerCase() || '';
-    if (!filtro.reglas[0].valor) return true;
     return this.evaluarReglas(valor, filtro.reglas, filtro.operador);
   }
 
@@ -342,7 +381,18 @@ export class DispositivosComponent implements OnInit {
       }
     });
 
-    return filtro.operador === 'AND' ? resultados.every((r: boolean) => r === true) : resultados.some((r: boolean) => r === true);
+    // Corregido: tipado explícito de 'r'
+    return filtro.operador === 'AND'
+      ? resultados.every((r: boolean) => r)
+      : resultados.some((r: boolean) => r);
+  }
+
+  aplicarFiltroAsignacion(equipo: DispositivoMovilLlamarDatos): boolean {
+    const filtroValor = this.filtros.asignacion.valor;
+    if (!filtroValor) return true;
+    // Tratar undefined/null como false (disponible)
+    const asignadoReal = equipo.asignado === true;
+    return (filtroValor === 'true') === asignadoReal;
   }
 
 
@@ -357,8 +407,7 @@ export class DispositivosComponent implements OnInit {
           this.aplicarFiltroMarca(dispositivo) &&
           this.aplicarFiltroModelo(dispositivo) &&
           this.aplicarFiltroSerial(dispositivo) &&
-          this.aplicarFiltroImei1(dispositivo) &&
-          this.aplicarFiltroImei2(dispositivo) &&
+          this.aplicarFiltroImei(dispositivo) &&
           this.aplicarFiltroEstado(dispositivo) &&
           this.aplicarFiltroProcesador(dispositivo) &&
           this.aplicarFiltroRam(dispositivo) &&
@@ -388,7 +437,6 @@ export class DispositivosComponent implements OnInit {
     this.terminoBusqueda = '';
     this.buscarDispositivos();
   }
-
 
   toggleSearch(): void {
     this.searchExpanded = !this.searchExpanded;
@@ -468,9 +516,10 @@ export class DispositivosComponent implements OnInit {
     return this.dispositivos.filter(d => d.activo === false).length;
   }
 
-  obtenerDispositivosPorEstado(estado: string): number {
-    return this.dispositivos.filter(d => d.estado === estado).length;
+  obtenerTotalDisponibles(): number {
+    return this.dispositivos.filter(e => !e.asignado).length;
   }
+
 
   // DETALLES TARJETAS
   toggleDetalle(tipo: string): void {
@@ -489,8 +538,12 @@ export class DispositivosComponent implements OnInit {
     return this.dispositivos.filter(d => d.tipo?.descripcion === tipo && d.activo === false).length;
   }
 
+  // Equipos NO asignados por tipo especifico
   obtenerDisponiblesPorTipo(tipo: string): number {
-    return this.dispositivos.filter(d => d.tipo?.descripcion === tipo && d.estado === 'DISPONIBLE').length;
+    return this.dispositivos.filter(e =>
+      e.tipo?.descripcion === tipo &&
+      !e.asignado
+    ).length;
   }
 
   // UTILIDADES
@@ -640,7 +693,11 @@ export class DispositivosComponent implements OnInit {
   filtroTieneValor(columna: string): boolean {
     if (columna === 'estado') {
       return this.filtros.estado.valor !== '' && this.filtros.estado.valor !== null;
-    } else {
+    }
+    else if (columna === 'asignacion') {
+      return this.filtros.asignacion.valor !== '' && this.filtros.asignacion.valor !== null;
+    }
+    else {
       const filtro = this.filtros[columna];
       if (filtro && filtro.reglas && Array.isArray(filtro.reglas)) {
         return filtro.reglas.some((regla: any) =>
@@ -663,6 +720,7 @@ export class DispositivosComponent implements OnInit {
       }
     }
     if (this.filtros.estado.valor !== '' && this.filtros.estado.valor !== null) return true;
+    if (this.filtros.asignacion.valor !== '' && this.filtros.asignacion.valor !== null) return true;
     return false;
   }
 }

@@ -76,11 +76,11 @@
             </button>
             <mat-icon [class.oculto]="detalleVisible === 'disponibles'">dns</mat-icon>
             <div class="info" [class.oculto]="detalleVisible === 'disponibles'">
-                <span class="numero">{{ obtenerPorEstado('DISPONIBLE') }}</span>
+                <span class="numero">{{ obtenerTotalDisponibles() }}</span>
                 <span class="etiqueta">Disponibles</span>
             </div>
             <div class="detalle-hover" [class.visible]="detalleVisible === 'disponibles'">
-                <h4><mat-icon>inventory</mat-icon> Disponibles: {{ obtenerEquiposPorEstado('DISPONIBLE') }}</h4>
+                <h4><mat-icon>inventory</mat-icon> Disponibles: {{ obtenerTotalDisponibles() }}</h4>
                 <div class="detalle-grid">
                     <p>TINT: {{ obtenerDisponiblesPorTipo('INYECCION DE TINTA') }}</p>
                     <p>LASR: {{ obtenerDisponiblesPorTipo('LASER') }}</p>
@@ -178,13 +178,23 @@
                         </div>
                     </th>
 
+                    <th [class.filtro-activo]="filtroTieneValor('asignacion')">
+                        &nbsp;
+                        <div class="icon-asignacion-titulo">
+                            <a (click)="abrirFiltro('asignacion')"><mat-icon>filter_list</mat-icon> &nbsp; &nbsp;</a>
+                            <div class="filtro" *ngIf="filtroActivo === 'asignacion'">
+                                <ng-container *ngTemplateOutlet="templateFiltroAsignacion"></ng-container>
+                            </div>
+                        </div>
+                    </th>
+
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let impresora of impresorasPaginadas">
 
                     <td class="propiedad">
-                          {{ impresora.propiedad }}
+                        {{ impresora.propiedad }}
                     </td>
 
                     <td class="tipo">
@@ -233,6 +243,24 @@
                                 {{ getEstadoCorto(impresora.estado) }}
                             </span>
                         </span>
+                    </td>
+                    <td class="asignacion">
+                        <!-- Asignado a empleado -->
+                        <mat-icon *ngIf="impresora.asignado && impresora.tipoAsignacion === 'empleado'"
+                            class="icono-asignado" [matTooltip]="'Asignado a: ' + impresora.asignadoA">
+                            person
+                        </mat-icon>
+
+                        <!-- Asignado a Area -->
+                        <mat-icon *ngIf="impresora.asignado && impresora.tipoAsignacion === 'area'" class="icono-area"
+                            [matTooltip]="'Asignado al área: ' + impresora.asignadoA">
+                            room
+                        </mat-icon>
+
+                        <!-- Disponible (no asignado) -->
+                        <mat-icon *ngIf="!impresora.asignado" class="icono-disponible" matTooltip="Disponible">
+                            person_outline
+                        </mat-icon>
                     </td>
 
                 </tr>
@@ -382,7 +410,7 @@
     <ng-template #templateFiltroEstado>
         <select class="select-operador" [(ngModel)]="filtros.estado.valor">
             <option value="">TODOS</option>
-            <option value="BUEN ESTADO">ÓPTIMO</option>
+            <option value="BUEN ESTADO">OPTIMO</option>
             <option value="ESTADO REGULAR">REGULAR</option>
             <option value="ESTADO DEFICIENTE">DEFICIENTE</option>
             <option value="INOPERATIVO">INOPERATIVO</option>
@@ -390,6 +418,20 @@
         <div class="acciones-filtro">
             <div class="opc">
                 <button class="btn-limpiar" (click)="limpiarFiltro('estado')">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #templateFiltroAsignacion>
+        <select class="select-operador" [(ngModel)]="filtros.asignacion.valor">
+            <option value="">TODOS</option>
+            <option value="true">EN USO</option>
+            <option value="false">DISPONIBLE</option>
+        </select>
+        <div class="acciones-filtro">
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro('asignacion')">Limpiar</button>
                 <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
             </div>
         </div>

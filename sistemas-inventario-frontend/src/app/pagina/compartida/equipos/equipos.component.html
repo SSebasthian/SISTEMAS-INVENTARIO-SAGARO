@@ -47,7 +47,7 @@
         </div>
 
         <div class="tarjeta-resumen inactivos" [class.activa]="detalleVisible === 'inactivos'">
-             <button class="btn-detalle" (click)="toggleDetalle('inactivos')">
+            <button class="btn-detalle" (click)="toggleDetalle('inactivos')">
                 <mat-icon>
                     {{ detalleVisible === 'inactivos' ? 'close' : 'whatshot' }}
                 </mat-icon>
@@ -70,17 +70,16 @@
 
         <div class="tarjeta-resumen disponibles" [class.activa]="detalleVisible === 'disponibles'">
             <button class="btn-detalle" (click)="toggleDetalle('disponibles')">
-                <mat-icon>
-                    {{ detalleVisible === 'disponibles' ? 'close' : 'whatshot' }}
-                </mat-icon>
+                <mat-icon>{{ detalleVisible === 'disponibles' ? 'close' : 'whatshot' }}</mat-icon>
             </button>
             <mat-icon [class.oculto]="detalleVisible === 'disponibles'">dns</mat-icon>
             <div class="info" [class.oculto]="detalleVisible === 'disponibles'">
-                <span class="numero">{{ obtenerEquiposPorEstado('DISPONIBLE') }}</span>
+                <span class="numero">{{ obtenerTotalDisponibles() }}</span>
                 <span class="etiqueta">Disponibles</span>
             </div>
+
             <div class="detalle-hover" [class.visible]="detalleVisible === 'disponibles'">
-                <h4><mat-icon>dns</mat-icon>Total Disponible</h4>
+                <h4><mat-icon>dns</mat-icon>Total Disponible {{ obtenerTotalDisponibles() }}</h4>
                 <div class="detalle-grid">
                     <p>Torre: {{ obtenerDisponiblesPorTipo('TORRE') }}</p>
                     <p>Portatil: {{ obtenerDisponiblesPorTipo('PORTATIL') }}</p>
@@ -89,6 +88,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- FILTRO GENERAL -->
@@ -190,6 +190,15 @@
                         </div>
                     </th>
 
+                    <th [class.filtro-activo]="filtroTieneValor('asignacion')">
+                        &nbsp;
+                        <div class="icon-asignacion-titulo">
+                            <a (click)="abrirFiltro('asignacion')"><mat-icon>filter_list</mat-icon> &nbsp; &nbsp;</a>
+                            <div class="filtro" *ngIf="filtroActivo === 'asignacion'">
+                                <ng-container *ngTemplateOutlet="templateFiltroAsignacion"></ng-container>
+                            </div>
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -276,6 +285,18 @@
                         </span>
                     </td>
 
+                    <td class="asignacion">
+                        <div class="icon-asignacion">
+                            <!-- ICONO DE ASIGNACION -->
+                            <mat-icon *ngIf="equipo.asignado" class="icono-asignado"
+                                [matTooltip]="'Asignado a: ' + equipo.asignadoA">
+                                person
+                            </mat-icon>
+                            <mat-icon *ngIf="!equipo.asignado" class="icono-disponible" matTooltip="Disponible">
+                                person_outline
+                            </mat-icon>
+                        </div>
+                    </td>
 
                 </tr>
                 <tr *ngIf="equiposFiltrados.length === 0">
@@ -436,6 +457,21 @@
         <div class="acciones-filtro">
             <div class="opc">
                 <button class="btn-limpiar" (click)="limpiarFiltro('estado')">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+
+    <ng-template #templateFiltroAsignacion>
+        <select class="select-operador" [(ngModel)]="filtros.asignacion.valor">
+            <option value="">TODOS</option>
+            <option value="true">EN USO</option>
+            <option value="false">DISPONIBLE</option>
+        </select>
+        <div class="acciones-filtro">
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro('asignacion')">Limpiar</button>
                 <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
             </div>
         </div>

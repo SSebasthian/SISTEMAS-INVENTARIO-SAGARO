@@ -1,5 +1,6 @@
 package com.sistemas_inventario_backend.controladores;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.ImpresoraRespuesta;
 import com.sistemas_inventario_backend.entidades.Impresora;
 import com.sistemas_inventario_backend.servicios.ImpresoraService;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +70,20 @@ public class ImpresoraController {
     public ResponseEntity<?> buscar(@RequestParam String termino) {
         try {
             List<Impresora> impresoras = impresoraService.buscarPorTermino(termino);
+            return ResponseEntity.ok(impresoras);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+
+    // ENDPOINT: listar equipos con estado de asignacion
+
+    @GetMapping("/listar-con-asignacion")
+    public ResponseEntity<?> listarConAsignacion() {
+        try {
+            List<ImpresoraRespuesta> impresoras = impresoraService.listarConEstadoAsignacion();
             return ResponseEntity.ok(impresoras);
         } catch (Exception e) {
             return ResponseEntity.badRequest()

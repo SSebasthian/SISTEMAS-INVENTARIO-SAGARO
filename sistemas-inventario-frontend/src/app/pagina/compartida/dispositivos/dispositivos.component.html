@@ -73,11 +73,11 @@
             </button>
             <mat-icon [class.oculto]="detalleVisible === 'disponibles'">dns</mat-icon>
             <div class="info" [class.oculto]="detalleVisible === 'disponibles'">
-                <span class="numero">{{ obtenerDispositivosPorEstado('DISPONIBLE') }}</span>
+                <span class="numero">{{ obtenerTotalDisponibles() }}</span>
                 <span class="etiqueta">Disponibles</span>
             </div>
             <div class="detalle-hover" [class.visible]="detalleVisible === 'disponibles'">
-                <h4><mat-icon>dns</mat-icon>Total Disponible</h4>
+                <h4><mat-icon>dns</mat-icon>Total Disponible {{ obtenerTotalDisponibles() }}</h4>
                 <div class="detalle-grid">
                     <p>Celular: {{ obtenerDisponiblesPorTipo('CELULAR') }}</p>
                     <p>Tablet: {{ obtenerDisponiblesPorTipo('TABLET') }}</p>
@@ -179,8 +179,10 @@
                             <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
                         </div>
                     </th> -->
+
                     <th [class.filtro-activo]="filtroTieneValor('sistemaOperativo')">
-                        SISTEMA OPERATIVO
+                        <span class="texto-largo">SISTEMA OPERATIVO</span>
+                        <span class="texto-corto">SISTEMA O.&nbsp;&nbsp;</span>
                         <a (click)="abrirFiltro('sistemaOperativo')"><mat-icon>filter_list</mat-icon></a>
                         <div class="filtro" *ngIf="filtroActivo === 'sistemaOperativo'">
                             <ng-container *ngTemplateOutlet="templateFiltro"></ng-container>
@@ -198,6 +200,15 @@
                         <a (click)="abrirFiltro('estado')"><mat-icon>filter_list</mat-icon></a>
                         <div class="filtro" *ngIf="filtroActivo === 'estado'">
                             <ng-container *ngTemplateOutlet="templateFiltroEstado"></ng-container>
+                        </div>
+                    </th>
+                    <th [class.filtro-activo]="filtroTieneValor('asignacion')">
+                        &nbsp;
+                        <div class="icon-asignacion-titulo">
+                            <a (click)="abrirFiltro('asignacion')"><mat-icon>filter_list</mat-icon> &nbsp; &nbsp;</a>
+                            <div class="filtro" *ngIf="filtroActivo === 'asignacion'">
+                                <ng-container *ngTemplateOutlet="templateFiltroAsignacion"></ng-container>
+                            </div>
                         </div>
                     </th>
                 </tr>
@@ -298,6 +309,17 @@
                                 {{ getEstadoCorto(dispositivo.estado) }}
                             </span>
                         </span>
+                    </td>
+
+                    <td class="asignacion">
+                        <!-- ICONO DE ASIGNACION -->
+                        <mat-icon *ngIf="dispositivo.asignado" class="icono-asignado"
+                            [matTooltip]="'Asignado a: ' + dispositivo.asignadoA">
+                            person
+                        </mat-icon>
+                        <mat-icon *ngIf="!dispositivo.asignado" class="icono-disponible" matTooltip="Disponible">
+                            person_outline
+                        </mat-icon>
                     </td>
                 </tr>
                 <tr *ngIf="dispositivosFiltrados.length === 0">
@@ -454,6 +476,21 @@
         <div class="acciones-filtro">
             <div class="opc">
                 <button class="btn-limpiar" (click)="limpiarFiltro('estado')">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+
+    <ng-template #templateFiltroAsignacion>
+        <select class="select-operador" [(ngModel)]="filtros.asignacion.valor">
+            <option value="">TODOS</option>
+            <option value="true">EN USO</option>
+            <option value="false">DISPONIBLE</option>
+        </select>
+        <div class="acciones-filtro">
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro('asignacion')">Limpiar</button>
                 <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
             </div>
         </div>

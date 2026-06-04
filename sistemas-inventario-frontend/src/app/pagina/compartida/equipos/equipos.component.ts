@@ -5,12 +5,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { EquipoDeComputoLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/EquipoDeComputoRespuesta.interface';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 import { ConsultarEquipoService } from '../../../arquitectura/servicio/consulta/ConsultarEquipo.service';
+import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 import { A11yModule } from "@angular/cdk/a11y";
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { forkJoin } from 'rxjs';
+
 
 
 @Component({
   selector: 'app-equipos',
-  imports: [CommonModule, FormsModule, MatIconModule, A11yModule],
+  imports: [CommonModule, FormsModule, MatIconModule, A11yModule, MatTooltipModule],
   templateUrl: './equipos.component.html',
   styleUrl: './equipos.component.css'
 })
@@ -36,6 +40,7 @@ export class EquiposComponent implements OnInit {
   constructor(
     private consultarEquipoService: ConsultarEquipoService,
     private notificacionSnackbarService: NotificacionSnackbarService,
+    private consultarAsignacionesService: ConsultarAsignacionesService,
     private elementRef: ElementRef //CERRAR FILTRO AL DAR CLIC AFUERA
   ) { }
 
@@ -45,10 +50,35 @@ export class EquiposComponent implements OnInit {
 
   cargarEquipos(): void {
     this.consultarEquipoService.listarEquipos().subscribe({
-      next: (data) => {
-        this.equipos = data;
-        this.equiposFiltrados = [...data];
-        this.actualizarPaginacion();
+      next: (equipos) => {
+        const peticiones = equipos.map(equipo =>
+          this.consultarAsignacionesService.obtenerAsignacionActual(equipo.serial)
+        );
+        forkJoin(peticiones).subscribe({
+          next: (respuestas: any[]) => {
+            this.equipos = equipos.map((equipo, index) => {
+              const asignacion = respuestas[index];
+              if (asignacion?.activo) {
+                equipo.asignado = true;
+                equipo.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
+                equipo.asignacionId = asignacion.codigo;
+              } else {
+                equipo.asignado = false;
+                equipo.asignadoA = null;
+                equipo.asignacionId = null;
+              }
+              return equipo;
+            });
+            this.equiposFiltrados = [...this.equipos];
+            this.actualizarPaginacion();
+          },
+          error: (err) => {
+            console.error('Error al obtener asignaciones:', err);
+            this.equipos = equipos;
+            this.equiposFiltrados = [...this.equipos];
+            this.actualizarPaginacion();
+          }
+        });
       },
       error: (err) => {
         console.error('Error al cargar equipos:', err);
@@ -106,6 +136,9 @@ export class EquiposComponent implements OnInit {
     fechaCompra: {
       operador: 'AND',
       reglas: [{ condicion: 'La fecha es', valor: '' }]
+    },
+    asignacion: {
+      valor: ''
     }
   };
 
@@ -136,7 +169,8 @@ export class EquiposComponent implements OnInit {
         this.aplicarFiltroDisco(equipo) &&
         this.aplicarFiltroSO(equipo) &&
         this.aplicarFiltroFacturaCompra(equipo) &&
-        this.aplicarFiltroFechaCompra(equipo);
+        this.aplicarFiltroFechaCompra(equipo) &&
+        this.aplicarFiltroAsignacion(equipo);
     });
     if (this.terminoBusqueda && this.terminoBusqueda.trim() !== '') {
       this.equiposFiltrados = equiposFiltradosPorColumnas.filter(equipo => {
@@ -162,7 +196,10 @@ export class EquiposComponent implements OnInit {
   limpiarFiltro(columna: string): void {
     if (columna === 'estado') {
       this.filtros.estado.valor = '';
+    } else if (columna === 'asignacion') {
+      this.filtros.asignacion.valor = '';
     } else {
+      // Para los filtros con reglas (tipo, marca, etc.)
       this.filtros[columna].reglas = [{ condicion: 'Empieza con', valor: '' }];
       this.filtros[columna].operador = 'AND';
     }
@@ -193,6 +230,7 @@ export class EquiposComponent implements OnInit {
     this.filtros.sistemaOperativo.operador = 'AND';
     this.filtros.fechaCompra.reglas = [{ condicion: 'La fecha es', valor: '' }];
     this.filtros.fechaCompra.operador = 'AND';
+    this.filtros.asignacion.valor = '';
     this.terminoBusqueda = '';
     this.paginaActual = 1;
     this.registrosPorPagina = 10;
@@ -322,6 +360,14 @@ export class EquiposComponent implements OnInit {
     }
   }
 
+  aplicarFiltroAsignacion(equipo: EquipoDeComputoLlamarDatos): boolean {
+    const filtroValor = this.filtros.asignacion.valor;
+    if (!filtroValor) return true;
+    // Tratar undefined/null como false (disponible)
+    const asignadoReal = equipo.asignado === true;
+    return (filtroValor === 'true') === asignadoReal;
+  }
+
 
 
   // BUSCADOR
@@ -342,7 +388,8 @@ export class EquiposComponent implements OnInit {
           this.aplicarFiltroDisco(equipo) &&
           this.aplicarFiltroSO(equipo) &&
           this.aplicarFiltroFacturaCompra(equipo) &&
-          this.aplicarFiltroFechaCompra(equipo);
+          this.aplicarFiltroFechaCompra(equipo) &&
+          this.aplicarFiltroAsignacion(equipo);
       });
       this.equiposFiltrados = equiposFiltradosPorFiltros.filter(equipo => {
         const textoBusqueda = `${equipo.tipo?.descripcion || ''} ${equipo.marca?.descripcion || ''} ${equipo.modelo?.descripcion || ''} ${equipo.serial} ${equipo.plaqueta} ${equipo.procesador} ${equipo.ram} ${equipo.disco} ${equipo.sistemaOperativo?.descripcion || ''} ${equipo.facturaCompra || ''}`.toLowerCase();
@@ -455,9 +502,10 @@ export class EquiposComponent implements OnInit {
     return this.equipos.filter(e => e.activo === false).length;
   }
 
-  obtenerEquiposPorEstado(estado: string): number {
-    return this.equipos.filter(e => e.estado === estado).length;
+  obtenerTotalDisponibles(): number {
+    return this.equipos.filter(e => !e.asignado).length;
   }
+
 
 
 
@@ -487,9 +535,12 @@ export class EquiposComponent implements OnInit {
   }
 
 
-  // Disponibles por tipo
+  // Equipos NO asignados por tipo especifico
   obtenerDisponiblesPorTipo(tipo: string): number {
-    return this.equipos.filter(e => e.tipo?.descripcion === tipo && e.estado === 'DISPONIBLE').length;
+    return this.equipos.filter(e =>
+      e.tipo?.descripcion === tipo &&
+      !e.asignado
+    ).length;
   }
 
 
@@ -661,7 +712,11 @@ export class EquiposComponent implements OnInit {
   filtroTieneValor(columna: string): boolean {
     if (columna === 'estado') {
       return this.filtros.estado.valor !== '' && this.filtros.estado.valor !== null;
-    } else {
+    }
+    else if (columna === 'asignacion') {
+      return this.filtros.asignacion.valor !== '' && this.filtros.asignacion.valor !== null;
+    }
+    else {
       const filtro = this.filtros[columna];
       if (filtro && filtro.reglas && Array.isArray(filtro.reglas)) {
         return filtro.reglas.some((regla: any) =>
@@ -685,6 +740,7 @@ export class EquiposComponent implements OnInit {
       }
     }
     if (this.filtros.estado.valor !== '' && this.filtros.estado.valor !== null) return true;
+    if (this.filtros.asignacion.valor !== '' && this.filtros.asignacion.valor !== null) return true;
     return false;
   }
 

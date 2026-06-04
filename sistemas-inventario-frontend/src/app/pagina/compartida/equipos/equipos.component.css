@@ -109,7 +109,7 @@
     pointer-events: none;
 }
 
-.tarjeta-resumen > mat-icon.oculto {
+.tarjeta-resumen>mat-icon.oculto {
     opacity: 0;
     visibility: hidden;
 }
@@ -145,12 +145,12 @@
     padding: 5px;
     text-align: center;
     border-radius: 8px;
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
     font-size: 14px;
     font-weight: 500;
 }
 
- .btn-detalle {
+.btn-detalle {
     position: absolute;
     top: 0;
     right: 5px;
@@ -274,6 +274,7 @@
     overflow-x: auto;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border: 1px solid #e8e8e8;
+
 }
 
 .tabla-equipos {
@@ -462,6 +463,24 @@
     display: none;
 }
 
+.icon-asignacion-titulo {
+    position: absolute;
+    right: initial;
+    margin-top: -15px;
+    margin-left: -20px;
+}
+
+td.asignacion {
+    width: 10px;
+    min-width: 10px;
+    max-width: 10px;
+    padding: 0;
+}
+
+td.asignacion mat-icon {
+    cursor: pointer;
+    margin-left: -20px;
+}
 
 /* Fechas */
 .fecha-texto {
@@ -475,6 +494,8 @@
 .fecha-texto span:last-child {
     font-size: 12px;
 }
+
+
 
 
 /* FILTROS */
@@ -491,7 +512,11 @@
 }
 
 .tabla-equipos th:nth-child(11) .filtro {
-    margin-left: -50px;
+    margin-left: -70px;
+}
+
+.tabla-equipos th:nth-child(12) .filtro {
+    margin-left: -160px;
 }
 
 .select-operador,
@@ -738,7 +763,7 @@
         font-size: 12px;
     }
 
-    
+
     .tabla-equipos th {
         font-size: 11px;
     }
@@ -792,5 +817,15 @@
         margin-left: -105px;
     }
 
+
+
+    .icon-asignacion-titulo {
+        margin-left: -10px;
+    }
+
+
+    td.asignacion mat-icon {
+        margin-left: -14px;
+    }
 
 }

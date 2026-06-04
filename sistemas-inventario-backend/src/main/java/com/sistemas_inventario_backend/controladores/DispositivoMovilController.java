@@ -1,5 +1,6 @@
 package com.sistemas_inventario_backend.controladores;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.DispositivoMovilRespuesta;
 import com.sistemas_inventario_backend.entidades.DispositivoMovil;
 import com.sistemas_inventario_backend.servicios.DispositivoMovilService;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +72,21 @@ public class DispositivoMovilController {
     public ResponseEntity<?> buscar(@RequestParam String termino) {
         try {
             List<DispositivoMovil> dispositivos = dispositivoMovilService.buscarPorTermino(termino);
+            return ResponseEntity.ok(dispositivos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+
+
+    // ENDPOINT: listar equipos con estado de asignacion
+
+    @GetMapping("/listar-con-asignacion")
+    public ResponseEntity<?> listarConAsignacion() {
+        try {
+            List<DispositivoMovilRespuesta> dispositivos = dispositivoMovilService.listarConEstadoAsignacion();
             return ResponseEntity.ok(dispositivos);
         } catch (Exception e) {
             return ResponseEntity.badRequest()

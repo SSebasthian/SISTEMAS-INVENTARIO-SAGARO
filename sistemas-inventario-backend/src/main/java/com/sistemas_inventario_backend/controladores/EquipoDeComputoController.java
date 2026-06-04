@@ -1,5 +1,6 @@
 package com.sistemas_inventario_backend.controladores;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.EquipoDeComputoRespuesta;
 import com.sistemas_inventario_backend.entidades.EquipoDeComputo;
 import com.sistemas_inventario_backend.servicios.EquipoDeComputoService;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +70,19 @@ public class EquipoDeComputoController {
     public ResponseEntity<?> buscarEquipos(@RequestParam String termino) {
         try {
             List<EquipoDeComputo> equipos = equipoService.buscarPorTermino(termino);
+            return ResponseEntity.ok(equipos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+
+    // ENDPOINT: listar equipos con estado de asignacion
+    @GetMapping("/listar-con-asignacion")
+    public ResponseEntity<?> listarConAsignacion() {
+        try {
+            List<EquipoDeComputoRespuesta> equipos = equipoService.listarConEstadoAsignacion();
             return ResponseEntity.ok(equipos);
         } catch (Exception e) {
             return ResponseEntity.badRequest()

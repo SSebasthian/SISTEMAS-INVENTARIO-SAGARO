@@ -62,7 +62,7 @@
 
 /* Estado CON sesión: dos columnas (menú + contenido) */
 .contenido-inventario-sistemas.con-menu {
-  grid-template-columns: var(--menu-width, 230px) 1fr;
+  grid-template-columns: var(--menu-width, 205px) 1fr;
 }
 
 .menu {
@@ -75,7 +75,7 @@
 }
 
 .contenido-inventario-sistemas.menu-minimizado.con-menu {
-  --menu-width: 80px;
+  --menu-width: 71px;
 }
 
 .pagina-dinamica {
