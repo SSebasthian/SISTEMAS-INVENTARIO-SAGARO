@@ -287,18 +287,29 @@
 
                     <td class="asignacion">
                         <div class="icon-asignacion">
-                            <!-- ICONO DE ASIGNACION -->
-                            <mat-icon *ngIf="equipo.asignado" class="icono-asignado"
-                                [matTooltip]="'Asignado a: ' + equipo.asignadoA">
-                                person
-                            </mat-icon>
-                            <mat-icon *ngIf="!equipo.asignado" class="icono-disponible" matTooltip="Disponible">
-                                person_outline
-                            </mat-icon>
+                            <div class="tooltip-asignacion-container">
+
+                                <!-- ICONO DE ASIGNACION -->
+                                <mat-icon *ngIf="equipo.asignado" class="icono-asignado">person</mat-icon>
+                                <div *ngIf="equipo.asignado" class="tooltip-asignacion-content">
+                                    <div class="tooltip-header">
+                                          <span>{{ equipo.asignadoArea }}</span>
+                                          <hr>
+                                        <span>{{ equipo.asignadoA }}</span>
+                                    </div>
+                                </div>
+                                <mat-icon *ngIf="!equipo.asignado" class="icono-disponible">person_outline</mat-icon>
+                                <div *ngIf="!equipo.asignado" class="tooltip-asignacion-content tooltip-disponible">
+                                    <div class="tooltip-header">
+                                        <a>DISPONIBLE</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </td>
 
                 </tr>
+
                 <tr *ngIf="equiposFiltrados.length === 0">
                     <td colspan="11" class="sin-datos">
                         <div class="empty-state">

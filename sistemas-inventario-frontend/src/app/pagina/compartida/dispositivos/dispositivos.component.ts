@@ -7,13 +7,12 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 import { ConsultarDispositivoService } from './../../../arquitectura/servicio/consulta/ConsultarDispositivo.service';
 import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 import { A11yModule } from "@angular/cdk/a11y";
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin } from 'rxjs';
 
 
 @Component({
   selector: 'app-dispositivos',
-  imports: [CommonModule, FormsModule, MatIconModule, A11yModule, MatTooltipModule],
+  imports: [CommonModule, FormsModule, MatIconModule, A11yModule],
   templateUrl: './dispositivos.component.html',
   styleUrl: './dispositivos.component.css'
 })
@@ -57,10 +56,12 @@ export class DispositivosComponent implements OnInit {
               if (asignacion?.activo) {
                 dispositivo.asignado = true;
                 dispositivo.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
+                dispositivo.asignadoArea = asignacion.areaDescripcion || null;
                 dispositivo.asignacionId = asignacion.codigo;
               } else {
                 dispositivo.asignado = false;
                 dispositivo.asignadoA = null;
+                dispositivo.asignadoArea = null;
                 dispositivo.asignacionId = null;
               }
               return dispositivo;

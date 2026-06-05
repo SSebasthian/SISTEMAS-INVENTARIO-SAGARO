@@ -1,5 +1,6 @@
 package com.sistemas_inventario_backend.controladores;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionPorEmpleado;
 import com.sistemas_inventario_backend.DTOs.Solicitud.AsignacionesSolicitud;
 import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionesRespuesta;
 import com.sistemas_inventario_backend.servicios.AsignacionesService;
@@ -85,6 +86,15 @@ public class AsignacionesController {
     @GetMapping("/empleado/{cedula}")
     public ResponseEntity<?> obtenerPorEmpleado(@PathVariable String cedula) {
         List<AsignacionesRespuesta> asignaciones = asignacionesService.obtenerAsignacionesPorEmpleado(cedula);
+        return ResponseEntity.ok(asignaciones);
+    }
+
+
+    // OBTENER ASIGNACIONES POR EMPLEADO
+
+    @GetMapping("/empleado/{cedula}/detalle")
+    public ResponseEntity<?> obtenerAsignacionesPorEmpleadoConDetalle(@PathVariable String cedula) {
+        List<AsignacionPorEmpleado> asignaciones = asignacionesService.obtenerAsignacionesPorEmpleadoConDetalle(cedula);
         return ResponseEntity.ok(asignaciones);
     }
 }

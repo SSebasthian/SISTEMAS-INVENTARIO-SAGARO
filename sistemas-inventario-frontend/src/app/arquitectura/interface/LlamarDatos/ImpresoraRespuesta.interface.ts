@@ -21,6 +21,7 @@ export interface ImpresoraLlamarDatos{
     // Asignacion
     asignado: boolean;
     asignadoA: string | null;
+    asignadoArea: string | null;
     tipoAsignacion: 'empleado' | 'area' | null;
     asignacionId: number | null;
 }

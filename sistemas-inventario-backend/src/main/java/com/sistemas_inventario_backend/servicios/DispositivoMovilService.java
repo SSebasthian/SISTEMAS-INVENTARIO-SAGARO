@@ -188,7 +188,7 @@ public class DispositivoMovilService {
             if (asignacion != null) {
                 dto.setAsignado(true);
                 dto.setAsignadoA(asignacion.getEmpleado().getNombre() + " " + asignacion.getEmpleado().getApellido());
-                dto.setAsignacionId(asignacion.getCodigo());
+                dto.setAsignacionId(asignacion.getConsecutivo());
             } else {
                 dto.setAsignado(false);
                 dto.setAsignadoA(null);

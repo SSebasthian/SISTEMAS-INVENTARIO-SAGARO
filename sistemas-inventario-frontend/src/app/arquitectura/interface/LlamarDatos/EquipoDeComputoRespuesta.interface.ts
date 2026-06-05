@@ -33,6 +33,7 @@ export interface EquipoDeComputoLlamarDatos {
     // Asignacion
     asignado: boolean;
     asignadoA: string | null;
+    asignadoArea: string | null;
     asignacionId: number | null;
     
 }

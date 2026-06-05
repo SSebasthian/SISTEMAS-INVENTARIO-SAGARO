@@ -95,8 +95,14 @@
                     </th>
                     <th [class.filtro-activo]="filtroTieneValor('asignaciones')">
                         ASIGNACIONES
-                        <a (click)="abrirFiltro('asignaciones')"><mat-icon>filter_list</mat-icon></a>
+                        <div class="icon-asignacion-titulo">
+                            <a (click)="abrirFiltro('asignaciones')"><mat-icon>filter_list</mat-icon>&nbsp;&nbsp;</a>
+                            <div class="filtro" *ngIf="filtroActivo === 'asignaciones'">
+                                <ng-container *ngTemplateOutlet="templateFiltroAsignaciones"></ng-container>
+                            </div>
+                        </div>
                     </th>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -123,8 +129,51 @@
                             {{ empleado.activo ? 'ACTIVO' : 'INACTIVO' }}
                         </span>
                     </td>
+
+
                     <td class="asignaciones">
+                        <ng-container *ngIf="getAsignaciones(empleado.cedula) as asignaciones">
+                            <div *ngIf="asignaciones.length > 0; else sinAsignacion" class="asignaciones-container">
+
+                                <!-- Icono de Equipos (catalogoCodigo = 1) -->
+                                <div *ngIf="contarPorCatalogo(asignaciones, 1) > 0" class="tooltip-container">
+                                    <mat-icon class="icono-asignacion equipo">desktop_mac</mat-icon>
+                                    <div class="tooltip-modern" *ngFor="let item of getTooltipItems(asignaciones, 1)">
+                                        <span class="tooltip-marca">{{ item.marca }}</span>
+                                        <br><span class="tooltip-modelo">{{ item.modelo }}</span>
+                                        <br><span class="tooltip-serial">{{ item.serial }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Icono de Moviles (catalogoCodigo = 2) -->
+                                <div *ngIf="contarPorCatalogo(asignaciones, 2) > 0" class="tooltip-container">
+                                    <mat-icon class="icono-asignacion movil">smartphone</mat-icon>
+                                    <div class="tooltip-modern" *ngFor="let item of getTooltipItems(asignaciones, 2)">
+                                        <span class="tooltip-marca">{{ item.marca }}</span>
+                                        <br><span class="tooltip-modelo">{{ item.modelo }}</span>
+                                        <br><span class="tooltip-serial">{{ item.serial }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Icono de Impresoras (catalogoCodigo = 3) -->
+                                <div *ngIf="contarPorCatalogo(asignaciones, 3) > 0" class="tooltip-container">
+                                    <mat-icon class="icono-asignacion impresora">print</mat-icon>
+                                    <div class="tooltip-modern" *ngFor="let item of getTooltipItems(asignaciones, 3)">
+                                        <span class="tooltip-marca">{{ item.marca }}</span>
+                                        <br><span class="tooltip-modelo">{{ item.modelo }}</span>
+                                        <br><span class="tooltip-serial">{{ item.serial }}</span>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <ng-template #sinAsignacion>
+                                <span class="sin-asignacion">
+                                    <mat-icon>block</mat-icon> Ninguno
+                                </span>
+                            </ng-template>
+                        </ng-container>
                     </td>
+
                 <tr *ngIf="empleadosFiltrados.length === 0">
                     <td colspan="8" class="sin-datos">
                         <div class="empty-state">
@@ -290,6 +339,26 @@
             </div>
         </div>
     </ng-template>
+
+
+    <ng-template #templateFiltroAsignaciones>
+        <select class="select-operador" [(ngModel)]="filtros.asignaciones.valor">
+            <option value="TODOS">TODOS</option>
+            <option value="CON_ASIGNACION">CON ASIGNACION</option>
+            <option value="SIN_ASIGNACION">SIN ASIGNACION</option>
+            <option value="CON_EQUIPO">CON EQUIPO</option>
+            <option value="CON_MOVIL">CON MOVIL</option>
+            <option value="CON_IMPRESORA">CON IMPRESORA</option>
+        </select>
+        <div class="acciones-filtro">
+            <div class="opc">
+                <button class="btn-limpiar" (click)="limpiarFiltro('asignaciones')">Limpiar</button>
+                <button class="btn-filtrar" (click)="aplicarFiltros()">Aplicar</button>
+            </div>
+        </div>
+    </ng-template>
+
+
 
     <br>
 

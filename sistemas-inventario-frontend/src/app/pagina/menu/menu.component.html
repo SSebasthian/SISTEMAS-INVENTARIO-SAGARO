@@ -5,7 +5,7 @@
                 <img src="menu/icon.jpg" alt="Perfil">
             </div>
             <div class="perfil-info">
-                <span class="perfil-nombre">Nombre Usuario</span>
+                <span class="perfil-nombre">{{ nombreUsuario }}</span>
                 <div class="perfil-opciones">
                     <mat-icon matTooltip="Perfil" [routerLink]="['/autenticacion/perfil']"> person_pin</mat-icon>
                     <mat-icon (click)="confirmarCierreSesion()" matTooltip="Cerrar sesión">exit_to_app</mat-icon>

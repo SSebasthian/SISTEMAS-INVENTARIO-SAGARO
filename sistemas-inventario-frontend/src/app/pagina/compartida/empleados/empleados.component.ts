@@ -5,9 +5,13 @@ import { MatIconModule } from '@angular/material/icon'
 import { AreaLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/AreaRespuesta.interface';
 import { CargoLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/CargoRespuesta.interface';
 import { EmpleadoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/EmpleadoRespuesta.interface';
+import { AsignacionPorEmpleado } from '../../../arquitectura/interface/LlamarDatos/AsignacionPorEmpleado.interface';
+import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 import { ConsultarEmpleadoService } from '../../../arquitectura/servicio/consulta/ConsultarEmpleado.service';
 import { A11yModule } from "@angular/cdk/a11y";
+import { forkJoin } from 'rxjs';
+
 
 
 @Component({
@@ -26,6 +30,7 @@ export class EmpleadosComponent implements OnInit {
   cargoSeleccionado!: number;
   empleados: EmpleadoLlamarDatos[] = [];
   empleadosFiltrados: EmpleadoLlamarDatos[] = [];
+  asignacionesPorEmpleado: Map<string, AsignacionPorEmpleado[]> = new Map();
   filtroActivo: string | null = null;
   terminoBusqueda: string = '';
   searchExpanded: boolean = false;
@@ -39,6 +44,7 @@ export class EmpleadosComponent implements OnInit {
   constructor(
     private consultarEmpleadoService: ConsultarEmpleadoService,
     private notificacionSnackbarService: NotificacionSnackbarService,
+    private consultarAsignacionesService: ConsultarAsignacionesService,
     private elementRef: ElementRef //CERRAR FILTRO AL DAR CLIC AFUERA
   ) { }
 
@@ -50,15 +56,71 @@ export class EmpleadosComponent implements OnInit {
   cargarEmpleados(): void {
     this.consultarEmpleadoService.listarEmpleados().subscribe({
       next: (data) => {
+        console.log('Empleados cargados:', data.length);
         this.empleados = data;
         this.empleadosFiltrados = [...data];
         this.actualizarPaginacion();
+
+        // Ahora que los empleados están cargados, carga las asignaciones
+        this.cargarAsignacionesParaEmpleados();
       },
       error: (err) => {
         console.error('Error al cargar empleados:', err);
         this.notificacionSnackbarService.error('Error', 'No se pudieron cargar los empleados');
       }
     });
+  }
+
+  cargarAsignacionesParaEmpleados(): void {
+    if (!this.empleados || this.empleados.length === 0) {
+      console.log('No hay empleados para cargar asignaciones');
+      return;
+    }
+
+    // Crear un array de observables para cada empleado
+    const observables = this.empleados.map(empleado =>
+      this.consultarAsignacionesService.obtenerAsignacionesPorEmpleado(empleado.cedula)
+    );
+
+    // Esperar a que todas las peticiones terminen
+    forkJoin(observables).subscribe({
+      next: (resultados) => {
+        //console.log('Todas las asignaciones cargadas:', resultados);
+
+        // Guardar los resultados en el Map
+        this.empleados.forEach((empleado, index) => {
+          this.asignacionesPorEmpleado.set(empleado.cedula, resultados[index]);
+        });
+
+        // Forzar actualización de la vista (opcional)
+        this.empleadosFiltrados = [...this.empleados];
+        this.actualizarPaginacion();
+      },
+      error: (err) => {
+        console.error('Error cargando asignaciones:', err);
+      }
+    });
+  }
+
+  // Obtener asignaciones de un empleado
+  getAsignaciones(cedula: string): AsignacionPorEmpleado[] {
+    return this.asignacionesPorEmpleado.get(cedula) || [];
+  }
+
+  // Contar por tipo de catálogo (1=Equipo, 2=Movil, 3=Impresora)
+  contarPorCatalogo(asignaciones: AsignacionPorEmpleado[], catalogoCodigo: number): number {
+    return asignaciones.filter(a => a.catalogoCodigo === catalogoCodigo).length;
+  }
+
+  // Generar tooltip con los detalles
+
+  getTooltipItems(asignaciones: AsignacionPorEmpleado[], catalogoCodigo: number): any[] {
+    const filtradas = asignaciones.filter(a => a.catalogoCodigo === catalogoCodigo);
+    return filtradas.map(a => ({
+      marca: a.marca,
+      modelo: a.modelo,
+      serial: a.serialActivo
+    }));
   }
 
   getAvatarColor(nombre: string): string {
@@ -115,6 +177,9 @@ export class EmpleadosComponent implements OnInit {
     },
     estado: {
       valor: ''
+    },
+    asignaciones: {
+      valor: ''
     }
   };
 
@@ -144,15 +209,17 @@ export class EmpleadosComponent implements OnInit {
   }
 
   limpiarFiltro(columna: string): void {
-    if (columna === 'estado') {
-      this.filtros.estado.valor = '';
-    } else {
-      this.filtros[columna].reglas = [{ condicion: 'Empieza con', valor: '' }];
-      this.filtros[columna].operador = 'AND';
-    }
-    this.aplicarFiltros();
-    this.cerrarFiltro();
+  if (columna === 'estado') {
+    this.filtros.estado.valor = '';
+  } else if (columna === 'asignaciones') {
+    this.filtros.asignaciones.valor = 'TODOS';
+  } else {
+    this.filtros[columna].reglas = [{ condicion: 'Empieza con', valor: '' }];
+    this.filtros[columna].operador = 'AND';
   }
+  this.aplicarFiltros();
+  this.cerrarFiltro();
+}
 
   aplicarFiltros(): void {
     // Primero aplicar los filtros por columna
@@ -172,9 +239,14 @@ export class EmpleadosComponent implements OnInit {
         const textoBusqueda = `${empleado.nombre} ${empleado.apellido} ${empleado.cedula} ${empleado.area?.descripcion || ''} ${empleado.cargo?.descripcion || ''}`.toLowerCase();
         return textoBusqueda.includes(this.terminoBusqueda.toLowerCase());
       });
-    } else {
-      this.empleadosFiltrados = empleadosFiltradosPorColumnas;
     }
+
+    // Finalmente aplicar el filtro de asignaciones
+    this.empleadosFiltrados = empleadosFiltradosPorColumnas.filter(empleado => {
+      return this.aplicarFiltroAsignaciones(empleado);
+    });
+
+
 
     // Verificar si hay algún filtro con valor
     const hayFiltrosActivos = this.hayFiltrosActivos() || (this.terminoBusqueda && this.terminoBusqueda.trim() !== '');
@@ -317,6 +389,27 @@ export class EmpleadosComponent implements OnInit {
     }
   }
 
+  aplicarFiltroAsignaciones(empleado: EmpleadoLlamarDatos): boolean {
+    const filtroValor = this.filtros.asignaciones.valor;
+    if (!filtroValor || filtroValor === 'TODOS') return true;
+
+    const asignaciones = this.getAsignaciones(empleado.cedula);
+
+    switch (filtroValor) {
+      case 'CON_ASIGNACION':
+        return asignaciones.length > 0;
+      case 'SIN_ASIGNACION':
+        return asignaciones.length === 0;
+      case 'CON_EQUIPO':
+        return asignaciones.some(a => a.catalogoCodigo === 1);
+      case 'CON_MOVIL':
+        return asignaciones.some(a => a.catalogoCodigo === 2);
+      case 'CON_IMPRESORA':
+        return asignaciones.some(a => a.catalogoCodigo === 3);
+      default:
+        return true;
+    }
+  }
 
   limpiarTodosLosFiltros(): void {
     // Reiniciar filtros de texto
@@ -334,6 +427,7 @@ export class EmpleadosComponent implements OnInit {
     this.filtros.retiro.operador = 'AND';
     this.filtros.estado.valor = '';
     this.terminoBusqueda = '';
+    this.filtros.asignaciones.valor = 'TODOS';
     // Resetear paginación
     this.paginaActual = 1;
     this.registrosPorPagina = 10;
@@ -344,11 +438,10 @@ export class EmpleadosComponent implements OnInit {
 
   filtroTieneValor(columna: string): boolean {
     if (columna === 'estado') {
-      // Para el filtro de estado (que es un select)
       return this.filtros.estado.valor !== '' && this.filtros.estado.valor !== null;
+    } else if (columna === 'asignaciones') {
+      return this.filtros.asignaciones.valor !== '' && this.filtros.asignaciones.valor !== null && this.filtros.asignaciones.valor !== 'TODOS';
     } else {
-      // Para los filtros de texto y fecha
-      // Verifica si al menos una regla tiene valor
       const filtro = this.filtros[columna];
       if (filtro && filtro.reglas && Array.isArray(filtro.reglas)) {
         return filtro.reglas.some((regla: any) =>
@@ -361,7 +454,6 @@ export class EmpleadosComponent implements OnInit {
 
   // Método auxiliar para verificar si hay filtros activos
   hayFiltrosActivos(): boolean {
-    // Verificar filtros de texto y fecha
     const columnasTexto = ['area', 'cargo', 'cedula', 'nombre', 'ingreso', 'retiro'];
     for (const columna of columnasTexto) {
       const filtro = this.filtros[columna];
@@ -372,12 +464,11 @@ export class EmpleadosComponent implements OnInit {
         if (tieneValor) return true;
       }
     }
-    // Verificar filtro de estado
-    if (this.filtros.estado.valor !== '' && this.filtros.estado.valor !== null) {
-      return true;
-    }
+    if (this.filtros.estado.valor !== '' && this.filtros.estado.valor !== null) return true;
+    if (this.filtros.asignaciones.valor !== '' && this.filtros.asignaciones.valor !== null && this.filtros.asignaciones.valor !== 'TODOS') return true;
     return false;
   }
+
 
   toggleSearch(): void {
     this.searchExpanded = !this.searchExpanded;

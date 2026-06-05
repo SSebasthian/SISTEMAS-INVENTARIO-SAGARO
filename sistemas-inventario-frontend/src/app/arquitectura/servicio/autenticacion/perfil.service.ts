@@ -56,14 +56,28 @@ export class PerfilService {
   // --------------------
   // ACTUALIZAR PERFIL---
   // --------------------
+
+  // En PerfilService, modifica el método actualizarPerfil
   actualizarPerfil(usuario: string, datos: any) {
     return this.http.put(`${this.apiUrl}/${usuario}`, datos).pipe(
       tap(() => {
+        // Actualizar el nombre en localStorage
+        this.actualizarNombreEnLocalStorage(datos.nombre);
+        // Notificar cambio de perfil
         this.notificarPerfilActualizado();
       })
-    );;
+    );
   }
 
+  // metodo para actualizar el nombre en localStorage
+  private actualizarNombreEnLocalStorage(nuevoNombre: string): void {
+    const usuarioGuardado = localStorage.getItem('usuario');
+    if (usuarioGuardado) {
+      const usuario = JSON.parse(usuarioGuardado);
+      usuario.nombre = nuevoNombre;
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+    }
+  }
 
 
   // -----------------------
@@ -127,7 +141,7 @@ export class PerfilService {
       this.permisosActualizados.next(permisosLimpios);
 
     } catch (error) {
-      console.error('❌ Error guardando permisos en localStorage:', error);
+      console.error('Error guardando permisos en localStorage:', error);
     }
   }
 
@@ -151,7 +165,7 @@ export class PerfilService {
       return data.permisos;
 
     } catch (error) {
-      console.error('❌ Error leyendo permisos de localStorage:', error);
+      console.error('Error leyendo permisos de localStorage:', error);
       return null;
     }
   }
@@ -175,7 +189,7 @@ export class PerfilService {
       return data;
 
     } catch (error) {
-      console.error('❌ Error leyendo info de permisos:', error);
+      console.error('Error leyendo info de permisos:', error);
       return null;
     }
   }
@@ -249,8 +263,8 @@ export class PerfilService {
   recargarPermisos(): void {
     //console.log('Recargando permisos desde el backend...');
     this.getPerfil().subscribe({
-      next: () => console.log('✅ Permisos recargados exitosamente'),
-      error: (err) => console.error('❌ Error recargando permisos:', err)
+      next: () => console.log('Permisos recargados exitosamente'),
+      error: (err) => console.error('Error recargando permisos:', err)
     });
   }
 }

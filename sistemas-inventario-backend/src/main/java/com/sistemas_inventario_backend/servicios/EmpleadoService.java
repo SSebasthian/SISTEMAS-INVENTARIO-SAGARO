@@ -1,6 +1,6 @@
 package com.sistemas_inventario_backend.servicios;
 
-import com.sistemas_inventario_backend.DTOs.EmpleadoSolicitud;
+import com.sistemas_inventario_backend.DTOs.Solicitud.EmpleadoSolicitud;
 import com.sistemas_inventario_backend.entidades.Area;
 import com.sistemas_inventario_backend.entidades.Cargo;
 import com.sistemas_inventario_backend.entidades.Empleado;

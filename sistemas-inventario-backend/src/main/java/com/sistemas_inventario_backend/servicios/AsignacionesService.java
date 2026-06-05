@@ -1,5 +1,6 @@
 package com.sistemas_inventario_backend.servicios;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionPorEmpleado;
 import com.sistemas_inventario_backend.DTOs.Solicitud.AsignacionesSolicitud;
 import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionesRespuesta;
 import com.sistemas_inventario_backend.entidades.*;
@@ -131,7 +132,7 @@ public class AsignacionesService {
 
     private AsignacionesRespuesta convertirADTO(Asignaciones a) {
         AsignacionesRespuesta dto = new AsignacionesRespuesta();
-        dto.setCodigo(a.getCodigo());
+        dto.setConsecutivo(a.getConsecutivo());
         dto.setCatalogoCodigo(a.getCatalogo().getCodigo());
         dto.setCatalogoNombre(a.getCatalogo().getNombre());
         dto.setSerialActivo(a.getSerialActivo());
@@ -157,5 +158,45 @@ public class AsignacionesService {
         }
 
         return dto;
+    }
+
+
+    // OBTENER ASIGNACIONES POR EMPLEADO
+
+    public List<AsignacionPorEmpleado> obtenerAsignacionesPorEmpleadoConDetalle(String cedula) {
+        List<Asignaciones> asignaciones = asignacionRepository.findByEmpleadoCedulaAndActivoTrue(cedula);
+
+        return asignaciones.stream().map(a -> {
+            AsignacionPorEmpleado dto = new AsignacionPorEmpleado();
+            dto.setAsignacionId(a.getConsecutivo());
+            dto.setCatalogoCodigo(a.getCatalogo().getCodigo());
+            dto.setCatalogoNombre(a.getCatalogo().getNombre());
+            dto.setSerialActivo(a.getSerialActivo());
+            dto.setFechaAsignacion(a.getFechaAsignacion());
+
+            if (a.getTipo() != null) {
+                dto.setTipoDescripcion(a.getTipo().getDescripcion());
+            }
+
+            // Obtener marca y modelo según el catálogo
+            if (a.getCatalogo().getCodigo() == 1L) { // Equipo
+                equipoDeComputoRepository.findById(a.getSerialActivo()).ifPresent(eq -> {
+                    if (eq.getMarca() != null) dto.setMarca(eq.getMarca().getDescripcion());
+                    if (eq.getModelo() != null) dto.setModelo(eq.getModelo().getDescripcion());
+                });
+            } else if (a.getCatalogo().getCodigo() == 2L) { // Móvil
+                dispositivoMovilRepository.findById(a.getSerialActivo()).ifPresent(dm -> {
+                    if (dm.getMarca() != null) dto.setMarca(dm.getMarca().getDescripcion());
+                    if (dm.getModelo() != null) dto.setModelo(dm.getModelo().getDescripcion());
+                });
+            } else if (a.getCatalogo().getCodigo() == 3L) { // Impresora
+                impresoraRepository.findById(a.getSerialActivo()).ifPresent(imp -> {
+                    if (imp.getMarca() != null) dto.setMarca(imp.getMarca().getDescripcion());
+                    if (imp.getModelo() != null) dto.setModelo(imp.getModelo().getDescripcion());
+                });
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

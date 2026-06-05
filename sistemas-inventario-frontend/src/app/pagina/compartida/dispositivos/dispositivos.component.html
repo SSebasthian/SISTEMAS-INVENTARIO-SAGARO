@@ -312,15 +312,28 @@
                     </td>
 
                     <td class="asignacion">
-                        <!-- ICONO DE ASIGNACION -->
-                        <mat-icon *ngIf="dispositivo.asignado" class="icono-asignado"
-                            [matTooltip]="'Asignado a: ' + dispositivo.asignadoA">
-                            person
-                        </mat-icon>
-                        <mat-icon *ngIf="!dispositivo.asignado" class="icono-disponible" matTooltip="Disponible">
-                            person_outline
-                        </mat-icon>
+                        <div class="icon-asignacion">
+                            <div class="tooltip-asignacion-container">
+
+                                <!-- ICONO DE ASIGNACION -->
+                                <mat-icon *ngIf="dispositivo.asignado" class="icono-asignado">person</mat-icon>
+                                <div *ngIf="dispositivo.asignado" class="tooltip-asignacion-content">
+                                    <div class="tooltip-header">
+                                        <span>{{ dispositivo.asignadoArea }}</span>
+                                          <hr>
+                                        <span>{{ dispositivo.asignadoA }}</span>
+                                    </div>
+                                </div>
+                                <mat-icon *ngIf="!dispositivo.asignado" class="icono-disponible">person_outline</mat-icon>
+                                <div *ngIf="!dispositivo.asignado" class="tooltip-asignacion-content tooltip-disponible">
+                                    <div class="tooltip-header">
+                                        <a>DISPONIBLE</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </td>
+
                 </tr>
                 <tr *ngIf="dispositivosFiltrados.length === 0">
                     <td colspan="13" class="sin-datos">

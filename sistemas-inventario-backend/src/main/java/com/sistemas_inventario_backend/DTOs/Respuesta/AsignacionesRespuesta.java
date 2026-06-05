@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 @Data
 public class AsignacionesRespuesta {
 
-    private Long codigo;
+    private Long consecutivo;
     private String empleadoCedula;
     private String empleadoNombre;
     private String empleadoApellido;

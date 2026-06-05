@@ -11,7 +11,7 @@ public class Asignaciones {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long codigo;
+    private Long consecutivo;
 
     @ManyToOne
     @JoinColumn(name = "empleado_cedula", referencedColumnName = "cedula")

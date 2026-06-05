@@ -7,14 +7,13 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 import { ConsultarImpresoraService } from '../../../arquitectura/servicio/consulta/ConsultarImpresora.service';
 import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 import { A11yModule } from '@angular/cdk/a11y';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin } from 'rxjs';
 
 
 
 @Component({
   selector: 'app-impresoras',
-  imports: [CommonModule, FormsModule, MatIconModule, A11yModule, MatTooltipModule],
+  imports: [CommonModule, FormsModule, MatIconModule, A11yModule],
   templateUrl: './impresoras.component.html',
   styleUrl: './impresoras.component.css'
 })
@@ -60,6 +59,8 @@ export class ImpresorasComponent implements OnInit {
                 if (asignacion.empleadoNombre) {
                   impresora.tipoAsignacion = 'empleado';
                   impresora.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
+                  impresora.asignadoArea = asignacion.areaDescripcion || null;
+
                 } else if (asignacion.areaDescripcion) {
                   impresora.tipoAsignacion = 'area';
                   impresora.asignadoA = asignacion.areaDescripcion;
@@ -69,6 +70,7 @@ export class ImpresorasComponent implements OnInit {
                 impresora.asignado = false;
                 impresora.tipoAsignacion = null;
                 impresora.asignadoA = null;
+                impresora.asignadoArea = null;
                 impresora.asignacionId = null;
               }
               return impresora;

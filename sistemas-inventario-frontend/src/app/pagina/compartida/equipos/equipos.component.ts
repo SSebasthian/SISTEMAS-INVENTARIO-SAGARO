@@ -7,14 +7,13 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 import { ConsultarEquipoService } from '../../../arquitectura/servicio/consulta/ConsultarEquipo.service';
 import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 import { A11yModule } from "@angular/cdk/a11y";
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin } from 'rxjs';
 
 
 
 @Component({
   selector: 'app-equipos',
-  imports: [CommonModule, FormsModule, MatIconModule, A11yModule, MatTooltipModule],
+  imports: [CommonModule, FormsModule, MatIconModule, A11yModule],
   templateUrl: './equipos.component.html',
   styleUrl: './equipos.component.css'
 })
@@ -61,10 +60,12 @@ export class EquiposComponent implements OnInit {
               if (asignacion?.activo) {
                 equipo.asignado = true;
                 equipo.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
+                equipo.asignadoArea = asignacion.areaDescripcion || null;
                 equipo.asignacionId = asignacion.codigo;
               } else {
                 equipo.asignado = false;
                 equipo.asignadoA = null;
+                equipo.asignadoArea = null;
                 equipo.asignacionId = null;
               }
               return equipo;
