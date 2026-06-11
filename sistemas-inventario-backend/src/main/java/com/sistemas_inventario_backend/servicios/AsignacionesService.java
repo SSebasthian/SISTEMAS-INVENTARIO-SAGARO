@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,20 +49,27 @@ public class AsignacionesService {
         asignacion.setCatalogo(catalogo);
         asignacion.setTipo(tipo);
         asignacion.setSerialActivo(solicitud.getSerialActivo());
-        asignacion.setFechaAsignacion(solicitud.getFechaAsignacion() != null ? solicitud.getFechaAsignacion() : LocalDateTime.now());
+        asignacion.setFechaAsignacion(solicitud.getFechaAsignacion() != null ?
+                solicitud.getFechaAsignacion() : LocalDate.now());
         asignacion.setObservaciones(solicitud.getObservaciones());
         asignacion.setActivo(true);
 
-        if (solicitud.getCatalogoCodigo() == 3L) { // Impresora
+        // SIEMPRE guardar el área
+        if (solicitud.getAreaCodigo() != null) {
             Area area = areaRepository.findById(solicitud.getAreaCodigo())
                     .orElseThrow(() -> new RuntimeException("Área no encontrada"));
             asignacion.setArea(area);
-            asignacion.setEmpleado(null);
-        } else { // Equipo o móvil
+        } else {
+            throw new RuntimeException("El área es requerida para la asignación");
+        }
+
+        // Guardar empleado si existe (puede ser null)
+        if (solicitud.getEmpleadoCedula() != null && !solicitud.getEmpleadoCedula().isEmpty()) {
             Empleado empleado = empleadoRepository.findById(solicitud.getEmpleadoCedula())
                     .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
             asignacion.setEmpleado(empleado);
-            asignacion.setArea(null);
+        } else {
+            asignacion.setEmpleado(null);
         }
 
         Asignaciones guardada = asignacionRepository.save(asignacion);
@@ -72,18 +79,16 @@ public class AsignacionesService {
 
     // ========== DEVOLVER ==========
     @Transactional
-    public void devolver(Long asignacionId, String observacionesDevolucion) {
+    public void devolver(Long asignacionId, LocalDate fechaDevolucion, String observacionesDevolucion) {
         Asignaciones asignacion = asignacionRepository.findById(asignacionId)
                 .orElseThrow(() -> new RuntimeException("Asignacion no encontrada con ID: " + asignacionId));
 
         asignacion.setActivo(false);
-        asignacion.setFechaDevolucion(LocalDateTime.now());
+        asignacion.setFechaDevolucion(fechaDevolucion != null ? fechaDevolucion : LocalDate.now());
 
+        // Reemplazar directamente, no concatenar
         if (observacionesDevolucion != null && !observacionesDevolucion.isEmpty()) {
-            String obsAnterior = asignacion.getObservaciones();
-            asignacion.setObservaciones(obsAnterior != null ?
-                    obsAnterior + " | DEVOLUCIÓN: " + observacionesDevolucion :
-                    "DEVOLUCIÓN: " + observacionesDevolucion);
+            asignacion.setObservaciones(observacionesDevolucion);
         }
 
         asignacionRepository.save(asignacion);
@@ -118,15 +123,15 @@ public class AsignacionesService {
     private void validarExistenciaActivo(Long catalogoCodigo, String serial) {
         if (catalogoCodigo == 1L) { // EQUIPO DE COMPUTO
             if (!equipoDeComputoRepository.existsById(serial))
-                throw new RuntimeException("El equipo de cómputo con serial " + serial + " no existe");
+                throw new RuntimeException("El equipo de computo con serial " + serial + " no existe");
         } else if (catalogoCodigo == 2L) { // DISPOSITIVO MOVIL
             if (!dispositivoMovilRepository.existsById(serial))
-                throw new RuntimeException("El dispositivo móvil con serial " + serial + " no existe");
+                throw new RuntimeException("El dispositivo movil con serial " + serial + " no existe");
         } else if (catalogoCodigo == 3L) { // IMPRESORA
             if (!impresoraRepository.existsById(serial))
                 throw new RuntimeException("La impresora con serial " + serial + " no existe");
         } else {
-            throw new RuntimeException("Catálogo no válido: " + catalogoCodigo);
+            throw new RuntimeException("Catalogo no válido: " + catalogoCodigo);
         }
     }
 

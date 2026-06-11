@@ -39,6 +39,7 @@
 `ng generate component pagina/registro/opc-tablet` (Opciones de registro - TABLET)<br>
 `ng generate component pagina/registro/opc-impresora` (Opciones de registro - IMPRESORA)<br>
 
+
 `Se crea interface Registro EmpleadoRegistro manualmente` (Interface EmpleadoRegistro REGISTRAR EMPLEADO)<br>
 `Se crea interface LlamarDatos EmpleadoRespuesta manualmente` (Interface EmpleadoRespuesta LLAMAR DATOS EMPLEADO)<br>
 `Se crea interface LlamarDatos AreaRespuesta manualmente` (Interface AreaRespuesta LLAMAR DATOS AREA)<br>
@@ -80,5 +81,11 @@
 `ng generate service arquitectura/servicio/consulta/ConsultarDispositivo` (Servicio CONSULTAR DISPOSITIVOS MOVILES)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarImpresora` (Servicio CONSULTAR IMPRESORAS)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarAsignaciones` (Servicio CONSULTAR ASIGNACIONES)<br>
+
+
+
+`ng generate component pagina/asignaciones/asig-impresora` (Opciones de Asignacion - IMPRESORA)<br>
+`ng generate service arquitectura/servicio/registro/RegistrarAsignaciones` (Servicio ASIGNACION DISPOSITIVOS TECNOLOGICOS)<br>
+
 
 

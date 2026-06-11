@@ -1,7 +1,8 @@
 package com.sistemas_inventario_backend.DTOs.Respuesta;
 
 import lombok.Data;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 
 @Data
 public class AsignacionPorEmpleado {
@@ -13,6 +14,6 @@ public class AsignacionPorEmpleado {
     private String tipoDescripcion;
     private String marca;
     private String modelo;
-    private LocalDateTime fechaAsignacion;
+    private LocalDate fechaAsignacion;
 
 }

@@ -7,6 +7,8 @@ import com.sistemas_inventario_backend.servicios.AsignacionesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,10 +35,17 @@ public class AsignacionesController {
 
     // ========== DEVOLVER ==========
     @PutMapping("/{id}/devolver")
-    public ResponseEntity<?> devolver(@PathVariable Long id, @RequestBody(required = false) Map<String, String> body) {
+    public ResponseEntity<?> devolver(@PathVariable Long id, @RequestBody Map<String, String> body) {
         try {
-            String obs = body != null ? body.get("observaciones") : null;
-            asignacionesService.devolver(id, obs);
+            String observaciones = body != null ? body.get("observaciones") : null;
+            String fechaDevolucionStr = body != null ? body.get("fechaDevolucion") : null;
+
+            LocalDate fechaDevolucion = null;
+            if (fechaDevolucionStr != null && !fechaDevolucionStr.isEmpty()) {
+                fechaDevolucion = LocalDate.parse(fechaDevolucionStr);
+            }
+
+            asignacionesService.devolver(id, fechaDevolucion, observaciones);
             return ResponseEntity.ok(Map.of("mensaje", "Devolucion registrada correctamente"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

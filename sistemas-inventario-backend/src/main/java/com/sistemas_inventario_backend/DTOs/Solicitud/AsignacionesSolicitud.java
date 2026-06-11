@@ -12,6 +12,6 @@ public class AsignacionesSolicitud {
     private Long catalogoCodigo;
     private Long tipoCodigo;
     private String serialActivo;
-    private LocalDateTime fechaAsignacion;  // si es null se asigna now()
+    private LocalDate fechaAsignacion;  // si es null se asigna now()
     private String observaciones;
 }

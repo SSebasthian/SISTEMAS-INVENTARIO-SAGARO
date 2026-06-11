@@ -2,7 +2,7 @@ package com.sistemas_inventario_backend.entidades;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "asignaciones")
@@ -33,9 +33,9 @@ public class Asignaciones {
     private String serialActivo;
 
     @Column(nullable = false)
-    private LocalDateTime fechaAsignacion;
+    private LocalDate fechaAsignacion;
 
-    private LocalDateTime fechaDevolucion;
+    private LocalDate fechaDevolucion;
 
     @Column(length = 500)
     private String observaciones;

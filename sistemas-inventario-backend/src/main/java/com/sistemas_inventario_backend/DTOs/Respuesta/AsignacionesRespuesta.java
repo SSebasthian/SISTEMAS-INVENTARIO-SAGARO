@@ -1,7 +1,7 @@
 package com.sistemas_inventario_backend.DTOs.Respuesta;
 
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class AsignacionesRespuesta {
@@ -17,8 +17,8 @@ public class AsignacionesRespuesta {
     private Long  tipoCodigo;
     private String tipoDescripcion;
     private String serialActivo;
-    private LocalDateTime fechaAsignacion;
-    private LocalDateTime fechaDevolucion;
+    private LocalDate fechaAsignacion;
+    private LocalDate fechaDevolucion;
     private String observaciones;
     private Boolean activo;
 }

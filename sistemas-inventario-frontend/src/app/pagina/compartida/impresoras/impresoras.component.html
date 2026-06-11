@@ -250,7 +250,7 @@
 
                                 <!-- Asignado a Empleado -->
                                 <mat-icon *ngIf="impresora.asignado && impresora.tipoAsignacion === 'empleado'"
-                                    class="icono-asignado">person</mat-icon>
+                                    class="icono-asignado" (click)="abrirModalAsignacion(impresora)">person</mat-icon>
                                 <div *ngIf="impresora.asignado && impresora.tipoAsignacion === 'empleado'"
                                     class="tooltip-asignacion-content">
                                     <div class="tooltip-header">
@@ -262,7 +262,7 @@
 
                                 <!-- Asignado a Area -->
                                 <mat-icon *ngIf="impresora.asignado && impresora.tipoAsignacion === 'area'"
-                                    class="icono-area">pin_drop</mat-icon>
+                                    class="icono-area" (click)="abrirModalAsignacion(impresora)">pin_drop</mat-icon>
                                 <div *ngIf="impresora.asignado && impresora.tipoAsignacion === 'area'"
                                     class="tooltip-asignacion-content tooltip-area-content">
                                     <div class="tooltip-header">
@@ -271,7 +271,8 @@
                                 </div>
 
                                 <!-- Disponible (no asignado) -->
-                                <mat-icon *ngIf="!impresora.asignado" class="icono-disponible">person_outline</mat-icon>
+                                <mat-icon *ngIf="!impresora.asignado" class="icono-disponible"
+                                    (click)="abrirModalAsignacion(impresora)">person_outline</mat-icon>
                                 <div *ngIf="!impresora.asignado" class="tooltip-asignacion-content tooltip-disponible">
                                     <div class="tooltip-header">
                                         <a>DISPONIBLE</a>

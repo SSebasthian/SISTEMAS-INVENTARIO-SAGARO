@@ -156,7 +156,7 @@ public class ImpresoraService {
                 dto.setModeloDescripcion(impresora.getModelo().getDescripcion());
             }
 
-            // 🔵 AGREGAR INFORMACION DE ASIGNACION
+            // AGREGAR INFORMACION DE ASIGNACION
             Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(impresora.getSerial());
 
             if (asignacion != null) {

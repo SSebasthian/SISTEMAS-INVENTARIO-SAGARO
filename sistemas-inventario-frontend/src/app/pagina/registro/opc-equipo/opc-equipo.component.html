@@ -15,7 +15,7 @@
 
         <div class="contenido-opcion">
           <label>TIPO DE EQUIPO<br></label>
-          <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo" (change)="onTipoChange()" [compareWith]="compararPorCodigo">  <!-- [disabled]="modoEdicion" -->
+          <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo" (change)="onTipoChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">  <!-- [disabled]="modoEdicion" -->
             <option [ngValue]="null"></option>
             <option *ngFor="let t of tipos" [ngValue]="t">{{ t.descripcion }}</option>
           </select>
@@ -23,12 +23,12 @@
 
         <div class="contenido-opcion">
           <label>SERIAL:<br></label>
-          <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial" (input)="serial = serial.toUpperCase()" [disabled]="modoEdicion">  
+          <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial" (input)="serial = serial.toUpperCase()" [disabled]="modoEdicion">   
         </div>
 
         <div class="contenido-opcion">
           <label>MARCA<br></label>
-          <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()" [compareWith]="compararPorCodigo">  <!-- [disabled]="modoEdicion" -->
+          <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">  <!-- [disabled]="modoEdicion" -->
             <option [ngValue]="null"></option>
             <option *ngFor="let m of marcas" [ngValue]="m">{{ m.descripcion }}</option>
             <!-- SOLO aparece NUEVA MARCA si hay un tipo seleccionado -->
@@ -41,7 +41,7 @@
 
         <div class="contenido-opcion">
           <label>MODELO:<br></label>
-          <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo" (change)="onModeloChange()" [compareWith]="compararPorCodigo">  <!-- [disabled]="modoEdicion" -->
+          <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo" (change)="onModeloChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">  <!-- [disabled]="modoEdicion" -->
             <option [ngValue]="null"></option>
             <option *ngFor="let mod of modelos" [ngValue]="mod">{{ mod.descripcion }}</option>
             <!-- SOLO aparece NUEVO MODELO si hay tipo Y marca seleccionados -->

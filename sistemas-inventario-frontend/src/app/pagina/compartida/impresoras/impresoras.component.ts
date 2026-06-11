@@ -6,8 +6,13 @@ import { ImpresoraLlamarDatos } from './../../../arquitectura/interface/LlamarDa
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 import { ConsultarImpresoraService } from '../../../arquitectura/servicio/consulta/ConsultarImpresora.service';
 import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
+import { RegistrarAsignacionesService } from '../../../arquitectura/servicio/registro/RegistrarAsignaciones.service';
 import { A11yModule } from '@angular/cdk/a11y';
 import { forkJoin } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { AsigImpresoraComponent } from '../../asignaciones/asig-impresora/asig-impresora.component';
+import { AreaLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/AreaRespuesta.interface';
+
 
 
 
@@ -27,6 +32,7 @@ export class ImpresorasComponent implements OnInit {
   detalleVisible: string | null = null;
   terminoBusqueda: string = '';
   searchExpanded: boolean = false;
+  areas: AreaLlamarDatos[] = [];
 
   // PAGINACION
   registrosPorPagina: number = 10;
@@ -37,7 +43,9 @@ export class ImpresorasComponent implements OnInit {
     private consultarImpresoraService: ConsultarImpresoraService,
     private notificacionSnackbarService: NotificacionSnackbarService,
     private consultarAsignacionesService: ConsultarAsignacionesService,
-    private elementRef: ElementRef
+    private registrarAsignacionesService: RegistrarAsignacionesService,
+    private elementRef: ElementRef,
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit(): void {
@@ -59,18 +67,28 @@ export class ImpresorasComponent implements OnInit {
                 if (asignacion.empleadoNombre) {
                   impresora.tipoAsignacion = 'empleado';
                   impresora.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
+                  impresora.asignadoCedula = asignacion.empleadoCedula;
                   impresora.asignadoArea = asignacion.areaDescripcion || null;
-
+                  impresora.fechaAsignacion = asignacion.fechaAsignacion;
                 } else if (asignacion.areaDescripcion) {
                   impresora.tipoAsignacion = 'area';
                   impresora.asignadoA = asignacion.areaDescripcion;
+                  impresora.fechaAsignacion = asignacion.fechaAsignacion;
                 }
-                impresora.asignacionId = asignacion.codigo;
+                impresora.asignacionId = asignacion.consecutivo;
+                // Guardar observaciones original
+                let obs = asignacion.observaciones || '';
+                impresora.observacionesOriginal = obs.replace(/^ASIGNACION:\s*/, '');
+                impresora.observaciones = asignacion.observaciones;
               } else {
                 impresora.asignado = false;
                 impresora.tipoAsignacion = null;
                 impresora.asignadoA = null;
+                impresora.asignadoCedula = null;
                 impresora.asignadoArea = null;
+                impresora.fechaAsignacion = null;
+                impresora.observaciones = null;
+                impresora.observacionesOriginal = null;
                 impresora.asignacionId = null;
               }
               return impresora;
@@ -208,7 +226,7 @@ export class ImpresorasComponent implements OnInit {
     this.aplicarFiltros();
   }
 
-  // ========== MÉTODOS DE FILTRO INDIVIDUALES ==========
+  // ========== METODOS DE FILTRO INDIVIDUALES ==========
   aplicarFiltroPropiedad(imp: ImpresoraLlamarDatos): boolean {
     const f = this.filtros.propiedad;
     const v = imp.propiedad.toLowerCase() || '';
@@ -341,7 +359,7 @@ export class ImpresorasComponent implements OnInit {
     }
   }
 
-  // ========== PAGINACIÓN ==========
+  // ========== PAGINACION ==========
   actualizarPaginacion(): void {
     const total = this.impresorasFiltradas.length;
     if (total === 0) {
@@ -494,7 +512,7 @@ export class ImpresorasComponent implements OnInit {
     return map[estado] || '#424242';
   }
 
-  // ========== MÉTODOS AUXILIARES DE FILTROS (REGLAS) ==========
+  // ========== METODOS AUXILIARES DE FILTROS (REGLAS) ==========
 
   agregarReglaTexto(columna: string): void {
     if (this.filtros[columna].reglas.length < 2)
@@ -550,4 +568,41 @@ export class ImpresorasComponent implements OnInit {
     const enBoton = target.closest('th a');
     if (!dentroFiltro && !enBoton) this.cerrarFiltro();
   }
+
+
+
+
+
+  // MODAL ASIGNAR IMPRESORA
+
+  abrirModalAsignacion(impresora: ImpresoraLlamarDatos): void {
+    const dialogRef = this.dialog.open(AsigImpresoraComponent, {
+      width: '900px',
+      data: { impresora, areas: this.areas }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.success) {
+        if (result.devuelta) {
+          // Si fue una devolución
+          this.notificacionSnackbarService.success('Devolucion Realizada', 'Impresora devuelta correctamente');
+        } else {
+          // Si fue una asignación
+          this.registrarAsignacionesService.asignar(result.data).subscribe({
+            next: () => {
+              this.notificacionSnackbarService.success('Asignacion Realizada', 'Impresora asignada correctamente');
+              this.cargarImpresoras();
+            },
+            error: (err) => {
+              this.notificacionSnackbarService.error('Error', err.error?.error || 'Error al asignar');
+            }
+          });
+        }
+        this.cargarImpresoras(); // Recargar lista
+      }
+    });
+
+  }
+
+
 }
