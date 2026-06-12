@@ -1,0 +1,598 @@
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.315);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-contenido {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 15px;
+    width: 550px;
+    max-width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.418);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-cabezera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+    padding: 0px 10px;
+    border-bottom: 1px solid #c4b9b9;
+}
+
+.modal-cabezera .titulo {
+    display: flex;
+    align-items: center;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 10px;
+}
+
+.modal-cabezera .titulo h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #595959;
+    padding-left: 10px;
+    text-align: center;
+}
+
+.modal-cabezera .titulo mat-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 30px;
+    color: #595959;
+}
+
+.modal-cabezera .titulo .cargoicon {
+    position: relative;
+    margin-bottom: -5px;
+    padding-right: 5px;
+}
+
+
+/* DISEÑO ASIGNACION */
+
+.asignacion {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    padding: 20px 0;
+}
+
+.columna-izquierda {
+    flex: 0.85;
+    min-width: 0;
+}
+
+.columna-derecha {
+    flex: 1.15;
+    min-width: 0;
+}
+
+
+
+/* DISEÑO IZQUIERDA - INFORMACION */
+
+
+.info-dispositivo {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e8e8e8;
+}
+
+.info-imagen {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.contenedor-imagen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.contenido-img {
+    width: 140px;
+    height: 140px;
+    border: 2px dashed rgba(58, 57, 57, 0.5);
+    background-color: #f9f9f9;
+    font-size: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.imagen-modelo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 8px;
+}
+
+.icono-img-default {
+    font-size: 110px;
+    width: 110px;
+    height: 110px;
+    color: rgba(153, 153, 153, 0.671);
+}
+
+.info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item .label {
+    font-weight: 600;
+    margin-bottom: 0.3em;
+    color: #6c757d;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+}
+
+.info-item .valor {
+    font-size: 13px;
+    color: #495057;
+    text-align: right;
+    vertical-align: middle;
+}
+
+
+/* DISEÑO DERECHA - ASIGNACION */
+
+.tipo-asignacion {
+    display: flex;
+    flex-direction: row;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: #64748b;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    margin-left: 13px;
+}
+
+.radio-option input {
+    display: none;
+}
+
+.radio-option.active {
+    background: white;
+    color: #3f51b5;
+    font-size: 14px;
+}
+
+.radio-option mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #94a3b8;
+    transition: color 0.2s;
+}
+
+.radio-option.active mat-icon {
+    color: #3f51b5;
+}
+
+
+
+/* Contenedor del buscador */
+
+.buscador-empleado {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    gap: 10px;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 13px;
+    padding: 0 10px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.buscador-empleado:focus-within {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.buscador-empleado mat-icon {
+    color: #94a3b8;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    transition: color 0.2s;
+}
+
+.buscador-empleado:focus-within mat-icon {
+    color: #3f51b5;
+}
+
+.buscador-empleado input {
+    flex: 1;
+    border: none;
+    padding: 12px 0;
+    font-size: 14px;
+    color: #1e293b;
+    background: transparent;
+    outline: none;
+    font-weight: 400;
+}
+
+.buscador-empleado input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+
+/* Lista de resultados */
+.lista-empleados {
+    margin-top: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    max-height: 297px;
+    overflow-y: auto;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.empleado-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.empleado-item:hover {
+    background: #f8fafc;
+}
+
+
+/* Informacion del empleado */
+.empleado-info {
+    flex: 1;
+}
+
+.empleado-nombre {
+    font-size: 13.4px;
+    color: #1e293b;
+    font-weight: 500;
+    margin-bottom: 4px;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.empleado-detalle {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #94a3b8;
+    width: 100%;
+}
+
+.seleccionado-detalle {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #94a3b8;
+    width: 210px;
+    margin: auto;
+    margin-top: 3px;
+}
+.seleccionado-detalle .seleccionado-cedula{
+    text-align: left;
+}
+
+.empleado-cedula,
+.seleccionado-cedula {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+}
+
+.empleado-area {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+}
+
+
+/* seleccion para la asignacion */
+
+
+.empleado-seleccionado {
+    margin-top: 20px;
+    background: linear-gradient(to right, #f0f4ff 0%, #e8edfb 100%);
+    border-radius: 8px;
+    border-left: 4px solid #3f51b5;
+    border-right: 4px solid #3f51b5;
+    overflow: hidden;
+    height: 55px;
+    animation: fadeInUp 0.2s ease;
+}
+
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.seleccionado-contenido {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    padding: 12px 0px;
+    color: #1e293b;
+    font-weight: 600px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+}
+
+.seleccionado-info {
+    flex: 1;
+}
+
+
+/* Fecha Asignacion */
+
+.seleccionado-fecha {
+    display: flex;
+    flex-direction: row;
+    margin-top: 20px;
+}
+
+.seleccionado-fecha .asignac {
+    flex: 1;
+    min-width: 0;
+}
+
+.seleccionado-fecha .devoluc {
+    flex: 1;
+    min-width: 0;
+}
+
+.seleccionado-fecha .fecha-campo,
+.seleccionado-fecha .fecha {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    background: transparent;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+    color: #3f51b5;
+}
+
+.seleccionado-fecha .fecha-campo.sin-asignacion {
+    margin-left: -90px;
+}
+
+.seleccionado-fecha .fecha input {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    color: #333;
+    transition: all 0.3s ease;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    gap: 10px;
+    margin-right: 5px;
+}
+
+
+
+/* DESCRIPCION  asignacion*/
+
+.seleccionado-observaciones {
+    margin-top: 20px;
+}
+
+.obser-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-radius: 8px;
+}
+
+.obser-campo span {
+    color: #3f51b5;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 13px;
+}
+
+.obser-campo span label {
+    position: absolute;
+    margin-left: 10px;
+    margin-top: 5px;
+}
+
+.obser-campo textarea {
+    width: 89%;
+    height: 112px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    outline: none;
+    color: #333;
+    font-size: 14px;
+    resize: none;
+    letter-spacing: 1px;
+    padding: 15px;
+    margin-top: -5px;
+}
+
+
+
+/* BOTONES FUNCIONES */
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+/* Estilos base para todos los botones */
+.modal-footer button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+
+.modal-footer button mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Boton Cancelar */
+.btn-cancelar {
+    background: #E55353;
+    color: #fff;
+    border: none;
+}
+
+.btn-cancelar:hover {
+    transform: translateY(-2px);
+}
+
+
+
+/* Boton Reasignar */
+.btn-reasignar,
+.btn-asignar,
+.btn-confirmar-reasignar {
+    background: #34C759;
+    border: none;
+    color: white;
+}
+
+.btn-reasignar:hover,
+.btn-asignar:hover,
+.btn-confirmar-reasignar:hover {
+    transform: translateY(-2px);
+}
+
+
+/* Boton Devolver */
+.btn-devolver,
+.btn-confirmar-devolver  {
+    background: #3399FF;
+    border: none;
+    color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-devolver:hover,
+.btn-confirmar-devolver:hover {
+    transform: translateY(-2px);
+}
+
+
+.error-mensaje {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-top: 8px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.error-mensaje mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}

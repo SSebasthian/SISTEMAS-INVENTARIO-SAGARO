@@ -266,14 +266,15 @@
 }
 
 
-/* TABLA EQUIPOS */
+/* TABLA IMPRESORAS */
 
 .tabla-container {
     background: white;
     border-radius: 12px;
-    overflow-x: auto;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border: 1px solid #e8e8e8;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .tabla-equipos thead tr {
@@ -284,7 +285,6 @@
 .tabla-impresoras {
     width: 100%;
     border-collapse: collapse;
-    min-width: 900px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -302,6 +302,7 @@
     font-weight: 600;
     color: #6c757d;
     letter-spacing: 0.3px;
+    position: relative;
 }
 
 .tabla-impresoras .filtro-activo {
@@ -867,19 +868,40 @@ td.asignacion mat-icon {
     }
 
 
+    th:last-child {
+        left: -1px;
+        top: 1px;
+    }
+
+    td.asignacion {
+        position: relative;
+        overflow: visible;
+    }
+
     td.asignacion mat-icon {
-        margin-left: 0px;
+        position: absolute;
+        left: 17px;
     }
 
     .tooltip-asignacion-content {
         font-size: 11px;
         line-height: 1.3;
         top: 25px;
-        left: -105px;
     }
 
     .tooltip-asignacion-content::after {
         right: 12px;
+    }
+
+    .tabla-impresoras tbody tr:last-child .tooltip-asignacion-content {
+        top: auto;
+        bottom: 30px;
+    }
+
+    .tabla-impresoras tbody tr:last-child .tooltip-asignacion-content::after {
+        bottom: auto;
+        top: 100%;
+        border-color: #323232 transparent transparent transparent;
     }
 
 }
