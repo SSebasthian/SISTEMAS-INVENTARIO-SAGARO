@@ -86,6 +86,7 @@
 
 `ng generate component pagina/asignaciones/asig-impresora` (Opciones de Asignacion - IMPRESORA)<br>
 `ng generate service arquitectura/servicio/registro/RegistrarAsignaciones` (Servicio ASIGNACION DISPOSITIVOS TECNOLOGICOS)<br>
+`ng generate component pagina/asignaciones/asig-dispositivo` (Opciones de Asignacion - DISPOSITIVO MOVIL)<br>
 
 
 

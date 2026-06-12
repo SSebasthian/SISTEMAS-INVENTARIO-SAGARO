@@ -13,20 +13,16 @@ import { A11yModule } from "@angular/cdk/a11y";
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 
 
-
-
 @Component({
-  selector: 'app-asig-impresora',
+  selector: 'app-asig-dispositivo',
   imports: [CommonModule, FormsModule, MatIconModule, A11yModule],
-  templateUrl: './asig-impresora.component.html',
-  styleUrl: './asig-impresora.component.css'
+  templateUrl: './asig-dispositivo.component.html',
+  styleUrl: './asig-dispositivo.component.css'
 })
-export class AsigImpresoraComponent {
-
+export class AsigDispositivoComponent {
 
   // ==================== PROPIEDADES ====================
-  impresora: any;
-  tipoAsignacion: 'empleado' | 'area' = 'empleado';
+  dispositivo: any;
   yaAsignada: boolean = false;
   esReasignacion: boolean = false;
   mostrarDevolucion: boolean = false;
@@ -47,41 +43,32 @@ export class AsigImpresoraComponent {
   busquedaEmpleado: string = '';
   empleadoSeleccionado: EmpleadoLlamarDatos | null = null;
 
-  // Areas
-  areas: AreaLlamarDatos[] = [];
-  areaSeleccionada: number | null = null;
-  busquedaArea: string = '';
-  areasFiltradas: AreaLlamarDatos[] = [];
-  areaSeleccionadaObj: AreaLlamarDatos | null = null;
-
   // Imagen
   imagenModeloSeleccionado: SafeResourceUrl = '';
 
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private dialogRef: MatDialogRef<AsigImpresoraComponent>,
+    private dialogRef: MatDialogRef<AsigDispositivoComponent>,
     private empleadoService: ConsultarEmpleadoService,
     private consultarAsignacionesService: ConsultarAsignacionesService,
     private registrarAsignacionesService: RegistrarAsignacionesService,
     private notificacionSnackbarService: NotificacionSnackbarService,
     private sanitizer: DomSanitizer
   ) {
-    this.impresora = data.impresora;
-    this.areas = data.areas || [];
+    this.dispositivo = data.dispositivo;
 
     // Verificar si ya esta asignada
-    this.yaAsignada = this.impresora.asignado === true;
+    this.yaAsignada = this.dispositivo.asignado === true;
     if (this.yaAsignada) {
-      this.tipoAsignacion = this.impresora.tipoAsignacion; // 'empleado' o 'area'
-      let obs = this.impresora.observaciones || '';
+      let obs = this.dispositivo.observaciones || '';
       this.observacionesOriginal = obs.replace(/^ASIGNACION:\s*/, '');
     }
 
     this.cargarEmpleados();
-    this.cargarImagenModelo();  // Cargar imagen al abrir el modal
-    this.cargarAreas();
+    this.cargarImagenModelo();
   }
+
 
 
   // ==================== CARGA DE DATOS ====================
@@ -98,30 +85,14 @@ export class AsigImpresoraComponent {
     });
   }
 
-
-  cargarAreas(): void {
-    this.consultarAsignacionesService.listarAreas().subscribe({
-      next: (data) => {
-        this.areas = data;
-        this.areasFiltradas = data;
-      },
-      error: (err) => {
-        console.error('Error al cargar áreas:', err);
-      }
-    });
-  }
-
-
-  // Metodo para cargar la imagen del modelo (igual que en opc-impresora)
   cargarImagenModelo(): void {
-    if (this.impresora?.modelo?.rutaImagen) {
-      let urlLimpia = this.impresora.modelo.rutaImagen.split('&token=')[0];
+    if (this.dispositivo?.modelo?.rutaImagen) {
+      let urlLimpia = this.dispositivo.modelo.rutaImagen.split('&token=')[0];
       this.imagenModeloSeleccionado = this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
     } else {
       this.imagenModeloSeleccionado = '';
     }
   }
-
 
 
   // ==================== FILTROS Y SELECCION ====================
@@ -140,10 +111,7 @@ export class AsigImpresoraComponent {
     this.empleadoSeleccionado = empleado;
     this.busquedaEmpleado = '';
     this.empleadosFiltrados = [];
-    // Establecer el area del empleado como areaCodigo
-    this.areaSeleccionada = empleado.area.codigo;
   }
-
 
 
   limpiarSeleccion(): void {
@@ -151,59 +119,28 @@ export class AsigImpresoraComponent {
   }
 
 
-  filtrarAreas(): void {
-    const termino = this.busquedaArea.toLowerCase();
-    this.areasFiltradas = this.areas.filter(area =>
-      area.descripcion.toLowerCase().includes(termino)
-    );
-  }
-
-  seleccionarArea(area: AreaLlamarDatos): void {
-    this.areaSeleccionadaObj = area;
-    this.areaSeleccionada = area.codigo;
-    this.busquedaArea = '';
-    this.areasFiltradas = [];
-  }
-
-  limpiarSeleccionArea(): void {
-    this.areaSeleccionadaObj = null;
-    this.areaSeleccionada = null;
-  }
-
-
   limpiarSeleccionTotal(): void {
-    if (this.tipoAsignacion === 'empleado') {
-      this.empleadoSeleccionado = null;
-      this.busquedaEmpleado = '';
-      this.empleadosFiltrados = this.empleados;
-    } else {
-      this.areaSeleccionadaObj = null;
-      this.areaSeleccionada = null;
-      this.busquedaArea = '';
-      this.areasFiltradas = this.areas;
-    }
+    this.empleadoSeleccionado = null;
+    this.busquedaEmpleado = '';
+    // Restaurar la lista completa de empleados
+    this.empleadosFiltrados = [...this.empleados];
+    this.observaciones = '';
+    this.fechaAsignacion = new Date().toISOString().split('T')[0];
     this.fechaDevolucion = '';
+    this.detalleDevolucion = '';
+    this.mostrarDevolucion = false;
+    this.esReasignacion = false;
+    this.errorFechaDevolucion = false;
   }
 
 
-  // MEtodo para saber si hay selección
   tieneSeleccion(): boolean {
-    if (this.tipoAsignacion === 'empleado') {
-      return this.empleadoSeleccionado !== null;
-    } else {
-      return this.areaSeleccionadaObj !== null;
-    }
+    return this.empleadoSeleccionado !== null;
   }
-
 
   puedeAsignar(): boolean {
-    if (this.tipoAsignacion === 'empleado') {
-      return this.empleadoSeleccionado !== null;
-    } else {
-      return this.areaSeleccionada !== null;
-    }
+    return this.empleadoSeleccionado !== null && !!this.fechaAsignacion;
   }
-
 
 
   // ==================== VALIDACION DE FECHAS ====================
@@ -212,9 +149,9 @@ export class AsigImpresoraComponent {
   isFechaDevolucionValida(): boolean {
     if (!this.fechaDevolucion) return false;
 
-    // Obtener la fecha de asignacion (puede venir de impresora.fechaAsignacion o de la variable)
+    // Obtener la fecha de asignacion (puede venir de dispositivo.fechaAsignacion o de la variable)
     const fechaAsignacionStr = this.yaAsignada
-      ? this.impresora.fechaAsignacion
+      ? this.dispositivo.fechaAsignacion
       : this.fechaAsignacion;
 
     if (!fechaAsignacionStr) return true; // Si no hay fecha de asignación, no validar
@@ -240,41 +177,55 @@ export class AsigImpresoraComponent {
 
   // ==================== ACCIONES PRINCIPALES ====================
 
-
   cerrar(): void {
     this.dialogRef.close({ success: false });
   }
 
 
   asignar(): void {
-    let observacionesFormateadas = '';
-    if (this.observaciones && this.observaciones.trim() !== '') {
-      observacionesFormateadas = `ASIGNACION: ${this.observaciones}`;
-    } else {
-      observacionesFormateadas = 'ASIGNACION: SIN OBSERVACIONES';
+    // Validar que haya un empleado seleccionado
+    if (!this.empleadoSeleccionado) {
+        this.notificacionSnackbarService.warning('Empleado requerido', 'Seleccione un empleado');
+        return;
     }
 
-    let areaCodigo: number | null = null;
+    // Validar que el empleado tenga cédula
+    if (!this.empleadoSeleccionado.cedula || this.empleadoSeleccionado.cedula.trim() === '') {
+        this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene cédula válida');
+        return;
+    }
 
-    if (this.tipoAsignacion === 'empleado') {
-      areaCodigo = this.empleadoSeleccionado!.area!.codigo;
+    // Validar que el empleado tenga área
+    if (!this.empleadoSeleccionado.area?.codigo) {
+        this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene un área asignada');
+        return;
+    }
+
+    // Validar fecha de asignación
+    if (!this.fechaAsignacion) {
+        this.notificacionSnackbarService.warning('Fecha requerida', 'Seleccione una fecha de asignación');
+        return;
+    }
+
+    let observacionesFormateadas = '';
+    if (this.observaciones && this.observaciones.trim() !== '') {
+        observacionesFormateadas = `ASIGNACION: ${this.observaciones}`;
     } else {
-      areaCodigo = this.areaSeleccionada;
+        observacionesFormateadas = 'ASIGNACION: SIN OBSERVACIONES';
     }
 
     const asignacionData = {
-      empleadoCedula: this.tipoAsignacion === 'empleado' ? this.empleadoSeleccionado?.cedula : null,
-      areaCodigo: areaCodigo,
-      catalogoCodigo: 3,
-      tipoCodigo: this.impresora.tipo?.codigo,
-      serialActivo: this.impresora.serial,
-      fechaAsignacion: this.fechaAsignacion,
-      observaciones: observacionesFormateadas  // ← Asegurar que usas esta variable
+        empleadoCedula: this.empleadoSeleccionado.cedula,
+        areaCodigo: this.empleadoSeleccionado.area.codigo,  // ← Enviar el área del empleado
+        catalogoCodigo: 2,  // Dispositivo móvil
+        tipoCodigo: this.dispositivo.tipo?.codigo,
+        serialActivo: this.dispositivo.serial,
+        fechaAsignacion: this.fechaAsignacion,
+        observaciones: observacionesFormateadas
     };
 
     this.dialogRef.close({ success: true, data: asignacionData });
-  }
-
+}
 
 
   activarDevolucion(): void {
@@ -298,13 +249,13 @@ export class AsigImpresoraComponent {
       return;
     }
 
-    if (!this.impresora.asignacionId) {
+    if (!this.dispositivo.asignacionId) {
       this.notificacionSnackbarService.error('Error', 'No se encontro el ID de la asignacion');
       return;
     }
 
     // Obtener el texto original y limpiarlo
-    let textoOriginal = this.impresora.observaciones || '';
+    let textoOriginal = this.dispositivo.observaciones || '';
     let textoLimpio = textoOriginal.replace(/^ASIGNACION:\s*/, '').split(' | ')[0];
 
     if (!textoLimpio || textoLimpio.trim() === '') {
@@ -323,7 +274,7 @@ export class AsigImpresoraComponent {
       fechaDevolucion: this.fechaDevolucion
     };
 
-    this.registrarAsignacionesService.devolver(this.impresora.asignacionId, data).subscribe({
+    this.registrarAsignacionesService.devolver(this.dispositivo.asignacionId, data).subscribe({
       next: () => {
         // SOLO CERRAR EL MODAL, no ir a asignacion
         this.dialogRef.close({ success: true, devuelta: true });
@@ -337,23 +288,11 @@ export class AsigImpresoraComponent {
 
 
 
-
-
   // Metodo para devolver (reiniciar seleccion)
   devolver(): void {
-    // Limpiar seleccion
-    if (this.tipoAsignacion === 'empleado') {
-      this.empleadoSeleccionado = null;
-      this.busquedaEmpleado = '';
-      this.empleadosFiltrados = this.empleados; //  Restaurar lista completa
-    } else {
-      this.areaSeleccionadaObj = null;
-      this.areaSeleccionada = null;
-      this.busquedaArea = '';
-      this.areasFiltradas = this.areas; //  Restaurar lista completa
-    }
-
-    // Limpiar fecha de devolucion
+    this.empleadoSeleccionado = null;
+    this.busquedaEmpleado = '';
+    this.empleadosFiltrados = this.empleados; //  Restaurar lista completa
     this.fechaDevolucion = '';
   }
 
@@ -365,6 +304,8 @@ export class AsigImpresoraComponent {
     this.fechaDevolucion = new Date().toISOString().split('T')[0];
     this.detalleDevolucion = '';
   }
+
+
 
   confirmarReasignar(): void {
     // Validar fecha
@@ -378,13 +319,13 @@ export class AsigImpresoraComponent {
       return;
     }
 
-    if (!this.impresora.asignacionId) {
+    if (!this.dispositivo.asignacionId) {
       this.notificacionSnackbarService.error('Error', 'No se encontro el ID de la asignacion');
       return;
     }
 
     // Obtener el texto original y limpiarlo
-    let textoOriginal = this.impresora.observaciones || '';
+    let textoOriginal = this.dispositivo.observaciones || '';
     let textoLimpio = textoOriginal.replace(/^ASIGNACION:\s*/, '').split(' | ')[0];
 
     if (!textoLimpio || textoLimpio.trim() === '') {
@@ -403,7 +344,7 @@ export class AsigImpresoraComponent {
       fechaDevolucion: this.fechaDevolucion
     };
 
-    this.registrarAsignacionesService.devolver(this.impresora.asignacionId, data).subscribe({
+    this.registrarAsignacionesService.devolver(this.dispositivo.asignacionId, data).subscribe({
       next: () => {
         this.notificacionSnackbarService.success('Exito', 'Devolucion registrada');
         // Preparar para nueva asignacion
@@ -425,8 +366,6 @@ export class AsigImpresoraComponent {
 
     // Limpiar selecciones previas
     this.empleadoSeleccionado = null;
-    this.areaSeleccionadaObj = null;
-    this.areaSeleccionada = null;
 
     // Resetear fechas y observaciones para nueva asignacion
     this.fechaAsignacion = new Date().toISOString().split('T')[0];
@@ -434,14 +373,13 @@ export class AsigImpresoraComponent {
     this.observaciones = '';
     this.detalleDevolucion = '';
 
-    // Resetear busquedas
+    // Resetear busquedas - IMPORTANTE: restaurar lista completa
     this.busquedaEmpleado = '';
-    this.busquedaArea = '';
-    this.empleadosFiltrados = this.empleados;
-    this.areasFiltradas = this.areas;
+    this.empleadosFiltrados = [...this.empleados];  // ← Restaurar lista completa
 
-    this.notificacionSnackbarService.info('Reasignacion', 'Seleccione un nuevo empleado o area');
+    this.notificacionSnackbarService.info('Reasignacion', 'Seleccione un nuevo empleado');
   }
+
 
 
   // Metodo para reasignar (limpiar asignacion actual y mostrar formulario)
@@ -459,26 +397,24 @@ export class AsigImpresoraComponent {
 
 
 
-
   // AUXILIARES
 
-  // Método para obtener el título según el estado
+  // Metodo para obtener el título según el estado
   getTitulo(): string {
     // Si no está asignada
     if (!this.yaAsignada) {
-      return 'Asignar Impresora';
+      return 'Asignar Dispositivo';
     }
 
     // Si está asignada y está en modo devolución
     if (this.mostrarDevolucion) {
       if (this.esReasignacion) {
-        return 'Reasignacion de Impresora';
+        return 'Reasignacion de Dispositivo';
       }
-      return 'Devolucion de Impresora';
+      return 'Devolucion de Dispositivo';
     }
 
     // Si esta asignada y no en modo devolución
-    return 'Impresora Asignada';
+    return 'Dispositivo Asignado';
   }
-
 }

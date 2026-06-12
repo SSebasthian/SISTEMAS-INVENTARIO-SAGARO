@@ -116,6 +116,5 @@ public class EmpleadoService {
         return empleadoRepository.findAll();
     }
 
-
 }
 

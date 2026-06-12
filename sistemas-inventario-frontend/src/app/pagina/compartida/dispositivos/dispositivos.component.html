@@ -316,7 +316,7 @@
                             <div class="tooltip-asignacion-container">
 
                                 <!-- ICONO DE ASIGNACION -->
-                                <mat-icon *ngIf="dispositivo.asignado" class="icono-asignado">person</mat-icon>
+                                <mat-icon *ngIf="dispositivo.asignado" class="icono-asignado" (click)="abrirModalAsignacion(dispositivo)">person</mat-icon>
                                 <div *ngIf="dispositivo.asignado" class="tooltip-asignacion-content">
                                     <div class="tooltip-header">
                                         <span>{{ dispositivo.asignadoArea }}</span>
@@ -324,7 +324,7 @@
                                         <span>{{ dispositivo.asignadoA }}</span>
                                     </div>
                                 </div>
-                                <mat-icon *ngIf="!dispositivo.asignado" class="icono-disponible">person_outline</mat-icon>
+                                <mat-icon *ngIf="!dispositivo.asignado" class="icono-disponible" (click)="abrirModalAsignacion(dispositivo)">person_outline</mat-icon>
                                 <div *ngIf="!dispositivo.asignado" class="tooltip-asignacion-content tooltip-disponible">
                                     <div class="tooltip-header">
                                         <a>DISPONIBLE</a>

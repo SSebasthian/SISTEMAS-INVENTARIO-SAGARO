@@ -6,8 +6,12 @@ import { DispositivoMovilLlamarDatos } from '../../../arquitectura/interface/Lla
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 import { ConsultarDispositivoService } from './../../../arquitectura/servicio/consulta/ConsultarDispositivo.service';
 import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
+import { RegistrarAsignacionesService } from '../../../arquitectura/servicio/registro/RegistrarAsignaciones.service';
 import { A11yModule } from "@angular/cdk/a11y";
 import { forkJoin } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { AsigDispositivoComponent } from '../../asignaciones/asig-dispositivo/asig-dispositivo.component';
+import { AreaLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/AreaRespuesta.interface';
 
 
 @Component({
@@ -26,6 +30,7 @@ export class DispositivosComponent implements OnInit {
   detalleVisible: string | null = null;
   terminoBusqueda: string = '';
   searchExpanded: boolean = false;
+  areas: AreaLlamarDatos[] = [];
 
   // PAGINACION
   registrosPorPagina: number = 10;
@@ -36,7 +41,9 @@ export class DispositivosComponent implements OnInit {
     private consultarDispositivoService: ConsultarDispositivoService,
     private notificacionSnackbarService: NotificacionSnackbarService,
     private consultarAsignacionesService: ConsultarAsignacionesService,
-    private elementRef: ElementRef //CERRAR FILTRO AL DAR CLIC AFUERA
+    private registrarAsignacionesService: RegistrarAsignacionesService,
+    private elementRef: ElementRef, //CERRAR FILTRO AL DAR CLIC AFUERA
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit(): void {
@@ -45,44 +52,74 @@ export class DispositivosComponent implements OnInit {
 
   cargarDispositivos(): void {
     this.consultarDispositivoService.listarDispositivos().subscribe({
-      next: (dispositivos) => {
-        const peticiones = dispositivos.map(dispositivo =>
-          this.consultarAsignacionesService.obtenerAsignacionActual(dispositivo.serial)
-        );
-        forkJoin(peticiones).subscribe({
-          next: (respuestas: any[]) => {
-            this.dispositivos = dispositivos.map((dispositivo, index) => {
-              const asignacion = respuestas[index];
-              if (asignacion?.activo) {
-                dispositivo.asignado = true;
-                dispositivo.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
-                dispositivo.asignadoArea = asignacion.areaDescripcion || null;
-                dispositivo.asignacionId = asignacion.codigo;
-              } else {
-                dispositivo.asignado = false;
-                dispositivo.asignadoA = null;
-                dispositivo.asignadoArea = null;
-                dispositivo.asignacionId = null;
-              }
-              return dispositivo;
+        next: (dispositivos) => {
+            const peticiones = dispositivos.map(dispositivo =>
+                this.consultarAsignacionesService.obtenerAsignacionActual(dispositivo.serial)
+            );
+            forkJoin(peticiones).subscribe({
+                next: (respuestas: any[]) => {
+                    console.log('Respuestas asignaciones:', respuestas); // ← Para depurar
+                    
+                    this.dispositivos = dispositivos.map((dispositivo, index) => {
+                        const asignacion = respuestas[index];
+                        console.log(`Dispositivo ${dispositivo.serial} - Asignacion:`, asignacion); // ← Para depurar
+                        
+                        if (asignacion && asignacion.activo === true) {
+                            dispositivo.asignado = true;
+                            
+                            // Verificar si tiene empleado asignado
+                            if (asignacion.empleadoNombre) {
+                                dispositivo.tipoAsignacion = 'empleado';
+                                dispositivo.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
+                                dispositivo.asignadoCedula = asignacion.empleadoCedula;
+                                dispositivo.asignadoArea = asignacion.areaDescripcion || null;
+                                dispositivo.fechaAsignacion = asignacion.fechaAsignacion;
+                            } 
+                            // Verificar si tiene área asignada
+                            else if (asignacion.areaDescripcion) {
+                                dispositivo.tipoAsignacion = 'area';
+                                dispositivo.asignadoA = asignacion.areaDescripcion;
+                                dispositivo.fechaAsignacion = asignacion.fechaAsignacion;
+                            }
+                            
+                            // Guardar el ID correctamente (usar codigo, no consecutivo)
+                            dispositivo.asignacionId = asignacion.codigo || asignacion.consecutivo;
+                            
+                            // Guardar observaciones
+                            let obs = asignacion.observaciones || '';
+                            dispositivo.observacionesOriginal = obs.replace(/^ASIGNACION:\s*/, '');
+                            dispositivo.observaciones = asignacion.observaciones;
+                        } else {
+                            dispositivo.asignado = false;
+                            dispositivo.tipoAsignacion = null;
+                            dispositivo.asignadoA = null;
+                            dispositivo.asignadoCedula = null;
+                            dispositivo.asignadoArea = null;
+                            dispositivo.fechaAsignacion = null;
+                            dispositivo.observaciones = null;
+                            dispositivo.observacionesOriginal = null;
+                            dispositivo.asignacionId = null;
+                        }
+                        return dispositivo;
+                    });
+                    
+                    this.dispositivosFiltrados = [...this.dispositivos];
+                    this.actualizarPaginacion();
+                },
+                error: (err) => {
+                    console.error('Error al obtener asignaciones de dispositivos:', err);
+                    this.dispositivos = dispositivos;
+                    this.dispositivosFiltrados = [...this.dispositivos];
+                    this.actualizarPaginacion();
+                }
             });
-            this.dispositivosFiltrados = [...this.dispositivos];
-            this.actualizarPaginacion();
-          },
-          error: (err) => {
-            console.error('Error al obtener asignaciones para dispositivos:', err);
-            this.dispositivos = dispositivos;
-            this.dispositivosFiltrados = [...this.dispositivos];
-            this.actualizarPaginacion();
-          }
-        });
-      },
-      error: (err) => {
-        console.error('Error al cargar dispositivos:', err);
-        this.notificacionSnackbarService.error('Error', 'No se pudieron cargar los dispositivos');
-      }
+        },
+        error: (err) => {
+            console.error('Error al cargar dispositivos:', err);
+            this.notificacionSnackbarService.error('Error', 'No se pudieron cargar los dispositivos');
+        }
     });
-  }
+}
 
 
   // ========== FILTROS ==========
@@ -724,4 +761,37 @@ export class DispositivosComponent implements OnInit {
     if (this.filtros.asignacion.valor !== '' && this.filtros.asignacion.valor !== null) return true;
     return false;
   }
+
+
+
+  // MODAL ASIGNAR IMPRESORA
+  
+    abrirModalAsignacion(dispositivo: DispositivoMovilLlamarDatos): void {
+      const dialogRef = this.dialog.open(AsigDispositivoComponent, {
+        width: '900px',
+        data: { dispositivo, areas: this.areas }
+      });
+  
+      dialogRef.afterClosed().subscribe(result => {
+        if (result?.success) {
+          if (result.devuelta) {
+            // Si fue una devolución
+            this.notificacionSnackbarService.success('Devolucion Realizada', 'Movil devuelto correctamente');
+          } else {
+            // Si fue una asignación
+            this.registrarAsignacionesService.asignar(result.data).subscribe({
+              next: () => {
+                this.notificacionSnackbarService.success('Asignacion Realizada', 'Movil asignada correctamente');
+                this.cargarDispositivos();
+              },
+              error: (err) => {
+                this.notificacionSnackbarService.error('Error', err.error?.error || 'Error al asignar');
+              }
+            });
+          }
+          this.cargarDispositivos(); // Recargar lista
+        }
+      });
+  
+    }
 }

@@ -31,9 +31,14 @@ export interface DispositivoMovilLlamarDatos {
     versionSO: VersionSOLlamarDatos;
 
     // Asignacion
-    asignado: boolean;
+     asignado: boolean;
     asignadoA: string | null;
+    asignadoCedula?: string | null; 
     asignadoArea: string | null;
+    tipoAsignacion: 'empleado' | 'area' | null;
+    fechaAsignacion?: string | null;
     asignacionId: number | null;
+    observacionesOriginal?: string | null;
+    observaciones?: string | null;
     
 }

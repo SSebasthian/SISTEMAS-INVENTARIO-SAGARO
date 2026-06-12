@@ -24,5 +24,9 @@ export class ConsultarEmpleadoService {
   }
 
 
+  listarEmpleadosActivos(): Observable<EmpleadoLlamarDatos[]> {
+    return this.http.get<EmpleadoLlamarDatos[]>(`${this.apiUrlConsultarEmpleado}/activos`);
+  }
+
 
 }

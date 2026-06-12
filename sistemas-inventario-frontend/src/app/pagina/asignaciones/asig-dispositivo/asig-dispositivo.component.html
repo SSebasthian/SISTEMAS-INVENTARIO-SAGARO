@@ -1,0 +1,293 @@
+<div class="modal">
+    <div class="modal-contenido">
+
+        <div class="modal-cabezera">
+            <div class="titulo">
+                <h2>
+                    <mat-icon class="cargoicon">blur_on</mat-icon>
+                    <strong>{{ getTitulo() }}</strong>
+                </h2>
+            </div>
+        </div>
+
+        <!-- CONTENEDOR DE DOS COLUMNAS -->
+        <div class="asignacion">
+
+            <!-- COLUMNA IZQUIERDA (siempre visible) -->
+            <div class="columna-izquierda">
+                <div class="info-dispositivo">
+                    <div class="info-imagen">
+                        <div class="contenedor-imagen">
+                            <div class="contenido-img">
+                                <img *ngIf="imagenModeloSeleccionado" [src]="imagenModeloSeleccionado"
+                                    class="imagen-modelo" alt="Imagen modelo">
+                                <mat-icon *ngIf="!imagenModeloSeleccionado" class="icono-img-default">image</mat-icon>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-grid">
+                    
+                        <div class="info-item">
+                            <span class="label">TIPO:</span>
+                            <span class="valor">{{ dispositivo.tipo.descripcion }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">MARCA:</span>
+                            <span class="valor">{{ dispositivo.marca.descripcion }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">MODELO:</span>
+                            <span class="valor">{{ dispositivo.modelo.descripcion }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">SERIAL:</span>
+                            <span class="valor">{{ dispositivo.serial }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">ESTADO:</span>
+                            <span class="valor">{{ dispositivo.estado }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA -->
+            <div class="columna-derecha">
+
+                <div class="form-asignacion">
+                    <!-- Tipo de asignacion -->
+                    <div class="tipo-asignacion">
+                        <label class="radio-option active">
+                            <input type="radio" value="empleado" checked>
+                            <mat-icon>person</mat-icon>
+                            <span>EMPLEADO</span>
+                        </label>
+                    </div>
+
+                    <!-- ================================================ -->
+                    <!-- CASO 1: YA ESTA ASIGNADA -->
+                    <!-- ================================================ -->
+                    <div *ngIf="yaAsignada" class="vista-asignada">
+
+                        <!-- Asignado a Empleado -->
+                        <div *ngIf="dispositivo.tipoAsignacion === 'empleado'" class="empleado-seleccionado">
+                            <div class="seleccionado-contenido">
+                                <div class="seleccionado-info">
+                                    <div class="seleccionado-nombre">
+                                        {{ dispositivo.asignadoA }}
+                                    </div>
+                                    <div class="seleccionado-detalle">
+                                        <span class="seleccionado-cedula">{{ dispositivo.asignadoCedula }}</span>
+                                        <span class="seleccionado-area">{{ dispositivo.asignadoArea }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fechas y descripcion -->
+                        <div class="seleccionado-fecha">
+                            <div class="campo-fecha asignac">
+                                <div class="fecha-campo">
+                                    <mat-icon>event</mat-icon>
+                                    <label>ASIGNACION</label>
+                                </div>
+                                <div class="fecha">
+                                    <input type="date"
+                                        [value]="yaAsignada ? (dispositivo.fechaAsignacion | date:'yyyy-MM-dd') : fechaAsignacion"
+                                        class="fecha-input" [disabled]="yaAsignada">
+                                </div>
+                            </div>
+
+                            <div class="campo-fecha devoluc" *ngIf="mostrarDevolucion">
+                                <div class="fecha-campo">
+                                    <mat-icon>event</mat-icon>
+                                    <label>DEVOLUCION</label>
+                                </div>
+                                <div class="fecha">
+                                    <input type="date" [(ngModel)]="fechaDevolucion" class="fecha-input"
+                                        (change)="validarFechaDevolucion()">
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Descripcion original (solo lectura) -->
+                        <div class="seleccionado-observaciones" *ngIf="!mostrarDevolucion">
+                            <div class="obser-campo">
+                                <span>
+                                    <mat-icon>description</mat-icon>
+                                    <label>DESCRIPCION</label>
+                                </span>
+                                <textarea [value]="dispositivo.observacionesOriginal  || 'SIN OBSERVACIONES'" rows="2"
+                                    disabled></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Detalle de devolucion (solo visible en modo devolución) -->
+                        <div class="seleccionado-observaciones" *ngIf="mostrarDevolucion">
+                            <div class="obser-campo">
+                                <span>
+                                    <mat-icon>description</mat-icon>
+                                    <label>DETALLE DE DEVOLUCION</label>
+                                </span>
+                                <textarea [(ngModel)]="detalleDevolucion" rows="2"
+                                    placeholder="Ingrese el motivo o detalles de la devolución..."
+                                    (input)="detalleDevolucion = detalleDevolucion.toUpperCase()"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================================ -->
+                    <!-- CASO 2: NUEVA ASIGNACION (NO ESTA ASIGNADA)      -->
+                    <!-- ================================================ -->
+
+
+                    <div *ngIf="!yaAsignada" class="vista-nueva">
+
+                        <!-- Seleccion de empleado -->
+                        <div class="campo-form">
+
+                            <!-- Buscador y lista de empleados (sin selección) -->
+                            <ng-container *ngIf="!empleadoSeleccionado">
+                                <div class="buscador-empleado">
+                                    <mat-icon>search</mat-icon>
+                                    <input type="text" [(ngModel)]="busquedaEmpleado" (input)="filtrarEmpleados()"
+                                        placeholder="Buscar Empleado...">
+                                </div>
+                                <div class="lista-empleados" *ngIf="empleadosFiltrados.length > 0">
+                                    <div *ngFor="let emp of empleadosFiltrados" class="empleado-item"
+                                        (click)="seleccionarEmpleado(emp)">
+                                        <div class="empleado-info">
+                                            <div class="empleado-nombre">{{ emp.nombre }} {{ emp.apellido }}</div>
+                                            <div class="empleado-detalle">
+                                                <span class="empleado-cedula">{{ emp.cedula }}</span>
+                                                <span class="empleado-area">{{ emp.area.descripcion }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+
+
+                            <!-- Empleado seleccionado -->
+                            <ng-container *ngIf="empleadoSeleccionado">
+                                <div class="empleado-seleccionado">
+                                    <div class="seleccionado-contenido">
+                                        <div class="seleccionado-info">
+                                            <div class="seleccionado-nombre">
+                                                {{ empleadoSeleccionado.nombre }} {{ empleadoSeleccionado.apellido }}
+                                            </div>
+                                            <div class="seleccionado-detalle">
+                                                <span class="seleccionado-cedula">{{ empleadoSeleccionado.cedula
+                                                    }}</span>
+                                                <span class="seleccionado-area">{{ empleadoSeleccionado.area.descripcion
+                                                    }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
+
+
+                        <!-- Fechas y descripcion (solo cuando hay selección) -->
+                        <ng-container *ngIf="empleadoSeleccionado">
+
+                            <!-- Fechas -->
+                            <div class="seleccionado-fecha">
+                                <div class="campo-fecha asignac">
+                                    <div class="fecha-campo sin-asignacion">
+                                        <mat-icon>event</mat-icon>
+                                        <label>FECHA DE ASIGNACION</label>
+                                    </div>
+                                    <div class="fecha">
+                                        <input type="date" [(ngModel)]="fechaAsignacion" class="fecha-input">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DescripciOn -->
+                            <div class="seleccionado-observaciones">
+                                <div class="obser-campo">
+                                    <span>
+                                        <mat-icon>description</mat-icon>
+                                        <label>DESCRIPCION</label>
+                                    </span>
+                                    <textarea [(ngModel)]="observaciones" rows="2"
+                                        placeholder="Ingrese detalles de la asignación..."
+                                        (input)="observaciones = observaciones.toUpperCase()"></textarea>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- BOTONES  -->
+        <div class="modal-footer">
+
+            <!-- CASO 1: YA ESTA ASIGNADA -->
+            <ng-container *ngIf="yaAsignada">
+
+                <!-- Boton Cancelar (siempre visible) -->
+                <button class="btn-cancelar" (click)="cerrar()">
+                    <mat-icon>close</mat-icon> Cancelar
+                </button>
+
+                <!-- Boton Reasignar (solo visible cuando NO está en modo devolución) -->
+                <button *ngIf="!mostrarDevolucion" class="btn-reasignar" (click)="activarReasignacion()">
+                    <mat-icon>refresh</mat-icon> Reasignar
+                </button>
+
+                <!-- Boton Devolver (solo visible cuando NO esta en modo devolución) -->
+                <button *ngIf="!mostrarDevolucion" class="btn-devolver" (click)="activarDevolucion()">
+                    <mat-icon>assignment_return</mat-icon> Devolver
+                </button>
+
+                <!-- Boton Confirmar Devolución (visible cuando está en modo devolución y viene de Devolver) -->
+                <button *ngIf="mostrarDevolucion && !esReasignacion" class="btn-confirmar-devolver"
+                    (click)="confirmarDevolver()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
+                    <mat-icon>done_all</mat-icon> Confirmar Devolucion
+                </button>
+
+                <!-- Boton Confirmar Reasignación (visible cuando está en modo devolución y viene de Reasignar) -->
+                <button *ngIf="mostrarDevolucion && esReasignacion" class="btn-confirmar-reasignar"
+                    (click)="confirmarReasignar()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
+                    <mat-icon>refresh</mat-icon> Confirmar Reasignacion
+                </button>
+
+            </ng-container>
+
+            <!-- CASO 2: NO ESTA ASIGNADA (NUEVA ASIGNACION) -->
+            <ng-container *ngIf="!yaAsignada">
+
+                <!-- Boton Cancelar (solo visible cuando NO hay seleccion) -->
+                <button *ngIf="!tieneSeleccion()" class="btn-cancelar" (click)="cerrar()">
+                    <mat-icon>close</mat-icon> Cancelar
+                </button>
+
+                <!-- Boton Volver Atras (solo visible cuando HAY seleccion) -->
+                <button *ngIf="tieneSeleccion()" class="btn-devolver" (click)="limpiarSeleccionTotal()">
+                    <mat-icon>keyboard_arrow_left</mat-icon> Volver
+                </button>
+
+                <!-- Boton Asignar (solo visible cuando HAY seleccion) -->
+                <button *ngIf="tieneSeleccion()" class="btn-asignar" [disabled]="!puedeAsignar()" (click)="asignar()">
+                    <mat-icon>done_all</mat-icon> Asignar
+                </button>
+
+            </ng-container>
+
+        </div>
+        <!-- Mensaje de error -->
+        <div *ngIf="fechaDevolucion && !isFechaDevolucionValida()" class="error-mensaje">
+            <mat-icon>warning</mat-icon>
+            La fecha de devolución no puede ser anterior a {{ dispositivo.fechaAsignacion | date:'dd/MM/yyyy' }}
+        </div>
+    </div>
+
+</div>

@@ -28,5 +28,8 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, String> {
     List<Empleado> buscarPorCedulaONombre(@Param("termino") String termino);
 
     List<Empleado> findAllByOrderByAreaCodigoAscCargoCodigoAsc();
+
+    @Query("SELECT e FROM Empleado e WHERE e.activo = true ORDER BY e.area.codigo ASC, e.cargo.codigo ASC")
+    List<Empleado> findActivosOrderByAreaAndCargo();
 }
 

@@ -214,6 +214,11 @@ public class EmpleadoController {
                 .findAllByOrderByAreaCodigoAscCargoCodigoAsc();
     }
 
+    @GetMapping("/activos")
+    public List<Empleado> listarEmpleadosActivos() {
+        return empleadoRepository.findActivosOrderByAreaAndCargo();
+    }
+
     // ========== ENDPOINT PARA BUSCAR EMPLEADOS POR CEDULA NOMBRE O APELLIDO ==========
 
     @GetMapping("/buscar")
