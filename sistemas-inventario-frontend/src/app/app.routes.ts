@@ -11,6 +11,8 @@ import { EmpleadosComponent } from './pagina/compartida/empleados/empleados.comp
 import { EquiposComponent } from './pagina/compartida/equipos/equipos.component';
 import { DispositivosComponent } from './pagina/compartida/dispositivos/dispositivos.component';
 import { ImpresorasComponent } from './pagina/compartida/impresoras/impresoras.component';
+import { RecursosComponent } from './pagina/compartida/recursos/recursos.component';
+
 
 
 
@@ -83,6 +85,11 @@ export const routes: Routes = [
     {
         path: 'impresoras',
         component: ImpresorasComponent,
+        canActivate: [estadoPrivado]
+    },
+    {
+        path: 'recursos',
+        component: RecursosComponent,
         canActivate: [estadoPrivado]
     },
     {
