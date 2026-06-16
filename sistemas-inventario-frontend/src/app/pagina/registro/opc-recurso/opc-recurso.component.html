@@ -1,1 +1,139 @@
-<p>opc-recurso works!</p>
+<div class="contenedor-regRecurso">
+  <form id="form-registro-recurso" (ngSubmit)="modoEdicion ? editar() : registrar()">
+    <div class="contenido">
+
+      <div class="fila-de-tres">
+        <p>
+          <label>TIPO RECURSO</label>
+          <select class="opcionForm select" [(ngModel)]="recurso.tipoCodigo" name="tipoCodigo" [disabled]="modoEdicion"
+            required>
+            <option [value]="null"></option>
+            <option *ngFor="let t of tiposRecurso" [value]="t.codigo">{{ t.nombre }}</option>
+          </select>
+        </p>
+        <p>
+
+        </p>
+
+        <p>
+          <label>CUERPO</label>
+          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.usuario" name="usuario"
+            (input)="recurso.usuario = recurso.usuario.toLowerCase()" required>
+        </p>
+        <p>
+          <label>DOMINIO</label>
+          <select class="opcionForm select" [(ngModel)]="recurso.dominioCodigo" name="dominioCodigo"
+            [disabled]="modoEdicion" required>
+            <option [value]="null"></option>
+            <option *ngFor="let d of dominios" [value]="d.codigo">&#64;{{ d.nombre }}.COM</option>
+          </select>
+        </p>
+
+        <div>
+          <label>DIGITAR CLAVE</label>
+          <div class="input-clave">
+            <input class="opcionForm" [type]="mostrarClave ? 'text' : 'password'" [(ngModel)]="recurso.clave"
+              name="clave" required>
+            <a type="button" class="btn-ver-clave" (click)="toggleMostrarClave()">
+              <mat-icon>{{ mostrarClave ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <label>REPETIR CLAVE</label>
+          <div class="input-clave">
+            <input class="opcionForm" [type]="mostrarRepetirClave ? 'text' : 'password'"
+              [(ngModel)]="recurso.repetirClave" name="repetirClave" required>
+            <a type="button" class="btn-ver-clave" (click)="toggleMostrarRepetirClave()">
+              <mat-icon>{{ mostrarRepetirClave ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </a>
+          </div>
+        </div>
+
+        <p class="checkbox-wrapper-10">
+          <label>ESTADO</label>
+          <input type="checkbox" id="cb5" class="tgl tgl-flip" [checked]="recurso.activo" disabled>
+          <label for="cb5" data-tg-on="ACTIVO" data-tg-off="INACTIVO" class="tgl-btn"></label>
+        </p>
+      </div>
+
+      <div class="botones-registroeditar">
+        <div>
+          <input type="submit" id="checkboxInput" [value]="modoEdicion ? 'Actualizar' : 'Registrar'">
+          <label for="checkboxInput" class="bookmark">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+        </div>
+
+        <div *ngIf="puedeEditarRegistro && !modoEdicion" (click)="abrirModalBuscar()">
+          <input id="checkboxInput2">
+          <label for="checkboxInput2" class="bookmark2">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+        </div>
+
+        <div *ngIf="!puedeEditarRegistro || modoEdicion" (click)="limpiarFormulario()">
+          <input id="checkboxInput3">
+          <label for="checkboxInput3" class="bookmark3">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<!-- Modal para buscar correo existente -->
+<div class="modal" [class.show]="mostrarModalBuscar" *ngIf="mostrarModalBuscar">
+  <div class="modal-contenido">
+    <div class="modal-cabezera">
+      <div class="titulo">
+        <h2>
+          <mat-icon class="cargoicon">search</mat-icon>
+          Buscar Correo
+        </h2>
+      </div>
+    </div>
+
+    <div class="buscar-contenido">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Buscar por dirección</mat-label>
+        <input matInput [(ngModel)]="busquedaModal" (input)="buscarEnModal()" placeholder="Ingrese dirección de correo">
+        <mat-icon matSuffix>email</mat-icon>
+      </mat-form-field>
+
+      <div class="resultados-modal" *ngIf="resultadosBusqueda.length > 0">
+        <div class="resultado-item-modal" *ngFor="let item of resultadosBusqueda" (click)="seleccionarCorreo(item)">
+          <div class="resultado-info-modal">
+            <strong>{{ item.direccion }}</strong><br>
+            <div>
+              <span class="estado">Estado:</span>
+              <span class="estado-badge" [class.activo]="item.activo" [class.inactivo]="!item.activo">
+                {{ item.activo ? 'ACTIVO' : 'INACTIVO' }}
+              </span>
+            </div>
+          </div>
+          <mat-icon>touch_app</mat-icon>
+        </div>
+      </div>
+
+      <div class="sin-resultados" *ngIf="!buscando && busquedaModal.length >= 2 && resultadosBusqueda.length === 0">
+        <mat-icon>info</mat-icon>
+        <p>No se encontraron correos con: <strong>{{ busquedaModal }}</strong></p>
+      </div>
+
+      <div class="sin-resultados" *ngIf="busquedaModal.length < 2 && busquedaModal.length > 0">
+        <mat-icon>info</mat-icon>
+        <p>Ingrese al menos 2 caracteres</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalBuscar()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+</div>

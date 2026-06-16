@@ -11,7 +11,7 @@
         <div class="carta"  [ngClass]="{'selected': componenteActivo === 'recurso'}">
             <div class="contenedor-caja">
                 <div class="contenido" (click)="mostrarComponenteRegistroRecurso()">
-                    <mat-icon>perm_identity</mat-icon>
+                    <mat-icon>ballot</mat-icon>
                     <h3>Recurso</h3>
                 </div>
             </div>
@@ -47,6 +47,10 @@
 
     <div *ngIf="componenteActivo === 'usuario'">
         <app-opc-empleado></app-opc-empleado> <!-- Llamamos a OpcEmpleadoComponent -->
+    </div>
+
+    <div *ngIf="componenteActivo === 'recurso'">
+        <app-opc-recurso></app-opc-recurso> <!-- Llamamos a OpcEmpleadoComponent -->
     </div>
 
     <div *ngIf="componenteActivo === 'equipo'">

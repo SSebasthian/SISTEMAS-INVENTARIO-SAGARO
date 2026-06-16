@@ -68,6 +68,8 @@
 `ng generate service arquitectura/servicio/Registro/RegistroEquipo` (Servicio REGISTRAR EQUIPO)<br>
 `ng generate service arquitectura/servicio/Registro/RegistroDispositivo` (Servicio REGISTRAR TELEFONOS)<br>
 `ng generate service arquitectura/servicio/Registro/RegistroImpresora` (Servicio REGISTRAR IMPRESORA)<br>
+`ng generate service arquitectura/servicio/Registro/RegistroCorreo` (Servicio REGISTRAR CORREO)<br>
+`ng generate service arquitectura/servicio/Registro/RegistroLineaTelefono` (Servicio REGISTRAR LINEA TELEFONO)<br>
 
 
 
@@ -83,6 +85,8 @@
 `ng generate service arquitectura/servicio/consulta/ConsultarDispositivo` (Servicio CONSULTAR DISPOSITIVOS MOVILES)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarImpresora` (Servicio CONSULTAR IMPRESORAS)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarAsignaciones` (Servicio CONSULTAR ASIGNACIONES)<br>
+`ng generate service arquitectura/servicio/consulta/consultaRecurso` (Servicio REGISTRAR RECURSOS)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarRecursoTipo` (Servicio CONSULTAR RECURSO TIPO)<br>
 
 
 
