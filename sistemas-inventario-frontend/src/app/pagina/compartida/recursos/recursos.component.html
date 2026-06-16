@@ -1,1 +1,137 @@
-<p>recursos works!</p>
+<br><br>
+<div class="contenido">
+
+    <!-- RESUMEN RECURSOS -->
+    <div class="resumen-recursos">
+
+        <!-- Tarjeta: Total Correos -->
+        <div class="tarjeta-resumen total" [class.activa]="detalleVisible === 'totalCorreos'">
+            <button class="btn-detalle" (click)="toggleDetalle('totalCorreos')">
+                <mat-icon>
+                    {{ detalleVisible === 'totalCorreos' ? 'close' : 'whatshot' }}
+                </mat-icon>
+            </button>
+            <mat-icon [class.oculto]="detalleVisible === 'totalCorreos'">email</mat-icon>
+            <div class="info" [class.oculto]="detalleVisible === 'totalCorreos'">
+                <span class="numero">{{ obtenerTotalCorreos() }}</span>
+                <span class="etiqueta">Correos Activos</span>
+            </div>
+            <div class="detalle-hover" [class.visible]="detalleVisible === 'totalCorreos'">
+                <h4><mat-icon>email</mat-icon> Total Correos: {{ obtenerTotalCorreos() }}</h4>
+                <div class="detalle-grid">
+                    <p>Asignados: {{ obtenerCorreosAsignados() }}</p>
+                    <p>Disponible: {{ obtenerCorreosDisponibles() }}</p>
+                    <p>saga: {{ obtenerCorreosDisponibles() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta: Total Telefonos -->
+        <div class="tarjeta-resumen activos" [class.activa]="detalleVisible === 'totalTelefonos'">
+            <button class="btn-detalle" (click)="toggleDetalle('totalTelefonos')">
+                <mat-icon>{{ detalleVisible === 'totalTelefonos' ? 'close' : 'whatshot' }}</mat-icon>
+            </button>
+            <mat-icon [class.oculto]="detalleVisible === 'totalTelefonos'">phone</mat-icon>
+            <div class="info" [class.oculto]="detalleVisible === 'totalTelefonos'">
+                <span class="numero">{{ obtenerTotalTelefonos() }}</span>
+                <span class="etiqueta">Telefonos Activos</span>
+            </div>
+            <div class="detalle-hover" [class.visible]="detalleVisible === 'totalTelefonos'">
+                <h4><mat-icon>phone</mat-icon> Total Telefonos: {{ obtenerTotalTelefonos() }}</h4>
+                <div class="detalle-grid">
+                    <p>Activos: {{ obtenerTelefonosActivos() }}</p>
+                    <!-- <p>Inactivos: {{ obtenerTelefonosInactivos() }}</p> -->
+                    <p>Asignados: {{ obtenerTelefonosAsignados() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta: Total Cuentas -->
+        <div class="tarjeta-resumen inactivos" [class.activa]="detalleVisible === 'totalCuentas'">
+            <button class="btn-detalle" (click)="toggleDetalle('totalCuentas')">
+                <mat-icon>{{ detalleVisible === 'totalCuentas' ? 'close' : 'whatshot' }}</mat-icon>
+            </button>
+            <mat-icon [class.oculto]="detalleVisible === 'totalCuentas'">account_box</mat-icon>
+            <div class="info" [class.oculto]="detalleVisible === 'totalCuentas'">
+                <span class="numero">{{ obtenerTotalCuentas() }}</span>
+                <span class="etiqueta">Cuentas Activos</span>
+            </div>
+            <div class="detalle-hover" [class.visible]="detalleVisible === 'totalCuentas'">
+                <h4><mat-icon>account_box</mat-icon> Total Cuentas: {{ obtenerTotalCuentas() }}</h4>
+                <div class="detalle-grid">
+                    <p>Activas: {{ obtenerCuentasActivas() }}</p>
+                    <p>Inactivas: {{ obtenerCuentasInactivas() }}</p>
+                    <p>Asignadas: {{ obtenerCuentasAsignadas() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta: Asignaciones Totales (opcional) -->
+        <div class="tarjeta-resumen disponibles" [class.activa]="detalleVisible === 'totalAsignaciones'">
+            <button class="btn-detalle" (click)="toggleDetalle('totalAsignaciones')">
+                <mat-icon>{{ detalleVisible === 'totalAsignaciones' ? 'close' : 'whatshot' }}</mat-icon>
+            </button>
+            <mat-icon [class.oculto]="detalleVisible === 'totalAsignaciones'">assignment_ind</mat-icon>
+            <div class="info" [class.oculto]="detalleVisible === 'totalAsignaciones'">
+                <span class="numero">{{ obtenerTotalAsignaciones() }}</span>
+                <span class="etiqueta">Asignaciones</span>
+            </div>
+            <div class="detalle-hover" [class.visible]="detalleVisible === 'totalAsignaciones'">
+                <h4><mat-icon>assignment_ind</mat-icon> Asignaciones activas</h4>
+                <div class="detalle-grid">
+                    <p>Correos: {{ obtenerAsignacionesCorreo() }}</p>
+                    <p>Teléfonos: {{ obtenerAsignacionesTelefono() }}</p>
+                    <p>Cuentas: {{ obtenerAsignacionesCuenta() }}</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- FILTRO GENERAL -->
+    <div class="botones-inicio">
+        <button class="btn-limpiar-filtros">
+            <mat-icon>clear_all</mat-icon>
+            Limpiar filtros
+        </button>
+        <div class="input-busqueda">
+            <mat-icon class="icono-busqueda">search</mat-icon>
+            <input type="text" placeholder="Buscar equipo...">
+            <mat-icon class="icono-limpiar" *ngIf="busqueda">close</mat-icon>
+        </div>
+    </div>
+
+
+    <div class="tabla-container">
+        <table class="tabla-equipos">
+            <thead>
+                <tr>
+                    <th>
+                        RECURSO
+                        <a><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro">
+                            <ng-container></ng-container>
+                        </div>
+                    </th>
+                    <th>
+                        TIPO
+                        <a><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro">
+                            <ng-container></ng-container>
+                        </div>
+                    </th>
+                    <th>
+                        DESCRIPCION
+                        <a><mat-icon>filter_list</mat-icon></a>
+                        <div class="filtro">
+                            <ng-container></ng-container>
+                        </div>
+                    </th>
+                    
+                </tr>
+            </thead>
+
+        </table>
+    </div>
+</div>

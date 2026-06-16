@@ -5,14 +5,14 @@ import { OpcEmpleadoComponent } from '../opc-empleado/opc-empleado.component';
 import { OpcEquipoComponent } from '../opc-equipo/opc-equipo.component';
 import { OpcDispositivoComponent } from '../opc-dispositivo/opc-dispositivo.component';
 import { OpcImpresoraComponent } from '../opc-impresora/opc-impresora.component';
+import { OpcRecursoComponent } from '../opc-recurso/opc-recurso.component';
 import { Location } from '@angular/common'; // Importar Location
 import { PermisoModuloService } from '../../../arquitectura/servicio/autenticacion/permiso-modulo.service';
 
 
-
 @Component({
   selector: 'app-opciones',
-  imports: [MatIconModule, CommonModule, OpcEmpleadoComponent, OpcEquipoComponent, OpcDispositivoComponent, OpcImpresoraComponent],
+  imports: [MatIconModule, CommonModule, OpcEmpleadoComponent, OpcEquipoComponent, OpcDispositivoComponent, OpcImpresoraComponent, OpcRecursoComponent],
   templateUrl: './opciones.component.html',
   styleUrl: './opciones.component.css'
 })
@@ -40,6 +40,16 @@ export class OpcionesComponent {
     }
   }
 
+   // Método para alternar la visibilidad del componente de registro
+  mostrarComponenteRegistroRecurso() {
+    if (this.componenteActivo === 'recurso') {
+      this.componenteActivo = '';  // Desactiva el componente
+      this.location.replaceState('/registro/opciones'); // Vuelve a la ruta base
+    } else {
+      this.componenteActivo = 'recurso';  // Activa el componente
+      this.location.replaceState('/registro/recurso'); // Cambia la URL
+    }
+  }
 
   // Método para alternar la visibilidad del componente de registro
   mostrarComponenteRegistroEquipo() {

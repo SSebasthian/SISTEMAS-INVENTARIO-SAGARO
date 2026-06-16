@@ -1,0 +1,269 @@
+.contenido {
+    position: relative;
+}
+
+
+/* RESUMEN EQUIPOS */
+.resumen-recursos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 50px;
+    margin-bottom: 10px;
+    padding: 10px 0;
+}
+
+.tarjeta-resumen {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05),
+        0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tarjeta-resumen::before {
+    content: "";
+    position: absolute;
+    right: -25px;
+    top: -25px;
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.11);
+    border-radius: 50%;
+
+}
+
+.tarjeta-resumen.activa::before {
+    transform: scale(25);
+}
+
+.tarjeta-resumen.total {
+    background: #5856D6;
+}
+
+.tarjeta-resumen.activos {
+    background: #3399FF;
+}
+
+.tarjeta-resumen.inactivos {
+    background: #E55353;
+}
+
+.tarjeta-resumen.disponibles {
+    background: #34C759;
+}
+
+.tarjeta-resumen mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: white;
+}
+
+.tarjeta-resumen .info {
+    display: flex;
+    flex-direction: column;
+    color: white;
+    opacity: 1;
+}
+
+.tarjeta-resumen .numero {
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.tarjeta-resumen .etiqueta {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.detalle-hover {
+    opacity: 0;
+    position: absolute;
+    inset: 0;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #fff;
+}
+
+.detalle-hover.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.detalle-hover.oculto {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.info.oculto {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.tarjeta-resumen>mat-icon.oculto {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.detalle-hover h4 {
+    margin: 2px 0;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    position: relative;
+    top: -5px;
+}
+
+.detalle-hover h4 mat-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    position: relative;
+    bottom: -4px;
+    left: -5px;
+}
+
+.detalle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 10px;
+    position: relative;
+    top: -3px;
+}
+
+.detalle-grid p {
+    margin: 0;
+    padding: 5px;
+    text-align: center;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-detalle {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+}
+
+.btn-detalle mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #ffffff95;
+}
+
+
+
+/* FILTRO GENERAL */
+
+.botones-inicio {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 18px;
+    padding-bottom: 20px;
+}
+
+.botones-inicio .input-busqueda {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 270px;
+}
+
+.botones-inicio .icono-busqueda {
+    position: absolute;
+    left: 12px;
+    color: #6c757d;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+}
+
+.botones-inicio .input-busqueda input {
+    width: 100%;
+    padding: 10px 35px 10px 40px;
+    border: 1px solid #ced4da;
+    border-radius: 13px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.botones-inicio .input-busqueda input:focus {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.botones-inicio .input-busqueda input:hover {
+    border-color: #1976d2;
+}
+
+.botones-inicio .icono-limpiar {
+    position: absolute;
+    right: 12px;
+    color: #6c757d;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.botones-inicio .icono-limpiar:hover {
+    color: #dc3545;
+}
+
+.botones-inicio .input-busqueda input::placeholder {
+    color: #adb5bd;
+    font-size: 14px;
+}
+
+.btn-limpiar-filtros {
+    background: #3f51b5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.btn-limpiar-filtros:hover {
+    background: #233294;
+}
+
+.btn-limpiar-filtros mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+

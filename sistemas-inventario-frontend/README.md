@@ -38,6 +38,7 @@
 `ng generate component pagina/registro/opc-telefono` (Opciones de registro - TELEFONO)<br>
 `ng generate component pagina/registro/opc-tablet` (Opciones de registro - TABLET)<br>
 `ng generate component pagina/registro/opc-impresora` (Opciones de registro - IMPRESORA)<br>
+`ng generate component pagina/registro/opc-recurso` (Opciones de registro - RECURSOS)<br>
 
 
 `Se crea interface Registro EmpleadoRegistro manualmente` (Interface EmpleadoRegistro REGISTRAR EMPLEADO)<br>

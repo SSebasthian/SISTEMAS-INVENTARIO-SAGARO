@@ -8,6 +8,14 @@
                 </div>
             </div>
         </div>
+        <div class="carta"  [ngClass]="{'selected': componenteActivo === 'recurso'}">
+            <div class="contenedor-caja">
+                <div class="contenido" (click)="mostrarComponenteRegistroRecurso()">
+                    <mat-icon>perm_identity</mat-icon>
+                    <h3>Recurso</h3>
+                </div>
+            </div>
+        </div>
         <div class="carta" [ngClass]="{'selected': componenteActivo === 'equipo'}">
             <div class="contenedor-caja">
                 <div class="contenido" (click)="mostrarComponenteRegistroEquipo()">

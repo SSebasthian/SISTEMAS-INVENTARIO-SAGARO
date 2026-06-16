@@ -12,6 +12,7 @@ import { EquiposComponent } from './pagina/compartida/equipos/equipos.component'
 import { DispositivosComponent } from './pagina/compartida/dispositivos/dispositivos.component';
 import { ImpresorasComponent } from './pagina/compartida/impresoras/impresoras.component';
 import { RecursosComponent } from './pagina/compartida/recursos/recursos.component';
+import { OpcRecursoComponent } from './pagina/registro/opc-recurso/opc-recurso.component';
 
 
 
@@ -48,6 +49,11 @@ export const routes: Routes = [
             {
                 path: 'opciones',
                 component: OpcEmpleadoComponent,
+                canActivate: [estadoPrivado],
+            },
+            {
+                path: 'opciones',
+                component: OpcRecursoComponent,
                 canActivate: [estadoPrivado],
             },
             {
