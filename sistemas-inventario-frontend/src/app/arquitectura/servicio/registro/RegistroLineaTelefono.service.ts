@@ -5,12 +5,11 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class RegistroCorreoService {
+export class RegistroLineaTelefonoService {
 
-  private apiUrl = 'http://192.168.100.4:8080/correos';
+  private apiUrl = 'http://192.168.100.4:8080/telefonos';
 
   constructor(private http: HttpClient) { }
-
 
   registrar(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}`, data);

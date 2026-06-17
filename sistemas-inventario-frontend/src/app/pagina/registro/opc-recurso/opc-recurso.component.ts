@@ -13,6 +13,7 @@ import { PermisoModuloService } from '../../../arquitectura/servicio/autenticaci
 import { ConsultaRecursoService } from '../../../arquitectura/servicio/consulta/ConsultaRecurso.service';
 import { ConsultarRecursoTipoService } from '../../../arquitectura/servicio/consulta/ConsultarRecursoTipo.service';
 import { RegistroCorreoService } from '../../../arquitectura/servicio/registro/RegistroCorreo.service';
+import { RegistroLineaTelefonoService } from '../../../arquitectura/servicio/registro/RegistroLineaTelefono.service';
 
 
 @Component({
@@ -36,8 +37,9 @@ export class OpcRecursoComponent {
 
   // ========== DATOS PRINCIPALES ==========
   tiposRecurso: any[] = [];
-  dominios: any[] = [];
+  subtipos: any[] = [];
   tipoSeleccionado: any = null;
+
 
   // ========== MODELO DEL CORREO ==========
   mostrarClave = false;
@@ -45,8 +47,10 @@ export class OpcRecursoComponent {
 
   recurso: any = {
     tipoCodigo: null,
-    dominioCodigo: null,
-    usuario: '',
+    subtipoCodigo: null,
+    operador: '',
+    identificador: '',
+    confirmarIdentificador: '',
     clave: '',
     repetirClave: '',
     activo: true
@@ -57,14 +61,21 @@ export class OpcRecursoComponent {
   modoEdicion = false;
   idOriginal: number | null = null;
 
+
   // ========== MODALES ==========
   mostrarModalBuscar = false;
   busquedaModal = '';
   resultadosBusqueda: any[] = [];
   buscando = false;
 
+
+  registrosActivos: any[] = [];
+  filtroBusquedaModal: string = '';
+
+
   constructor(
     private registroCorreoService: RegistroCorreoService,
+    private registroLineaTelefonoService: RegistroLineaTelefonoService,
     private consultaRecursoService: ConsultaRecursoService,
     private consultarRecursoTipoService: ConsultarRecursoTipoService,
     private snackbar: NotificacionSnackbarService,
@@ -75,86 +86,144 @@ export class OpcRecursoComponent {
     this.cargarDatos();
   }
 
+  // ========== CARGA INICIAL ==========
   cargarDatos(): void {
     this.consultaRecursoService.listarActivos().subscribe({
       next: (data) => {
         this.tiposRecurso = data;
-        // Si hay un tipo CORREO, cargar sus dominios
-        const correoTipo = data.find(t => t.nombre === 'CORREO');
-        if (correoTipo) {
-          this.cargarDominios(correoTipo.codigo);
-        }
       },
       error: () => this.snackbar.error('Error', 'No se pudieron cargar los tipos de recurso')
     });
   }
 
-  cargarDominios(recursoCodigo: number): void {
+  // ========== AL CAMBIAR TIPO ==========
+  onTipoChange(): void {
+    const tipo = this.tiposRecurso.find(t => t.codigo === Number(this.recurso.tipoCodigo));
+    this.tipoSeleccionado = tipo;
+    this.mostrarModalBuscar = false;  // cerrar modal si estaba abierto
+
+    if (tipo) {
+      this.cargarSubtipos(tipo.codigo);
+      this.cargarRegistrosActivos(tipo.nombre);
+      this.limpiarFormulario();          // resetear campos
+      this.modoEdicion = false;
+      this.idOriginal = null;
+    } else {
+      this.subtipos = [];
+      this.registrosActivos = [];
+    }
+  }
+
+  cargarSubtipos(recursoCodigo: number): void {
     this.consultarRecursoTipoService.listarPorRecurso(recursoCodigo).subscribe({
-      next: (data) => { this.dominios = data; },
-      error: () => this.snackbar.error('Error', 'No se pudieron cargar los dominios')
+      next: (data) => { this.subtipos = data; },
+      error: () => this.snackbar.error('Error', 'No se pudieron cargar los subtipos')
+    });
+  }
+
+  cargarRegistrosActivos(tipoNombre: string): void {
+    if (tipoNombre === 'CORREO') {
+      this.registroCorreoService.listarTodos().subscribe({
+        next: (data) => { this.registrosActivos = data; },
+        error: () => this.snackbar.error('Error', 'No se pudieron cargar los correos activos')
+      });
+    } else if (tipoNombre === 'LINEATELEFONICA') {
+      this.registroLineaTelefonoService.listarTodos().subscribe({
+        next: (data) => { this.registrosActivos = data; },
+        error: () => this.snackbar.error('Error', 'No se pudieron cargar los teléfonos activos')
+      });
+    } else {
+      this.registrosActivos = [];
+    }
+  }
+
+  // ========== GETTER PARA FILTRADO LOCAL EN MODAL ==========
+  get registrosFiltrados(): any[] {
+    // Solo mostrar resultados si hay al menos 2 caracteres
+    if (!this.filtroBusquedaModal || this.filtroBusquedaModal.length < 2) {
+      return [];
+    }
+    const filtro = this.filtroBusquedaModal.toLowerCase();
+    return this.registrosActivos.filter(item => {
+      const campo = this.tipoSeleccionado?.nombre === 'CORREO' ? item.direccion : item.numero;
+      return campo && campo.toLowerCase().includes(filtro);
     });
   }
 
   // ========== REGISTRAR ==========
   registrar(): void {
     if (this.enviando) return;
-    if (!this.recurso.tipoCodigo || !this.recurso.dominioCodigo || !this.recurso.usuario || !this.recurso.clave) {
+    if (!this.recurso.tipoCodigo || !this.recurso.subtipoCodigo || !this.recurso.identificador) {
       this.snackbar.warning('Campos incompletos', 'Todos los campos son obligatorios');
       return;
     }
 
-    // Validar coincidencia de claves
-    if (this.recurso.clave !== this.recurso.repetirClave) {
-      this.snackbar.warning('Claves no coinciden', 'Las claves deben ser iguales');
+    const tipo = this.tiposRecurso.find(t => t.codigo === Number(this.recurso.tipoCodigo));
+    if (!tipo) {
+      this.snackbar.error('Error', 'Tipo de recurso no válido');
       return;
     }
 
-    // Validar que el dominio exista
-    const dominio = this.dominios.find(d => d.codigo === Number(this.recurso.dominioCodigo));
-    if (!dominio) {
-      this.snackbar.error('Error', 'Dominio no encontrado. Por favor seleccione uno valido.');
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    if (!subtipo) {
+      this.snackbar.error('Error', 'Subtipo no válido');
       return;
     }
 
-    // Convertir cuerpo a mayasculas
-    const usuarioMayus = this.recurso.usuario.toUpperCase();
-    // Dominio en mayusculas y agregar .COM
-    const dominioNombre = dominio.nombre.toUpperCase();
-    const direccion = `${usuarioMayus}@${dominioNombre}.COM`;
+    let payload: any = {};
+    let servicio: any;
 
-    const payload = {
-      direccion: direccion,
-      clave: this.recurso.clave,
-      activo: this.recurso.activo
-    };
+    if (tipo.nombre === 'CORREO') {
+      if (this.recurso.clave !== this.recurso.repetirClave) {
+        this.snackbar.warning('Claves no coinciden', 'Las claves deben ser iguales');
+        return;
+      }
+      const direccion = `${this.recurso.identificador.toUpperCase()}@${subtipo.nombre.toUpperCase()}.COM`;
+      payload = {
+        direccion: direccion,
+        clave: this.recurso.clave,
+        recursoCodigo: tipo.codigo,
+        recursoTipoCodigo: subtipo.codigo,
+        activo: this.recurso.activo
+      };
+      servicio = this.registroCorreoService;
+    } else if (tipo.nombre === 'LINEATELEFONICA') {
+      // Validar que los numeros coincidan
+      if (this.recurso.identificador !== this.recurso.confirmarIdentificador) {
+        this.snackbar.warning('Numeros no coinciden', 'Los numeros deben ser iguales');
+        return;
+      }
+      if (!this.recurso.operador) {
+        this.snackbar.warning('Operador requerido', 'Seleccione un operador');
+        return;
+      }
+      payload = {
+        numero: this.recurso.identificador,
+        operador: this.recurso.operador,
+        activo: this.recurso.activo,
+        recursoCodigo: tipo.codigo,
+        recursoTipoCodigo: subtipo.codigo,
+      };
+      servicio = this.registroLineaTelefonoService;
+
+    } else {
+      this.snackbar.warning('Tipo no soportado', 'Este tipo de recurso aun no esta implementado');
+      return;
+    }
 
     this.enviando = true;
-    this.registroCorreoService.registrar(payload).subscribe({
-      next: (resp) => {
-        this.snackbar.success('Correo registrado', `${resp.direccion}`);
+    servicio.registrar(payload).subscribe({
+      next: () => {
+        this.snackbar.success('Registro exitoso', `${tipo.nombre} registrado`);
         this.limpiarFormulario();
         this.enviando = false;
+        this.cargarRegistrosActivos(tipo.nombre);
       },
-      error: (err) => {
-        console.error('Error completo:', err); // Para depurar
-
-        let mensaje = 'Error al registrar el correo';
-
-        // Extraer mensaje del error (probando diferentes estructuras)
-        if (err.error?.message) {
-          mensaje = err.error.message;
-        } else if (err.error?.error) {
-          mensaje = err.error.error;
-        } else if (err.message) {
-          mensaje = err.message;
-        }
-
-        // Personalizar si es un error de duplicado
+      error: (err: any) => {
+        let mensaje = err.error?.message || err.message || 'Error al registrar';
         if (mensaje.toLowerCase().includes('ya existe')) {
-          mensaje = `El correo ya esta registrado en el sistema.`;
+          mensaje = `El ${tipo.nombre.toLowerCase()} ya esta registrado.`;
         }
-
         this.snackbar.error('Error', mensaje);
         this.enviando = false;
       }
@@ -169,37 +238,64 @@ export class OpcRecursoComponent {
       return;
     }
 
-    // Validar solo si se escribio clave
-    if (this.recurso.clave && this.recurso.clave !== this.recurso.repetirClave) {
-      this.snackbar.warning('Claves no coinciden', 'Las claves deben ser iguales');
+    const tipo = this.tiposRecurso.find(t => t.codigo === Number(this.recurso.tipoCodigo));
+    if (!tipo) {
+      this.snackbar.error('Error', 'Tipo de recurso no valido');
       return;
     }
 
-    const dominio = this.dominios.find(d => d.codigo === Number(this.recurso.dominioCodigo));
-    if (!dominio) {
-      this.snackbar.error('Error', 'Dominio no encontrado');
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    if (!subtipo) {
+      this.snackbar.error('Error', 'Subtipo no valido');
       return;
     }
 
-const direccion = `${this.recurso.usuario.toUpperCase()}@${dominio.nombre.toUpperCase()}.COM`;
+    let payload: any = {};
+    let servicio: any;
 
-    // Construir payload: solo incluir clave si el usuario la escribio
-    const payload: any = {
-      direccion: direccion,
-      activo: this.recurso.activo
-    };
-    if (this.recurso.clave && this.recurso.clave.trim() !== '') {
-      payload.clave = this.recurso.clave;
+    if (tipo.nombre === 'CORREO') {
+      if (this.recurso.clave && this.recurso.clave !== this.recurso.repetirClave) {
+        this.snackbar.warning('Claves no coinciden', 'Las claves deben ser iguales');
+        return;
+      }
+      const direccion = `${this.recurso.identificador.toUpperCase()}@${subtipo.nombre.toUpperCase()}.COM`;
+      payload = { direccion, activo: this.recurso.activo };
+      if (this.recurso.clave && this.recurso.clave.trim() !== '') {
+        payload.clave = this.recurso.clave;
+      }
+      servicio = this.registroCorreoService;
+
+    } else if (tipo.nombre === 'LINEATELEFONICA') {
+      // Validar que los numeros coincidan (si se cambio)
+      if (this.recurso.identificador !== this.recurso.confirmarIdentificador) {
+        this.snackbar.warning('Números no coinciden', 'Los números deben ser iguales');
+        return;
+      }
+      if (!this.recurso.operador) {
+        this.snackbar.warning('Operador requerido', 'Seleccione un operador');
+        return;
+      }
+      payload = {
+        numero: this.recurso.identificador,
+        operador: this.recurso.operador,
+        activo: this.recurso.activo
+      };
+      servicio = this.registroLineaTelefonoService;
+
+    } else {
+      this.snackbar.warning('Tipo no soportado', 'Este tipo de recurso aún no esta implementado');
+      return;
     }
 
     this.enviando = true;
-    this.registroCorreoService.editar(this.idOriginal, payload).subscribe({
-      next: (resp) => {
-        this.snackbar.success('Correo actualizado', `${resp.direccion}`);
+    servicio.editar(this.idOriginal, payload).subscribe({
+      next: () => {  //
+        this.snackbar.success('Actualizacian exitosa', `${tipo.nombre} actualizado`);
         this.limpiarFormulario();
         this.enviando = false;
+        this.cargarRegistrosActivos(tipo.nombre);
       },
-      error: (err) => {
+      error: (err: any) => {  // 
         const mensaje = err.error?.message || err.message || 'Error al actualizar';
         this.snackbar.error('Error', mensaje);
         this.enviando = false;
@@ -207,13 +303,13 @@ const direccion = `${this.recurso.usuario.toUpperCase()}@${dominio.nombre.toUppe
     });
   }
 
-
-  // ========== LIMPIAR ==========
+  // ========== LIMPIAR FORMULARIO ==========
   limpiarFormulario(): void {
     this.recurso = {
-      tipoCodigo: null,
-      dominioCodigo: null,
-      usuario: '',
+      tipoCodigo: this.recurso.tipoCodigo, // mantener el tipo seleccionado
+      subtipoCodigo: null,
+      identificador: '',
+      confirmarIdentificador: '',
       clave: '',
       repetirClave: '',
       activo: true
@@ -221,70 +317,54 @@ const direccion = `${this.recurso.usuario.toUpperCase()}@${dominio.nombre.toUppe
     this.modoEdicion = false;
     this.idOriginal = null;
     this.mostrarModalBuscar = false;
-    this.busquedaModal = '';
-    this.resultadosBusqueda = [];
+    this.filtroBusquedaModal = '';
+    // No limpiar registrosActivos porque se recargan al cambiar tipo
   }
 
-  // ========== BUSCADOR PARA EDITAR ==========
+  // ========== MODAL DE BÚSQUEDA ==========
   abrirModalBuscar(): void {
     this.mostrarModalBuscar = true;
-    this.busquedaModal = '';
-    this.resultadosBusqueda = [];
+    this.filtroBusquedaModal = '';
+    if (this.subtipos.length === 0 && this.tipoSeleccionado) {
+      this.cargarSubtipos(this.tipoSeleccionado.codigo);
+    }
   }
 
   cerrarModalBuscar(): void {
     this.mostrarModalBuscar = false;
-    this.busquedaModal = '';
-    this.resultadosBusqueda = [];
+    this.filtroBusquedaModal = '';
   }
 
-  buscarEnModal(): void {
-    if (this.busquedaModal.length < 2) {
-      this.resultadosBusqueda = [];
-      return;
-    }
-    this.buscando = true;
-    this.registroCorreoService.buscar(this.busquedaModal).subscribe({
-      next: (data) => {
-        this.resultadosBusqueda = data;
-        this.buscando = false;
-      },
-      error: () => {
-        this.resultadosBusqueda = [];
-        this.buscando = false;
-        this.snackbar.error('Error', 'No se pudieron buscar correos');
-      }
-    });
-  }
-
-  seleccionarCorreo(correo: any): void {
+  seleccionarRegistro(registro: any): void {
     this.modoEdicion = true;
-    this.idOriginal = correo.codigo;
+    this.idOriginal = registro.codigo;
 
-    // Establecer el tipo de recurso (CORREO)
-    // Buscar el tipo "CORREO" en la lista de tiposRecurso
-    const tipoCorreo = this.tiposRecurso.find(t => t.nombre === 'CORREO');
-    this.recurso.tipoCodigo = tipoCorreo ? tipoCorreo.codigo : null;
+    // Establecer tipo
+    this.recurso.tipoCodigo = this.tipoSeleccionado?.codigo;
 
-    // Extraer usuario y dominio de la dirección
-    const partes = correo.direccion.split('@');
-    this.recurso.usuario = partes[0]; // usuario en minúsculas
+    // Buscar subtipo correspondiente
+    if (this.tipoSeleccionado?.nombre === 'CORREO') {
+      const partes = registro.direccion.split('@');
+      this.recurso.identificador = partes[0]; // usuario
+      const nombreDominio = partes[1].split('.')[0].toLowerCase();
+      const subtipo = this.subtipos.find(s => s.nombre.toLowerCase() === nombreDominio);
+      this.recurso.subtipoCodigo = subtipo ? subtipo.codigo : null;
+      this.recurso.clave = '';
+      this.recurso.repetirClave = '';
+    }
 
-    // Limpiar el dominio: eliminar extension (.COM, .com, etc.) y convertir a minusculas para buscar
-    let nombreDominio = partes[1].split('.')[0].toLowerCase();
+    else if (this.tipoSeleccionado?.nombre === 'LINEATELEFONICA') {
+      this.recurso.identificador = registro.numero;
+      this.recurso.confirmarIdentificador = registro.numero;
+      this.recurso.operador = registro.operador;
+      this.recurso.subtipoCodigo = registro.recursoTipo?.codigo || null;
+      this.recurso.clave = '';
+      this.recurso.repetirClave = '';
+    }
 
-    // Buscar el dominio en la lista (ignorando mayusculas/minusculas)
-    const dominioEncontrado = this.dominios.find(d =>
-      d.nombre.toLowerCase() === nombreDominio
-    );
+    this.recurso.activo = registro.activo;
 
-    this.recurso.dominioCodigo = dominioEncontrado ? dominioEncontrado.codigo : null;
-
-    this.recurso.clave = ''; // No se devuelve la clave
-    this.recurso.repetirClave = ''; // Limpiar también la repeticion
-    this.recurso.activo = correo.activo;
-
-    this.snackbar.success('Correo seleccionado', `Editando: ${correo.direccion}`);
+    this.snackbar.success('Registro seleccionado', `Editando: ${this.tipoSeleccionado?.nombre}`);
     this.cerrarModalBuscar();
   }
 
@@ -293,8 +373,7 @@ const direccion = `${this.recurso.usuario.toUpperCase()}@${dominio.nombre.toUppe
     return this.permisoModuloService.puede('registro', 'editar');
   }
 
-
-  // MOSTRAR CLAVE CORREO
+  // ========== MOSTRAR/OCULTAR CLAVE ==========
   toggleMostrarClave(): void {
     this.mostrarClave = !this.mostrarClave;
   }
@@ -302,5 +381,12 @@ const direccion = `${this.recurso.usuario.toUpperCase()}@${dominio.nombre.toUppe
     this.mostrarRepetirClave = !this.mostrarRepetirClave;
   }
 
+
+  getNombreMostrar(tipo: any): string {
+    if (tipo.nombre === 'LINEATELEFONICA') {
+      return 'LINEA TELEFONICA';
+    }
+    return tipo.nombre;
+  }
 
 }

@@ -2,33 +2,35 @@
   <form id="form-registro-recurso" (ngSubmit)="modoEdicion ? editar() : registrar()">
     <div class="contenido">
 
+      <!-- Tipo de recurso -->
       <div class="fila-de-tres">
         <p>
           <label>TIPO RECURSO</label>
-          <select class="opcionForm select" [(ngModel)]="recurso.tipoCodigo" name="tipoCodigo" [disabled]="modoEdicion"
-            required>
+          <select class="opcionForm select" [(ngModel)]="recurso.tipoCodigo" name="tipoCodigo" (change)="onTipoChange()"
+            [disabled]="modoEdicion" required>
             <option [value]="null"></option>
-            <option *ngFor="let t of tiposRecurso" [value]="t.codigo">{{ t.nombre }}</option>
+            <option *ngFor="let t of tiposRecurso" [value]="t.codigo">{{ getNombreMostrar(t) }}</option>
           </select>
         </p>
-        <p>
+      </div>
 
-        </p>
 
+
+      <!-- CAMPOS CORREO -->
+      <div *ngIf="tipoSeleccionado?.nombre === 'CORREO'" class="fila-de-tres campocorreo">
         <p>
           <label>CUERPO</label>
-          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.usuario" name="usuario"
-            (input)="recurso.usuario = recurso.usuario.toLowerCase()" required>
+          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.identificador" name="identificador"
+            (input)="recurso.identificador = recurso.identificador.toLowerCase()" required [disabled]="modoEdicion">
         </p>
         <p>
           <label>DOMINIO</label>
-          <select class="opcionForm select" [(ngModel)]="recurso.dominioCodigo" name="dominioCodigo"
-            [disabled]="modoEdicion" required>
-            <option [value]="null"></option>
-            <option *ngFor="let d of dominios" [value]="d.codigo">&#64;{{ d.nombre }}.COM</option>
+          <select class="opcionForm select" [(ngModel)]="recurso.subtipoCodigo" name="subtipoCodigo" required
+            [disabled]="modoEdicion">
+            <option [value]="null" disabled selected></option>
+            <option *ngFor="let d of subtipos" [value]="d.codigo">&#64;{{ d.nombre }}.COM</option>
           </select>
         </p>
-
         <div>
           <label>DIGITAR CLAVE</label>
           <div class="input-clave">
@@ -39,7 +41,6 @@
             </a>
           </div>
         </div>
-
         <div>
           <label>REPETIR CLAVE</label>
           <div class="input-clave">
@@ -50,14 +51,53 @@
             </a>
           </div>
         </div>
+      </div>
 
+
+
+      <!-- CAMPOSLINEATELEFONO -->
+      <div *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'" class="fila-de-tres campotelefono">
+        <p>
+          <label>TIPO DE LINEA</label>
+          <select class="opcionForm select" [(ngModel)]="recurso.subtipoCodigo" name="subtipoCodigo" required [disabled]="modoEdicion">
+            <option [value]="null" disabled selected></option>
+            <option *ngFor="let o of subtipos" [value]="o.codigo">{{ o.nombre }}</option>
+          </select>
+        </p>
+        <p>
+          <label>OPERADOR</label>
+          <select class="opcionForm select" [(ngModel)]="recurso.operador" name="operador" required>
+            <option [value]="null" disabled selected></option>
+            <option value="CLARO">CLARO</option>
+            <option value="MOVISTAR">MOVISTAR</option>
+          </select>
+        </p>
+        <p>
+          <label>DIGITAR NUMERO</label>
+          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.identificador" name="identificador"
+            required [disabled]="modoEdicion">
+        </p>
+
+        <p>
+          <label>CONFIRMAR NUMERO</label>
+          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.confirmarIdentificador"
+            name="confirmarIdentificador" required [disabled]="modoEdicion">
+        </p>
+
+      </div>
+
+
+      <!-- Estado (comun) solo si hay tipo seleccionado -->
+      <div *ngIf="tipoSeleccionado" class="fila-de-tres campoestado">
         <p class="checkbox-wrapper-10">
           <label>ESTADO</label>
-          <input type="checkbox" id="cb5" class="tgl tgl-flip" [checked]="recurso.activo" disabled>
+          <input type="checkbox" id="cb5" class="tgl tgl-flip" [(ngModel)]="recurso.activo" [disabled]="modoEdicion"
+            name="activo">
           <label for="cb5" data-tg-on="ACTIVO" data-tg-off="INACTIVO" class="tgl-btn"></label>
         </p>
       </div>
 
+      <!-- Botones de accion -->
       <div class="botones-registroeditar">
         <div>
           <input type="submit" id="checkboxInput" [value]="modoEdicion ? 'Actualizar' : 'Registrar'">
@@ -66,14 +106,20 @@
           </label>
         </div>
 
-        <div *ngIf="puedeEditarRegistro && !modoEdicion" (click)="abrirModalBuscar()">
+        <!-- Boton de busqueda (editar) solo si es CORREO y LINEA TELEFONICA  tiene permiso -->
+        <div
+          *ngIf="puedeEditarRegistro && !modoEdicion && (tipoSeleccionado?.nombre === 'CORREO' || tipoSeleccionado?.nombre === 'LINEATELEFONICA')"
+          (click)="abrirModalBuscar()">
           <input id="checkboxInput2">
           <label for="checkboxInput2" class="bookmark2">
             <mat-icon>bookmark</mat-icon>
           </label>
         </div>
 
-        <div *ngIf="!puedeEditarRegistro || modoEdicion" (click)="limpiarFormulario()">
+        <!-- Boton limpiar (si no tiene permiso o está en edicion o el tipo no es CORREO) -->
+        <div
+          *ngIf="!puedeEditarRegistro || modoEdicion || (tipoSeleccionado?.nombre !== 'CORREO' && tipoSeleccionado?.nombre !== 'LINEATELEFONICA')"
+          (click)="limpiarFormulario()">
           <input id="checkboxInput3">
           <label for="checkboxInput3" class="bookmark3">
             <mat-icon>bookmark</mat-icon>
@@ -85,48 +131,71 @@
   </form>
 </div>
 
-<!-- Modal para buscar correo existente -->
+<!-- Modal de busqueda (edicion) -->
 <div class="modal" [class.show]="mostrarModalBuscar" *ngIf="mostrarModalBuscar">
   <div class="modal-contenido">
     <div class="modal-cabezera">
       <div class="titulo">
         <h2>
           <mat-icon class="cargoicon">search</mat-icon>
-          Buscar Correo
+          Buscar {{ tipoSeleccionado?.nombre === 'CORREO' ? 'Correo' : 'Linea' }}
         </h2>
       </div>
     </div>
 
     <div class="buscar-contenido">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Buscar por dirección</mat-label>
-        <input matInput [(ngModel)]="busquedaModal" (input)="buscarEnModal()" placeholder="Ingrese dirección de correo">
-        <mat-icon matSuffix>email</mat-icon>
+        <mat-label>Buscar por {{ tipoSeleccionado?.nombre === 'CORREO' ? 'direccion' : 'numero' }}</mat-label>
+        <input matInput [(ngModel)]="filtroBusquedaModal" placeholder="Ingrese al menos 2 caracteres">
+        <mat-icon matSuffix>{{ tipoSeleccionado?.nombre === 'CORREO' ? 'email' : 'phone' }}</mat-icon>
       </mat-form-field>
 
-      <div class="resultados-modal" *ngIf="resultadosBusqueda.length > 0">
-        <div class="resultado-item-modal" *ngFor="let item of resultadosBusqueda" (click)="seleccionarCorreo(item)">
+      <div class="resultados-modal" *ngIf="registrosFiltrados.length > 0">
+        <div class="resultado-item-modal" *ngFor="let item of registrosFiltrados" (click)="seleccionarRegistro(item)"
+          [ngClass]="{'resultado-correo': tipoSeleccionado?.nombre === 'CORREO', 'resultado-linea': tipoSeleccionado?.nombre === 'LINEATELEFONICA'}">
+
+
+          <!-- Contenido principal -->
           <div class="resultado-info-modal">
-            <strong>{{ item.direccion }}</strong><br>
-            <div>
+
+
+            <!-- Detalles CORREO -->
+            <div class="resultado-correo" *ngIf="tipoSeleccionado?.nombre === 'CORREO'">
+              <span class="cuerpo">{{ item.direccion.split('@')[0] }}</span>
+              <span class="dominio">&#64;{{ item.direccion.split('@')[1].split('.')[0] }}</span>
+            </div>
+
+
+            <!-- TELEFONO OPERADOR -->
+            <div class="resultado-linea" *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'">
+              
+              <span class="numero"> {{ item.numero }} </span> 
+              <span class="operador"> ( {{ item.recursoTipo.nombre }} - {{ item.operador }} )</span>
+            </div>
+
+
+            <!-- Estado -->
+            <div class="resultado-estado">
               <span class="estado">Estado:</span>
               <span class="estado-badge" [class.activo]="item.activo" [class.inactivo]="!item.activo">
                 {{ item.activo ? 'ACTIVO' : 'INACTIVO' }}
               </span>
             </div>
           </div>
-          <mat-icon>touch_app</mat-icon>
+
+          <!-- Acción tactil -->
+          <mat-icon class="resultado-accion">touch_app</mat-icon>
         </div>
       </div>
 
-      <div class="sin-resultados" *ngIf="!buscando && busquedaModal.length >= 2 && resultadosBusqueda.length === 0">
+      <div class="sin-resultados" *ngIf="filtroBusquedaModal.length >= 2 && registrosFiltrados.length === 0">
         <mat-icon>info</mat-icon>
-        <p>No se encontraron correos con: <strong>{{ busquedaModal }}</strong></p>
+        <p>No se encontraron resultados para: <strong>{{ filtroBusquedaModal }}</strong></p>
       </div>
 
-      <div class="sin-resultados" *ngIf="busquedaModal.length < 2 && busquedaModal.length > 0">
+      <div class="sin-resultados" *ngIf="filtroBusquedaModal.length < 2 && filtroBusquedaModal.length > 0">
         <mat-icon>info</mat-icon>
-        <p>Ingrese al menos 2 caracteres</p>
+        <p>Ingrese al menos 2 caracteres para filtrar</p>
       </div>
     </div>
 

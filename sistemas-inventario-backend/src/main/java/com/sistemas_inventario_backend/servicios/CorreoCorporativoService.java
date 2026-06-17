@@ -1,7 +1,12 @@
 package com.sistemas_inventario_backend.servicios;
 
+import com.sistemas_inventario_backend.DTOs.Solicitud.CorreoCorporativoSolicitud;
 import com.sistemas_inventario_backend.entidades.CorreosCorporativos;
+import com.sistemas_inventario_backend.entidades.Recurso;
+import com.sistemas_inventario_backend.entidades.Recurso_Tipo;
 import com.sistemas_inventario_backend.repositorios.CorreoCorporativoRepository;
+import com.sistemas_inventario_backend.repositorios.RecursoRepository;
+import com.sistemas_inventario_backend.repositorios.Recurso_TipoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,21 +20,35 @@ public class CorreoCorporativoService {
 
     private final CorreoCorporativoRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final RecursoRepository recursoRepository;
+    private final Recurso_TipoRepository recursoTipoRepository;
 
     public List<CorreosCorporativos> listarActivos() {
         return repository.findByActivoTrue();
     }
+    public List<CorreosCorporativos> listarTodos() { return repository.findAll(); }
+
 
     @Transactional
-    public CorreosCorporativos registrar(CorreosCorporativos correo) {
-        if (repository.findByDireccion(correo.getDireccion()).isPresent()) {
-            throw new RuntimeException("Ya existe un correo con la direccion: " + correo.getDireccion());
+    public CorreosCorporativos registrar(CorreoCorporativoSolicitud dto) {
+        if (repository.findByDireccion(dto.getDireccion()).isPresent()) {
+            throw new RuntimeException("Ya existe un correo con la dirección: " + dto.getDireccion());
         }
-        // Encriptar la clave antes de guardar
-        if (correo.getClave() != null && !correo.getClave().isEmpty()) {
-            correo.setClave(passwordEncoder.encode(correo.getClave()));
+
+        Recurso recurso = recursoRepository.findById(dto.getRecursoCodigo())
+                .orElseThrow(() -> new RuntimeException("Recurso no encontrado"));
+        Recurso_Tipo recursoTipo = recursoTipoRepository.findById(dto.getRecursoTipoCodigo())
+                .orElseThrow(() -> new RuntimeException("Tipo de recurso no encontrado"));
+
+        CorreosCorporativos correo = new CorreosCorporativos();
+        correo.setDireccion(dto.getDireccion());
+        if (dto.getClave() != null && !dto.getClave().isEmpty()) {
+            correo.setClave(passwordEncoder.encode(dto.getClave()));
         }
-        correo.setActivo(true);
+        correo.setRecurso(recurso);
+        correo.setRecursoTipo(recursoTipo);
+        correo.setActivo(dto.getActivo() != null ? dto.getActivo() : true);
+
         return repository.save(correo);
     }
 

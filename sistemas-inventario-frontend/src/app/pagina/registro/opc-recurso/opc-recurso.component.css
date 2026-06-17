@@ -15,6 +15,7 @@
 
 .contenedor-regRecurso .contenido {
     position: relative;
+    width: 450px;
 }
 
 
@@ -83,10 +84,17 @@
     box-shadow: 0 0 5px rgba(100, 51, 219, 0.3);
 }
 
+.campocorreo,
+.campotelefono,
+.campoestado {
+    padding-top: 15px;
+}
 
 /* CORREO */
 
 /* Contenedor para input de clave con botón */
+
+
 .input-clave {
     display: flex;
     align-items: center;
@@ -468,7 +476,7 @@
 /* RESULTADOS */
 
 .resultados-modal {
-    max-height: 190px;
+    max-height: 195px;
     overflow-y: auto;
     margin-top: 0px;
     display: flex;
@@ -515,24 +523,18 @@
 }
 
 
-.resultado-info-modal strong {
-    font-size: 13px;
-    padding: 3px 2px;
-    border-radius: 5px;
-    display: inline-block;
-    margin-bottom: 6px;
-    color: #2c3e50;
+
+/* CORREO */
+
+.resultado-info-modal .resultado-correo .cuerpo,
+.resultado-linea .numero{
+    color: #3f51b5;
+    font-size: 12.5px;
 }
-
-
-/* .resultado-info-modal strong {
-    font-size: 15px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 5px;
-    display: inline-block;
-    margin-bottom: 6px;
-} */
+.resultado-info-modal .resultado-correo .dominio,
+.resultado-linea .operador{
+    font-size: 11px;
+}
 
 .resultado-info-modal div {
     font-size: 14px;
@@ -540,23 +542,23 @@
 }
 
 .resultado-info-modal .estado {
-    color: #3f51b5;
-    background: #e8eaf6;
-    padding: 3px 8px;
+    font-size: 11.5px;
+    padding: 3px 2px;
     border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 6px;
+    color: #2c3e50;
 }
 
 .estado-badge.activo {
-  color: #2e7d32;
-  font-size: 11px;
+    color: #2e7d32;
+    font-size: 11px;
 }
 
 .estado-badge.inactivo {
-  color: #c62828;
-  font-size: 11px;
-}
-
-
+    color: #c62828;
+    font-size: 11px;
+} 
 
 .resultado-item-modal mat-icon {
     color: #3f51b5;
@@ -564,7 +566,7 @@
     border-radius: 10px;
     padding: 6px;
     transition: all 0.2s ease;
-} 
+}
 
 
 

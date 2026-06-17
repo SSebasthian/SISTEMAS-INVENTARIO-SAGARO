@@ -1,19 +1,22 @@
 package com.sistemas_inventario_backend.entidades;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "correoscorporativos")
+@Table(name = "lineastelefonicas")
 @Data
-public class CorreosCorporativos {
+public class LineaTelefonica {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codigo;
 
-    @Column(unique = true, nullable = false)
-    private String direccion;       // (unico)
-    private String clave;           //  encriptada
+    @Column(unique = true, nullable = false, length = 20)
+    private String numero;
+
+    private String operador;     // Claro, Movistar, Tigo
+
     private Boolean activo = true;
 
     @ManyToOne
@@ -23,5 +26,5 @@ public class CorreosCorporativos {
     @ManyToOne
     @JoinColumn(name = "recurso_tipo_codigo", nullable = false)
     private Recurso_Tipo recursoTipo;
-}
 
+}
