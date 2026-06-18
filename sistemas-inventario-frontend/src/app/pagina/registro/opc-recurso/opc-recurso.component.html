@@ -8,10 +8,19 @@
           <label>TIPO RECURSO</label>
           <select class="opcionForm select" [(ngModel)]="recurso.tipoCodigo" name="tipoCodigo" (change)="onTipoChange()"
             [disabled]="modoEdicion" required>
-            <option [value]="null"></option>
             <option *ngFor="let t of tiposRecurso" [value]="t.codigo">{{ getNombreMostrar(t) }}</option>
           </select>
         </p>
+        <div class="contenedor-icono">
+          <!-- Correo -->
+          <mat-icon *ngIf="tipoSeleccionado?.nombre === 'CORREO'">email</mat-icon>
+          <!-- Linea -->
+          <mat-icon *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'">phone</mat-icon>
+          <!-- Cuenta/Plataforma -->
+          <mat-icon *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA'">account_circle</mat-icon>
+          <!-- Default (si no hay selección) -->
+          <mat-icon *ngIf="!tipoSeleccionado">image</mat-icon>
+        </div>
       </div>
 
 
@@ -59,7 +68,8 @@
       <div *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'" class="fila-de-tres campotelefono">
         <p>
           <label>TIPO DE LINEA</label>
-          <select class="opcionForm select" [(ngModel)]="recurso.subtipoCodigo" name="subtipoCodigo" required [disabled]="modoEdicion">
+          <select class="opcionForm select" [(ngModel)]="recurso.subtipoCodigo" name="subtipoCodigo" required
+            [disabled]="modoEdicion">
             <option [value]="null" disabled selected></option>
             <option *ngFor="let o of subtipos" [value]="o.codigo">{{ o.nombre }}</option>
           </select>
@@ -74,8 +84,8 @@
         </p>
         <p>
           <label>DIGITAR NUMERO</label>
-          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.identificador" name="identificador"
-            required [disabled]="modoEdicion">
+          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.identificador" name="identificador" required
+            [disabled]="modoEdicion">
         </p>
 
         <p>
@@ -86,6 +96,42 @@
 
       </div>
 
+
+      <div *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA'" class="fila-de-tres campoplataforma">
+        <p>
+          <label>SOFTWARE</label>
+          <select class="opcionForm select" [(ngModel)]="recurso.subtipoCodigo" name="subtipoCodigo"
+            (change)="onSubtipoChange()" required [disabled]="modoEdicion">
+            <option [value]="null" disabled selected></option>
+            <option *ngFor="let t of subtipos" [value]="t.codigo">{{ t.nombre }}</option>
+          </select>
+        </p>
+
+        <p>
+          <label>PLATAFORMA</label>
+          <select class="opcionForm select" [(ngModel)]="recurso.plataformaCodigo" name="plataformaCodigo"
+            (change)="onPlataformaChange()" required [disabled]="modoEdicion">
+            <option [value]="null" disabled selected></option>
+            <option *ngFor="let p of plataformas" [value]="p.codigo">{{ p.descripcion }}</option>
+          </select>
+        </p>
+
+        <p>
+          <label>USUARIO</label>
+          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.usuario" name="usuario"
+            (input)="recurso.usuario = recurso.usuario.toUpperCase()" required>
+        </p>
+
+        <p>
+          <label>ROL</label>
+          <select class="opcionForm select" [(ngModel)]="recurso.plataformaRolCodigo" name="plataformaRolCodigo"
+            required>
+            <option [value]="null" disabled selected></option>
+            <option *ngFor="let r of roles" [value]="r.codigo">{{ r.rol }} {{ r.descripcion }}</option>
+          </select>
+        </p>
+
+      </div>
 
       <!-- Estado (comun) solo si hay tipo seleccionado -->
       <div *ngIf="tipoSeleccionado" class="fila-de-tres campoestado">
@@ -106,9 +152,9 @@
           </label>
         </div>
 
-        <!-- Boton de busqueda (editar) solo si es CORREO y LINEA TELEFONICA  tiene permiso -->
+        <!-- Botón de búsqueda (editar) para CORREO, LINEATELEFONICA y PLATAFORMAS -->
         <div
-          *ngIf="puedeEditarRegistro && !modoEdicion && (tipoSeleccionado?.nombre === 'CORREO' || tipoSeleccionado?.nombre === 'LINEATELEFONICA')"
+          *ngIf="puedeEditarRegistro && !modoEdicion && (tipoSeleccionado?.nombre === 'CORREO' || tipoSeleccionado?.nombre === 'LINEATELEFONICA' || tipoSeleccionado?.nombre === 'PLATAFORMA')"
           (click)="abrirModalBuscar()">
           <input id="checkboxInput2">
           <label for="checkboxInput2" class="bookmark2">
@@ -116,9 +162,9 @@
           </label>
         </div>
 
-        <!-- Boton limpiar (si no tiene permiso o está en edicion o el tipo no es CORREO) -->
+        <!-- Botón limpiar (visible cuando no se puede editar, o en modo edición, o el tipo no es editable) -->
         <div
-          *ngIf="!puedeEditarRegistro || modoEdicion || (tipoSeleccionado?.nombre !== 'CORREO' && tipoSeleccionado?.nombre !== 'LINEATELEFONICA')"
+          *ngIf="!puedeEditarRegistro || modoEdicion || (tipoSeleccionado?.nombre !== 'CORREO' && tipoSeleccionado?.nombre !== 'LINEATELEFONICA' && tipoSeleccionado?.nombre !== 'PLATAFORMA')"
           (click)="limpiarFormulario()">
           <input id="checkboxInput3">
           <label for="checkboxInput3" class="bookmark3">
@@ -138,26 +184,40 @@
       <div class="titulo">
         <h2>
           <mat-icon class="cargoicon">search</mat-icon>
-          Buscar {{ tipoSeleccionado?.nombre === 'CORREO' ? 'Correo' : 'Linea' }}
+          Buscar
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'CORREO'">Correo</ng-container>
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'">Linea</ng-container>
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA'">Cuenta</ng-container>
         </h2>
       </div>
     </div>
 
     <div class="buscar-contenido">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Buscar por {{ tipoSeleccionado?.nombre === 'CORREO' ? 'direccion' : 'numero' }}</mat-label>
+        <mat-label>
+          Buscar por
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'CORREO'">dirección</ng-container>
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'">número</ng-container>
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA'">usuario o plataforma</ng-container>
+        </mat-label>
         <input matInput [(ngModel)]="filtroBusquedaModal" placeholder="Ingrese al menos 2 caracteres">
-        <mat-icon matSuffix>{{ tipoSeleccionado?.nombre === 'CORREO' ? 'email' : 'phone' }}</mat-icon>
+        <mat-icon matSuffix>
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'CORREO'">email</ng-container>
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'">phone</ng-container>
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA'">account_circle</ng-container>
+        </mat-icon>
       </mat-form-field>
 
       <div class="resultados-modal" *ngIf="registrosFiltrados.length > 0">
         <div class="resultado-item-modal" *ngFor="let item of registrosFiltrados" (click)="seleccionarRegistro(item)"
-          [ngClass]="{'resultado-correo': tipoSeleccionado?.nombre === 'CORREO', 'resultado-linea': tipoSeleccionado?.nombre === 'LINEATELEFONICA'}">
-
+          [ngClass]="{
+            'resultado-correo': tipoSeleccionado?.nombre === 'CORREO',
+            'resultado-linea': tipoSeleccionado?.nombre === 'LINEATELEFONICA',
+            'resultado-plataforma': tipoSeleccionado?.nombre === 'PLATAFORMA'
+          }">
 
           <!-- Contenido principal -->
           <div class="resultado-info-modal">
-
 
             <!-- Detalles CORREO -->
             <div class="resultado-correo" *ngIf="tipoSeleccionado?.nombre === 'CORREO'">
@@ -165,14 +225,22 @@
               <span class="dominio">&#64;{{ item.direccion.split('@')[1].split('.')[0] }}</span>
             </div>
 
-
-            <!-- TELEFONO OPERADOR -->
+            <!-- Detalles LINEATELEFONICA -->
             <div class="resultado-linea" *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'">
-              
-              <span class="numero"> {{ item.numero }} </span> 
-              <span class="operador"> ( {{ item.recursoTipo.nombre }} - {{ item.operador }} )</span>
+              <span class="numero"> {{ item.numero }} </span>
+              <span class="operador"> ( {{ item.recursoTipo?.nombre || '' }} - {{ item.operador }} )</span>
             </div>
 
+            <!-- Detalles PLATAFORMAS -->
+            <div class="resultado-plataforma" *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA'">
+              <div class="plataforma-info">
+                <span class="plataforma-nombre">{{ item.plataforma?.descripcion || 'Sin plataforma' }}</span>
+                <span class="usuario"> - {{ item.usuario }}</span><br>
+                <span class="plataforma-rol" *ngIf="item.plataformaRol">
+                  ({{ item.plataformaRol.rol }} {{ item.plataformaRol.descripcion }})
+                </span>
+              </div>
+            </div>
 
             <!-- Estado -->
             <div class="resultado-estado">
@@ -188,6 +256,7 @@
         </div>
       </div>
 
+      <!-- Mensajes sin resultados -->
       <div class="sin-resultados" *ngIf="filtroBusquedaModal.length >= 2 && registrosFiltrados.length === 0">
         <mat-icon>info</mat-icon>
         <p>No se encontraron resultados para: <strong>{{ filtroBusquedaModal }}</strong></p>

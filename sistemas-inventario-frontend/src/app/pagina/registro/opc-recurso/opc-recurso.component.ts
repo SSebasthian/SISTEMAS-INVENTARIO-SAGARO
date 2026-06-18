@@ -14,6 +14,11 @@ import { ConsultaRecursoService } from '../../../arquitectura/servicio/consulta/
 import { ConsultarRecursoTipoService } from '../../../arquitectura/servicio/consulta/ConsultarRecursoTipo.service';
 import { RegistroCorreoService } from '../../../arquitectura/servicio/registro/RegistroCorreo.service';
 import { RegistroLineaTelefonoService } from '../../../arquitectura/servicio/registro/RegistroLineaTelefono.service';
+import { RegistroCuentaService } from '../../../arquitectura/servicio/registro/RegistroCuenta.service';
+import { ConsultarPlataformaService } from '../../../arquitectura/servicio/consulta/ConsultarPlataforma.service';
+import { ConsultarPlataformaRolService } from '../../../arquitectura/servicio/consulta/ConsultarPlataformaRol.service';
+
+
 
 
 @Component({
@@ -53,50 +58,73 @@ export class OpcRecursoComponent {
     confirmarIdentificador: '',
     clave: '',
     repetirClave: '',
+    plataformaCodigo: null,
+    plataformaRolCodigo: null,
     activo: true
   };
 
-  // ========== VARIABLES DE ESTADO ==========
+
+  // =====ESTADO DEL COMPONENTE =============
   enviando = false;
   modoEdicion = false;
   idOriginal: number | null = null;
 
 
-  // ========== MODALES ==========
+  // ========== MODALES Y LISTAS AUX ==========
   mostrarModalBuscar = false;
-  busquedaModal = '';
-  resultadosBusqueda: any[] = [];
-  buscando = false;
-
-
-  registrosActivos: any[] = [];
   filtroBusquedaModal: string = '';
+  registrosActivos: any[] = [];
+
+  plataformas: any[] = [];
+  roles: any[] = [];
+
+
+
 
 
   constructor(
     private registroCorreoService: RegistroCorreoService,
     private registroLineaTelefonoService: RegistroLineaTelefonoService,
+    private registroCuentaService: RegistroCuentaService,
     private consultaRecursoService: ConsultaRecursoService,
     private consultarRecursoTipoService: ConsultarRecursoTipoService,
     private snackbar: NotificacionSnackbarService,
-    private permisoModuloService: PermisoModuloService
+    private permisoModuloService: PermisoModuloService,
+    private consultarPlataformaService: ConsultarPlataformaService,
+    private consultarPlataformaRolService: ConsultarPlataformaRolService
   ) { }
 
   ngOnInit(): void {
     this.cargarDatos();
   }
 
-  // ========== CARGA INICIAL ==========
+
+  // ================================
+  //  CARGA INICIAL DE DATOS
+  // ================================
+
+
   cargarDatos(): void {
     this.consultaRecursoService.listarActivos().subscribe({
       next: (data) => {
         this.tiposRecurso = data;
+        // Seleccionar PLATAFORMA por defecto si no hay tipo seleccionado
+        if (!this.recurso.tipoCodigo) {
+          const tipoPlataforma = data.find(t => t.nombre === 'PLATAFORMA' || t.nombre === 'PLATAFORMAS');
+          if (tipoPlataforma) {
+            this.recurso.tipoCodigo = tipoPlataforma.codigo;
+            this.onTipoChange(); // esto cargará subtipos, registros, etc.
+          }
+        }
       },
       error: () => this.snackbar.error('Error', 'No se pudieron cargar los tipos de recurso')
     });
   }
 
-  // ========== AL CAMBIAR TIPO ==========
+  // ================================
+  //  MANEJO DE CAMBIOS DE TIPO
+  // ================================
+
   onTipoChange(): void {
     const tipo = this.tiposRecurso.find(t => t.codigo === Number(this.recurso.tipoCodigo));
     this.tipoSeleccionado = tipo;
@@ -127,34 +155,79 @@ export class OpcRecursoComponent {
         next: (data) => { this.registrosActivos = data; },
         error: () => this.snackbar.error('Error', 'No se pudieron cargar los correos activos')
       });
+
     } else if (tipoNombre === 'LINEATELEFONICA') {
       this.registroLineaTelefonoService.listarTodos().subscribe({
         next: (data) => { this.registrosActivos = data; },
         error: () => this.snackbar.error('Error', 'No se pudieron cargar los teléfonos activos')
       });
+
+    } else if (tipoNombre === 'PLATAFORMA') {
+      this.registroCuentaService.listarTodos().subscribe({
+        next: (data) => { this.registrosActivos = data; },
+        error: () => this.snackbar.error('Error', 'No se pudieron cargar las cuentas')
+      });
+
     } else {
       this.registrosActivos = [];
     }
   }
 
-  // ========== GETTER PARA FILTRADO LOCAL EN MODAL ==========
-  get registrosFiltrados(): any[] {
-    // Solo mostrar resultados si hay al menos 2 caracteres
-    if (!this.filtroBusquedaModal || this.filtroBusquedaModal.length < 2) {
-      return [];
+
+
+  // ================================
+  //  CAMBIOS EN PLATAFORMAS
+  // ================================
+
+
+  onSubtipoChange(): void {
+    const subtipoCodigo = Number(this.recurso.subtipoCodigo);
+    if (subtipoCodigo) {
+      this.consultarPlataformaService.listarPorTipo(subtipoCodigo).subscribe({
+        next: (data) => {
+          this.plataformas = data;
+          this.recurso.plataformaCodigo = null; // resetear selección
+        },
+        error: () => this.snackbar.error('Error', 'No se pudieron cargar las plataformas')
+      });
+    } else {
+      this.plataformas = [];
+      this.recurso.plataformaCodigo = null;
     }
-    const filtro = this.filtroBusquedaModal.toLowerCase();
-    return this.registrosActivos.filter(item => {
-      const campo = this.tipoSeleccionado?.nombre === 'CORREO' ? item.direccion : item.numero;
-      return campo && campo.toLowerCase().includes(filtro);
-    });
   }
 
-  // ========== REGISTRAR ==========
+  onPlataformaChange(): void {
+    const plataformaCodigo = Number(this.recurso.plataformaCodigo);
+    this.cargarRolesPorPlataforma(plataformaCodigo);
+  }
+
+  cargarRolesPorPlataforma(plataformaCodigo: number): void {
+    if (plataformaCodigo) {
+      this.consultarPlataformaRolService.listarPorPlataforma(plataformaCodigo).subscribe({
+        next: (data) => {
+          this.roles = data;
+          this.recurso.plataformaRolCodigo = null; // resetear selección
+        },
+        error: () => this.snackbar.error('Error', 'No se pudieron cargar los roles')
+      });
+    } else {
+      this.roles = [];
+      this.recurso.plataformaRolCodigo = null;
+    }
+  }
+
+
+  // ================================
+  //  REGISTRAR
+  // ================================
+
+
   registrar(): void {
     if (this.enviando) return;
-    if (!this.recurso.tipoCodigo || !this.recurso.subtipoCodigo || !this.recurso.identificador) {
-      this.snackbar.warning('Campos incompletos', 'Todos los campos son obligatorios');
+
+    // Validación común: solo tipoCodigo
+    if (!this.recurso.tipoCodigo) {
+      this.snackbar.warning('Campos incompletos', 'Seleccione un tipo de recurso');
       return;
     }
 
@@ -164,18 +237,22 @@ export class OpcRecursoComponent {
       return;
     }
 
-    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
-    if (!subtipo) {
-      this.snackbar.error('Error', 'Subtipo no válido');
-      return;
-    }
-
     let payload: any = {};
     let servicio: any;
 
     if (tipo.nombre === 'CORREO') {
+      // Validaciones específicas CORREO
+      if (!this.recurso.subtipoCodigo || !this.recurso.identificador || !this.recurso.clave || !this.recurso.repetirClave) {
+        this.snackbar.warning('Campos incompletos', 'Todos los campos son obligatorios');
+        return;
+      }
       if (this.recurso.clave !== this.recurso.repetirClave) {
         this.snackbar.warning('Claves no coinciden', 'Las claves deben ser iguales');
+        return;
+      }
+      const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+      if (!subtipo) {
+        this.snackbar.error('Error', 'Subtipo no válido');
         return;
       }
       const direccion = `${this.recurso.identificador.toUpperCase()}@${subtipo.nombre.toUpperCase()}.COM`;
@@ -187,14 +264,20 @@ export class OpcRecursoComponent {
         activo: this.recurso.activo
       };
       servicio = this.registroCorreoService;
+
     } else if (tipo.nombre === 'LINEATELEFONICA') {
-      // Validar que los numeros coincidan
-      if (this.recurso.identificador !== this.recurso.confirmarIdentificador) {
-        this.snackbar.warning('Numeros no coinciden', 'Los numeros deben ser iguales');
+      // Validaciones específicas LINEATELEFONICA
+      if (!this.recurso.subtipoCodigo || !this.recurso.identificador || !this.recurso.confirmarIdentificador || !this.recurso.operador) {
+        this.snackbar.warning('Campos incompletos', 'Todos los campos son obligatorios');
         return;
       }
-      if (!this.recurso.operador) {
-        this.snackbar.warning('Operador requerido', 'Seleccione un operador');
+      if (this.recurso.identificador !== this.recurso.confirmarIdentificador) {
+        this.snackbar.warning('Números no coinciden', 'Los números deben ser iguales');
+        return;
+      }
+      const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+      if (!subtipo) {
+        this.snackbar.error('Error', 'Subtipo no válido');
         return;
       }
       payload = {
@@ -205,6 +288,20 @@ export class OpcRecursoComponent {
         recursoTipoCodigo: subtipo.codigo,
       };
       servicio = this.registroLineaTelefonoService;
+
+    } else if (tipo.nombre === 'PLATAFORMA') {
+      // Validaciones específicas PLATAFORMAS
+      if (!this.recurso.plataformaCodigo || !this.recurso.plataformaRolCodigo || !this.recurso.usuario) {
+        this.snackbar.warning('Campos incompletos', 'Seleccione plataforma, rol y escriba usuario');
+        return;
+      }
+      payload = {
+        plataformaCodigo: this.recurso.plataformaCodigo,
+        plataformaRolCodigo: this.recurso.plataformaRolCodigo,
+        usuario: this.recurso.usuario,
+        activo: this.recurso.activo
+      };
+      servicio = this.registroCuentaService;
 
     } else {
       this.snackbar.warning('Tipo no soportado', 'Este tipo de recurso aun no esta implementado');
@@ -230,7 +327,13 @@ export class OpcRecursoComponent {
     });
   }
 
-  // ========== EDITAR ==========
+
+
+  // ================================
+  //  EDITAR
+  // ================================
+
+
   editar(): void {
     if (this.enviando) return;
     if (!this.idOriginal) {
@@ -265,22 +368,22 @@ export class OpcRecursoComponent {
       }
       servicio = this.registroCorreoService;
 
-    } else if (tipo.nombre === 'LINEATELEFONICA') {
-      // Validar que los numeros coincidan (si se cambio)
-      if (this.recurso.identificador !== this.recurso.confirmarIdentificador) {
-        this.snackbar.warning('Números no coinciden', 'Los números deben ser iguales');
+    } else if (tipo.nombre === 'PLATAFORMA') {
+      // Validar campos obligatorios
+      if (!this.recurso.usuario) {
+        this.snackbar.warning('Campos incompletos', 'El usuario es obligatorio');
         return;
       }
-      if (!this.recurso.operador) {
-        this.snackbar.warning('Operador requerido', 'Seleccione un operador');
+      if (!this.recurso.plataformaRolCodigo) {
+        this.snackbar.warning('Campos incompletos', 'Seleccione un rol');
         return;
       }
       payload = {
-        numero: this.recurso.identificador,
-        operador: this.recurso.operador,
+        usuario: this.recurso.usuario,
+        plataformaRolCodigo: this.recurso.plataformaRolCodigo,
         activo: this.recurso.activo
       };
-      servicio = this.registroLineaTelefonoService;
+      servicio = this.registroCuentaService;
 
     } else {
       this.snackbar.warning('Tipo no soportado', 'Este tipo de recurso aún no esta implementado');
@@ -303,25 +406,11 @@ export class OpcRecursoComponent {
     });
   }
 
-  // ========== LIMPIAR FORMULARIO ==========
-  limpiarFormulario(): void {
-    this.recurso = {
-      tipoCodigo: this.recurso.tipoCodigo, // mantener el tipo seleccionado
-      subtipoCodigo: null,
-      identificador: '',
-      confirmarIdentificador: '',
-      clave: '',
-      repetirClave: '',
-      activo: true
-    };
-    this.modoEdicion = false;
-    this.idOriginal = null;
-    this.mostrarModalBuscar = false;
-    this.filtroBusquedaModal = '';
-    // No limpiar registrosActivos porque se recargan al cambiar tipo
-  }
 
-  // ========== MODAL DE BÚSQUEDA ==========
+  // ================================
+  //  MODAL DE BUSQUEDA
+  // ================================
+
   abrirModalBuscar(): void {
     this.mostrarModalBuscar = true;
     this.filtroBusquedaModal = '';
@@ -334,6 +423,27 @@ export class OpcRecursoComponent {
     this.mostrarModalBuscar = false;
     this.filtroBusquedaModal = '';
   }
+
+
+  get registrosFiltrados(): any[] {
+    if (!this.filtroBusquedaModal || this.filtroBusquedaModal.length < 2) {
+      return [];
+    }
+    const filtro = this.filtroBusquedaModal.toLowerCase();
+    return this.registrosActivos.filter(item => {
+      let campo = '';
+      if (this.tipoSeleccionado?.nombre === 'CORREO') {
+        campo = item.direccion;
+      } else if (this.tipoSeleccionado?.nombre === 'LINEATELEFONICA') {
+        campo = item.numero;
+      } else if (this.tipoSeleccionado?.nombre === 'PLATAFORMA') {
+        // Buscar por usuario o nombre de plataforma
+        campo = item.usuario + ' ' + (item.plataforma?.descripcion || '');
+      }
+      return campo && campo.toLowerCase().includes(filtro);
+    });
+  }
+
 
   seleccionarRegistro(registro: any): void {
     this.modoEdicion = true;
@@ -360,7 +470,35 @@ export class OpcRecursoComponent {
       this.recurso.subtipoCodigo = registro.recursoTipo?.codigo || null;
       this.recurso.clave = '';
       this.recurso.repetirClave = '';
+
+
+    } else if (this.tipoSeleccionado?.nombre === 'PLATAFORMA') {
+      this.recurso.usuario = registro.usuario;
+      const subtipoCodigo = registro.plataforma?.recursoTipo?.codigo || null;
+      this.recurso.subtipoCodigo = subtipoCodigo;
+      if (subtipoCodigo) {
+        this.consultarPlataformaService.listarPorTipo(subtipoCodigo).subscribe({
+          next: (plataformas) => {
+            this.plataformas = plataformas;
+            this.recurso.plataformaCodigo = registro.plataforma?.codigo || null;
+            if (this.recurso.plataformaCodigo) {
+              // Cargar roles y luego asignar el rol guardado
+              this.consultarPlataformaRolService.listarPorPlataforma(this.recurso.plataformaCodigo).subscribe({
+                next: (roles) => {
+                  this.roles = roles;
+                  // Buscar el rol que coincide con el registro
+                  const rolEncontrado = roles.find(r => r.codigo === registro.plataformaRol?.codigo);
+                  this.recurso.plataformaRolCodigo = rolEncontrado ? rolEncontrado.codigo : null;
+                },
+                error: () => this.snackbar.error('Error', 'No se pudieron cargar los roles')
+              });
+            }
+          },
+          error: () => this.snackbar.error('Error', 'No se pudieron cargar las plataformas')
+        });
+      }
     }
+
 
     this.recurso.activo = registro.activo;
 
@@ -368,15 +506,23 @@ export class OpcRecursoComponent {
     this.cerrarModalBuscar();
   }
 
-  // ========== PERMISOS ==========
+
+
+  // ================================
+  //  UTILIDADES
+  // ================================
+
+
   get puedeEditarRegistro(): boolean {
     return this.permisoModuloService.puede('registro', 'editar');
   }
 
   // ========== MOSTRAR/OCULTAR CLAVE ==========
+  
   toggleMostrarClave(): void {
     this.mostrarClave = !this.mostrarClave;
   }
+
   toggleMostrarRepetirClave(): void {
     this.mostrarRepetirClave = !this.mostrarRepetirClave;
   }
@@ -388,5 +534,32 @@ export class OpcRecursoComponent {
     }
     return tipo.nombre;
   }
+
+
+  limpiarFormulario(): void {
+    this.recurso = {
+      tipoCodigo: this.recurso.tipoCodigo,
+      subtipoCodigo: null,
+      identificador: '',
+      confirmarIdentificador: '',
+      clave: '',
+      repetirClave: '',
+      operador: '',
+      usuario: '',
+      plataformaCodigo: null,
+      plataformaRolCodigo: null,
+      activo: true
+    };
+    this.plataformas = [];
+    this.roles = [];
+    this.modoEdicion = false;
+    this.idOriginal = null;
+    this.mostrarModalBuscar = false;
+    this.filtroBusquedaModal = '';
+  }
+
+
+
+
 
 }

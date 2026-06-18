@@ -70,7 +70,7 @@
 `ng generate service arquitectura/servicio/Registro/RegistroImpresora` (Servicio REGISTRAR IMPRESORA)<br>
 `ng generate service arquitectura/servicio/Registro/RegistroCorreo` (Servicio REGISTRAR CORREO)<br>
 `ng generate service arquitectura/servicio/Registro/RegistroLineaTelefono` (Servicio REGISTRAR LINEA TELEFONO)<br>
-
+`ng generate service arquitectura/servicio/Registro/RegistroCuenta` (Servicio REGISTRAR CUENTA)<br>
 
 
 `ng generate component pagina/compartida/empleados` (Empleados vista)<br>
@@ -87,6 +87,8 @@
 `ng generate service arquitectura/servicio/consulta/ConsultarAsignaciones` (Servicio CONSULTAR ASIGNACIONES)<br>
 `ng generate service arquitectura/servicio/consulta/consultaRecurso` (Servicio REGISTRAR RECURSOS)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarRecursoTipo` (Servicio CONSULTAR RECURSO TIPO)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarPlataforma` (Servicio CONSULTAR PLATAFORMA)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarPlataformaRol` (Servicio CONSULTAR PLATAFORMA ROL)<br>
 
 
 

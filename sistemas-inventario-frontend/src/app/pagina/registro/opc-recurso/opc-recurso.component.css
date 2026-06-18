@@ -27,6 +27,24 @@
     margin: auto;
 }
 
+
+.contenedor-icono {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.contenedor-icono mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: rgba(153, 153, 153, 0.671);
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+
 .contenedor-regRecurso .contenido p {
     margin: 0;
     display: flex;
@@ -86,7 +104,9 @@
 
 .campocorreo,
 .campotelefono,
-.campoestado {
+.campoestado,
+.campoplataforma
+ {
     padding-top: 15px;
 }
 
@@ -523,17 +543,23 @@
 }
 
 
-
-/* CORREO */
+/* listado */
+/* CORREO  - LINEA - PLATAFORMA */
 
 .resultado-info-modal .resultado-correo .cuerpo,
-.resultado-linea .numero{
+.resultado-linea .numero,
+.resultado-plataforma .usuario{
     color: #3f51b5;
     font-size: 12.5px;
 }
 .resultado-info-modal .resultado-correo .dominio,
-.resultado-linea .operador{
+.resultado-linea .operador,
+.plataforma-info .plataforma-rol{
     font-size: 11px;
+}
+.plataforma-info .plataforma-nombre{
+    color: rgba(31, 17, 17, 0.815);
+    font-size: 12.5px;
 }
 
 .resultado-info-modal div {
