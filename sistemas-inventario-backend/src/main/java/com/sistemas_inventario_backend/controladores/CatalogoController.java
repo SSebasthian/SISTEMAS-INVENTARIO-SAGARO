@@ -22,8 +22,8 @@ public class CatalogoController {
     private final DispositivoTecnologico_TipoRepository tipoRepo;
     private final DispositivoTecnologico_MarcaRepository marcaRepo;
     private final DispositivoTecnologico_ModeloRepository modeloRepo;
-    private final DispositivoTecnologico_SORepository soRepo;
-    private final DispositivoTecnologico_VersionSORepository versionRepo;
+    private final SistemaOperativoRepository soRepo;
+    private final SistemaOperativo_VersionRepository versionRepo;
 
     // =====================================================
     // ========== CONSULTAS (GET) ==========================
@@ -78,13 +78,13 @@ public class CatalogoController {
 
     // Sistemas Operativos por categoría  (usando el ID de la categoría)
     @GetMapping("/sistemas-operativos/catalogo/{catalogoCodigo}")
-    public List<DispositivoTecnologico_SO> getSoPorCatalogo(@PathVariable Long catalogoCodigo) {
+    public List<SistemaOperativo> getSoPorCatalogo(@PathVariable Long catalogoCodigo) {
         return soRepo.findByCatalogoCodigoAndActivoTrue(catalogoCodigo);
     }
 
     // Versiones por SO
     @GetMapping("/versiones-so/so/{soCodigo}")
-    public List<DispositivoTecnologico_VersionSO> getVersionesPorSO(@PathVariable Long soCodigo) {
+    public List<sistemaoperativo_version> getVersionesPorSO(@PathVariable Long soCodigo) {
         return versionRepo.findBySistemaOperativoCodigoAndActivoTrue(soCodigo);
     }
 
@@ -161,7 +161,7 @@ public class CatalogoController {
                         .body(Map.of("message", "La descripción de la versión es requerida"));
             }
 
-            DispositivoTecnologico_VersionSO nuevaVersion = catalogoService.crearVersionSO(descripcion.trim(), soCodigo);
+            sistemaoperativo_version nuevaVersion = catalogoService.crearVersionSO(descripcion.trim(), soCodigo);
             return ResponseEntity.ok(nuevaVersion);
 
         } catch (Exception e) {

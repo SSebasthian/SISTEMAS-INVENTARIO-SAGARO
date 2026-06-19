@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "dispositivotecnologico_versionso")
+@Table(name = "sistemaoperativo_version")
 @Getter @Setter @NoArgsConstructor
-public class DispositivoTecnologico_VersionSO {
+public class sistemaoperativo_version {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +21,7 @@ public class DispositivoTecnologico_VersionSO {
 
     @ManyToOne
     @JoinColumn(name = "so_codigo")
-    private DispositivoTecnologico_SO sistemaOperativo;
+    private SistemaOperativo sistemaOperativo;
 
 }
 

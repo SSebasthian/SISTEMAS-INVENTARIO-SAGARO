@@ -4,13 +4,11 @@ import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_TipoRepository;
 import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_MarcaRepository;
 import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_ModeloRepository;
-import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_SORepository;
-import com.sistemas_inventario_backend.repositorios.DispositivoTecnologico_VersionSORepository;
+import com.sistemas_inventario_backend.repositorios.SistemaOperativoRepository;
+import com.sistemas_inventario_backend.repositorios.SistemaOperativo_VersionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,8 +18,8 @@ public class CatalogoService {
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final DispositivoTecnologico_MarcaRepository marcaRepository;
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
-    private final DispositivoTecnologico_SORepository soRepository;
-    private final DispositivoTecnologico_VersionSORepository versionSORepository;
+    private final SistemaOperativoRepository soRepository;
+    private final SistemaOperativo_VersionRepository versionSORepository;
 
 
     // ========== CREAR MARCA ==========
@@ -71,13 +69,13 @@ public class CatalogoService {
     // ==========  CREAR VERSION SO ==========
 
     @Transactional
-    public DispositivoTecnologico_VersionSO crearVersionSO(String descripcion, Long soCodigo) {
+    public sistemaoperativo_version crearVersionSO(String descripcion, Long soCodigo) {
         // Buscar el USANDO EL REPOSITORIO (soRepository), no la entidad
-        DispositivoTecnologico_SO so = soRepository.findById(soCodigo)
+        SistemaOperativo so = soRepository.findById(soCodigo)
                 .orElseThrow(() -> new RuntimeException("SO no encontrado con código: " + soCodigo));
 
         // Crear nueva versión
-        DispositivoTecnologico_VersionSO nuevaVersion = new DispositivoTecnologico_VersionSO();
+        sistemaoperativo_version nuevaVersion = new sistemaoperativo_version();
         nuevaVersion.setDescripcion(descripcion);
         nuevaVersion.setActivo(true);
         nuevaVersion.setSistemaOperativo(so);

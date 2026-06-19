@@ -241,7 +241,7 @@ export class OpcImpresoraComponent implements OnInit {
 
     if (marcaSeleccionada) {
       this.notificacionSnackbarService.info('Marca existente',
-        `La marca "${marcaSeleccionada.descripcion}" ya existe en ${this.tipoSeleccionado?.descripcion}. Se ha seleccionado automáticamente.`);
+        `La marca "${marcaSeleccionada.descripcion}" ya existe en ${this.tipoSeleccionado?.descripcion}. Se ha seleccionado automaticamente.`);
       this.marcaSeleccionada = marcaSeleccionada;
       this.cerrarModalMarca();
     }
@@ -491,7 +491,7 @@ export class OpcImpresoraComponent implements OnInit {
     }
 
     const plaquetaFinal = this.plaqueta && this.plaqueta.trim() !== '' ? this.plaqueta : 'NO TIENE';
-    const descripcionFinal = this.descripcion && this.descripcion.trim() !== '' ? this.descripcion : 'SIN DESCRIPCIÓN';
+    const descripcionFinal = this.descripcion && this.descripcion.trim() !== '' ? this.descripcion : 'SIN DESCRIPCION';
     const facturaFinal = this.facturaCompra && this.facturaCompra.trim() !== '' ? this.facturaCompra : 'NO TIENE';
     const fechaFinal = this.fechaCompra && this.fechaCompra.trim() !== '' ? this.fechaCompra : null;
 

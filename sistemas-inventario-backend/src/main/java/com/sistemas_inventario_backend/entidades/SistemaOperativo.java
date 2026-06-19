@@ -6,10 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "dispositivotecnologico_so")
+@Table(name = "sistemaoperativo")
 @Getter @Setter @NoArgsConstructor
 
-public class DispositivoTecnologico_SO {
+public class SistemaOperativo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codigo;

@@ -18,8 +18,8 @@ public class EquipoDeComputoService {
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final DispositivoTecnologico_MarcaRepository marcaRepository;
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
-    private final DispositivoTecnologico_SORepository soRepository;
-    private final DispositivoTecnologico_VersionSORepository versionRepository;
+    private final SistemaOperativoRepository soRepository;
+    private final SistemaOperativo_VersionRepository versionRepository;
     private final AsignacionesRepository asignacionRepository;
 
 
@@ -50,13 +50,13 @@ public class EquipoDeComputoService {
         }
 
         if (equipo.getSistemaOperativo() != null && equipo.getSistemaOperativo().getCodigo() != null) {
-            DispositivoTecnologico_SO so = soRepository.findById(equipo.getSistemaOperativo().getCodigo())
+            SistemaOperativo so = soRepository.findById(equipo.getSistemaOperativo().getCodigo())
                     .orElseThrow(() -> new RuntimeException("Sistema Operativo no encontrado"));
             equipo.setSistemaOperativo(so);
         }
 
         if (equipo.getVersionSO() != null && equipo.getVersionSO().getCodigo() != null) {
-            DispositivoTecnologico_VersionSO version = versionRepository.findById(equipo.getVersionSO().getCodigo())
+            sistemaoperativo_version version = versionRepository.findById(equipo.getVersionSO().getCodigo())
                     .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
             equipo.setVersionSO(version);
         }
@@ -98,14 +98,14 @@ public class EquipoDeComputoService {
 
         // Validar y cargar SO
         if (equipoActualizado.getSistemaOperativo() != null && equipoActualizado.getSistemaOperativo().getCodigo() != null) {
-            DispositivoTecnologico_SO so = soRepository.findById(equipoActualizado.getSistemaOperativo().getCodigo())
+            SistemaOperativo so = soRepository.findById(equipoActualizado.getSistemaOperativo().getCodigo())
                     .orElseThrow(() -> new RuntimeException("Sistema Operativo no encontrado"));
             equipoExistente.setSistemaOperativo(so);
         }
 
         // Validar y cargar Versión SO
         if (equipoActualizado.getVersionSO() != null && equipoActualizado.getVersionSO().getCodigo() != null) {
-            DispositivoTecnologico_VersionSO version = versionRepository.findById(equipoActualizado.getVersionSO().getCodigo())
+            sistemaoperativo_version version = versionRepository.findById(equipoActualizado.getVersionSO().getCodigo())
                     .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
             equipoExistente.setVersionSO(version);
         }

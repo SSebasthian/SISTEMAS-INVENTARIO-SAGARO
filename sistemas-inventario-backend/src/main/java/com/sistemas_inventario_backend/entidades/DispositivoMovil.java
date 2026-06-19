@@ -50,10 +50,10 @@ public class DispositivoMovil {
 
     @ManyToOne
     @JoinColumn(name = "codigo_so")
-    private DispositivoTecnologico_SO sistemaOperativo;
+    private SistemaOperativo sistemaOperativo;
 
     @ManyToOne
     @JoinColumn(name = "codigo_versionso")
-    private DispositivoTecnologico_VersionSO versionSO;
+    private sistemaoperativo_version versionSO;
 
 }

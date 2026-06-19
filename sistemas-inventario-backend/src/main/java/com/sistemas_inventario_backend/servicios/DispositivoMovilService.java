@@ -18,8 +18,8 @@ public class DispositivoMovilService {
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final DispositivoTecnologico_MarcaRepository marcaRepository;
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
-    private final DispositivoTecnologico_SORepository soRepository;
-    private final DispositivoTecnologico_VersionSORepository versionRepository;
+    private final SistemaOperativoRepository soRepository;
+    private final SistemaOperativo_VersionRepository versionRepository;
     private final AsignacionesRepository asignacionRepository;
 
 
@@ -53,13 +53,13 @@ public class DispositivoMovilService {
         }
 
         if (dispositivo.getSistemaOperativo() != null && dispositivo.getSistemaOperativo().getCodigo() != null) {
-            DispositivoTecnologico_SO so = soRepository.findById(dispositivo.getSistemaOperativo().getCodigo())
+            SistemaOperativo so = soRepository.findById(dispositivo.getSistemaOperativo().getCodigo())
                     .orElseThrow(() -> new RuntimeException("Sistema Operativo no encontrado"));
             dispositivo.setSistemaOperativo(so);
         }
 
         if (dispositivo.getVersionSO() != null && dispositivo.getVersionSO().getCodigo() != null) {
-            DispositivoTecnologico_VersionSO version = versionRepository.findById(dispositivo.getVersionSO().getCodigo())
+            sistemaoperativo_version version = versionRepository.findById(dispositivo.getVersionSO().getCodigo())
                     .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
             dispositivo.setVersionSO(version);
         }
@@ -97,13 +97,13 @@ public class DispositivoMovilService {
         }
 
         if (dispositivoActualizado.getSistemaOperativo() != null && dispositivoActualizado.getSistemaOperativo().getCodigo() != null) {
-            DispositivoTecnologico_SO so = soRepository.findById(dispositivoActualizado.getSistemaOperativo().getCodigo())
+            SistemaOperativo so = soRepository.findById(dispositivoActualizado.getSistemaOperativo().getCodigo())
                     .orElseThrow(() -> new RuntimeException("Sistema Operativo no encontrado"));
             dispositivoExistente.setSistemaOperativo(so);
         }
 
         if (dispositivoActualizado.getVersionSO() != null && dispositivoActualizado.getVersionSO().getCodigo() != null) {
-            DispositivoTecnologico_VersionSO version = versionRepository.findById(dispositivoActualizado.getVersionSO().getCodigo())
+            sistemaoperativo_version version = versionRepository.findById(dispositivoActualizado.getVersionSO().getCodigo())
                     .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
             dispositivoExistente.setVersionSO(version);
         }
