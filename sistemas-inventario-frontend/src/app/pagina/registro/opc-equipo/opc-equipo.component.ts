@@ -11,8 +11,8 @@ import { RegistroCatalogoService } from '../../../arquitectura/servicio/registro
 import { TipoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Tipo.interface';
 import { MarcaLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Marca.interface';
 import { ModeloLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_Modelo.interface';
-import { SOLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_SO.interface';
-import { VersionSOLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/DispositivoTecnologico_VersionSO.interface';
+import { SOLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/SistemaOperativo.interface';
+import { VersionSOLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/SistemaOperativo_Version.interface';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 
 import { RegistroEquipoService } from './../../../arquitectura/servicio/registro/RegistroEquipo.service';

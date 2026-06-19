@@ -1,4 +1,4 @@
-import { SOLlamarDatos } from '../LlamarDatos/DispositivoTecnologico_SO.interface';
+import { SOLlamarDatos } from './SistemaOperativo.interface';
 
 export interface VersionSOLlamarDatos {
   codigo: number;

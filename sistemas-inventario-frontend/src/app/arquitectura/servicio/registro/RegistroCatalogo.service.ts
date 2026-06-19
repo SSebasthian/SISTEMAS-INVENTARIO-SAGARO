@@ -5,8 +5,8 @@ import { CatalogoLlamarDatos } from '../../interface/LlamarDatos/Catalogo.interf
 import { TipoLlamarDatos } from '../../interface/LlamarDatos/DispositivoTecnologico_Tipo.interface';
 import { MarcaLlamarDatos } from '../../interface/LlamarDatos/DispositivoTecnologico_Marca.interface';
 import { ModeloLlamarDatos } from '../../interface/LlamarDatos/DispositivoTecnologico_Modelo.interface';
-import { SOLlamarDatos } from '../../interface/LlamarDatos/DispositivoTecnologico_SO.interface';
-import { VersionSOLlamarDatos } from '../../interface/LlamarDatos/DispositivoTecnologico_VersionSO.interface';
+import { SOLlamarDatos } from '../../interface/LlamarDatos/SistemaOperativo.interface';
+import { VersionSOLlamarDatos } from '../../interface/LlamarDatos/SistemaOperativo_Version.interface';
 
 @Injectable({
   providedIn: 'root'

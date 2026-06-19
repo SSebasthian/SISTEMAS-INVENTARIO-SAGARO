@@ -1,8 +1,8 @@
 import { TipoLlamarDatos } from '../LlamarDatos/DispositivoTecnologico_Tipo.interface';
 import { MarcaLlamarDatos } from '../LlamarDatos/DispositivoTecnologico_Marca.interface';
 import { ModeloLlamarDatos } from '../LlamarDatos/DispositivoTecnologico_Modelo.interface';
-import { SOLlamarDatos } from '../LlamarDatos/DispositivoTecnologico_SO.interface';
-import { VersionSOLlamarDatos } from '../LlamarDatos/DispositivoTecnologico_VersionSO.interface';
+import { SOLlamarDatos } from './SistemaOperativo.interface';
+import { VersionSOLlamarDatos } from './SistemaOperativo_Version.interface';
 
 
 export interface EquipoDeComputoLlamarDatos {

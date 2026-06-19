@@ -1,4 +1,4 @@
-import { CatalogoLlamarDatos } from '../../interface/LlamarDatos/Catalogo.interface';
+import { CatalogoLlamarDatos } from './Catalogo.interface';
 
 
 export interface SOLlamarDatos {
