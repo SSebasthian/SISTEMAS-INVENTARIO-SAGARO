@@ -5,15 +5,13 @@
             <div class="titulo">
                 <h2>
                     <mat-icon class="cargoicon">blur_on</mat-icon>
-                    <strong>Asignar Equipo</strong>
+                    <strong>{{ getTitulo() }}</strong>
                 </h2>
             </div>
         </div>
 
-
         <!-- CONTENEDOR DE DOS COLUMNAS -->
         <div class="asignacion">
-
 
             <!-- COLUMNA IZQUIERDA (siempre visible) -->
             <div class="columna-izquierda">
@@ -28,7 +26,6 @@
                         </div>
                     </div>
                     <div class="info-grid">
-
                         <div class="info-item">
                             <span class="label">TIPO:</span>
                             <span class="valor">{{ equipo.tipo.descripcion }}</span>
@@ -53,10 +50,8 @@
                 </div>
             </div>
 
-
             <!-- COLUMNA DERECHA -->
             <div class="columna-derecha">
-
                 <div class="form-asignacion">
 
                     <!-- Tipo de asignacion -->
@@ -114,7 +109,6 @@
                             </div>
                         </div>
 
-
                         <!-- Descripcion original (solo lectura) -->
                         <div class="seleccionado-observaciones" *ngIf="!mostrarDevolucion">
                             <div class="obser-campo">
@@ -139,15 +133,11 @@
                                     (input)="detalleDevolucion = detalleDevolucion.toUpperCase()"></textarea>
                             </div>
                         </div>
-
                     </div>
-
 
                     <!-- ================================================ -->
                     <!-- CASO 2: NUEVA ASIGNACION (NO ESTA ASIGNADA)      -->
                     <!-- ================================================ -->
-
-
                     <div *ngIf="!yaAsignada" class="vista-nueva">
 
                         <!-- Seleccion de empleado -->
@@ -174,7 +164,6 @@
                                 </div>
                             </ng-container>
 
-
                             <!-- Empleado seleccionado -->
                             <ng-container *ngIf="empleadoSeleccionado">
                                 <div class="empleado-seleccionado">
@@ -195,74 +184,263 @@
                             </ng-container>
                         </div>
 
-
-                        <!-- Fechas y descripcion (solo cuando hay selección) -->
+                        <!-- Contenido según paso (solo si hay empleado seleccionado) -->
                         <ng-container *ngIf="empleadoSeleccionado">
 
-                            <!-- Fechas -->
-                            <div class="seleccionado-fecha">
-                                <div class="campo-fecha asignac">
-                                    <div class="fecha-campo sin-asignacion">
-                                        <mat-icon>event</mat-icon>
-                                        <label>FECHA DE ASIGNACION</label>
+                            <!-- PASO 1: Fechas y descripción -->
+                            <div *ngIf="paso === 1">
+                                <div class="seleccionado-fecha">
+                                    <div class="campo-fecha asignac">
+                                        <div class="fecha-campo sin-asignacion">
+                                            <mat-icon>event</mat-icon>
+                                            <label>FECHA DE ASIGNACION</label>
+                                        </div>
+                                        <div class="fecha">
+                                            <input type="date" [(ngModel)]="fechaAsignacion" class="fecha-input">
+                                        </div>
                                     </div>
-                                    <div class="fecha">
-                                        <input type="date" [(ngModel)]="fechaAsignacion" class="fecha-input">
+                                </div>
+
+                                <div class="seleccionado-observaciones">
+                                    <div class="obser-campo">
+                                        <span>
+                                            <mat-icon>description</mat-icon>
+                                            <label>DESCRIPCION</label>
+                                        </span>
+                                        <textarea [(ngModel)]="observaciones" rows="2"
+                                            placeholder="Ingrese detalles de la asignacion..."
+                                            (input)="observaciones = observaciones.toUpperCase()"></textarea>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- DescripciOn -->
-                            <div class="seleccionado-observaciones">
-                                <div class="obser-campo">
-                                    <span>
-                                        <mat-icon>description</mat-icon>
-                                        <label>DESCRIPCION</label>
-                                    </span>
-                                    <textarea [(ngModel)]="observaciones" rows="2"
-                                        placeholder="Ingrese detalles de la asignación..."
-                                        (input)="observaciones = observaciones.toUpperCase()"></textarea>
+                            <!-- PASO 2: Detalle del equipo -->
+                            <div *ngIf="paso === 2" class="seccion-detalle">
+                                <div class="seleccion-detalle">
+                                    <div class="detalle-campo">
+                                        <mat-icon>queue_play_next</mat-icon>
+                                        <label>DETALLE EQUIPO</label>
+                                    </div>
+
+                                    <div class="detalle-grid">
+
+                                        <!-- Nombre Equipo -->
+                                        <div class="campo-detalle">
+                                            <label>NOMBRE EQUIPO</label>
+                                            <input [(ngModel)]="detalle.nombreEquipo" (input)="detalle.nombreEquipo = detalle.nombreEquipo.toUpperCase()" />
+                                        </div>
+
+                                        <!-- IP (1-255) -->
+                                        <div class="campo-detalle">
+                                            <label>IP (1-255)</label>
+                                            <input type="number" min="1" max="255" [(ngModel)]="detalle.ip" />
+                                        </div>
+
+                                        <!-- Credenciales -->
+
+                                        <div class="campo-detalle">
+                                            <label>USUARIO ADMIN</label>
+                                            <input [(ngModel)]="detalle.nombreUsuarioAdministrador" (input)="detalle.nombreUsuarioAdministrador = detalle.nombreUsuarioAdministrador.toUpperCase()" />
+                                        </div>
+
+                                        <div class="campo-detalle">
+                                            <label>CLAVE ADMIN</label>
+                                            <div class="input-con-toggle">
+                                                <input [type]="mostrarClaveAdmin ? 'text' : 'password'"
+                                                    [(ngModel)]="detalle.claveUsuarioAdministrador" />
+                                                <mat-icon class="toggle-icon" (click)="toggleClaveAdmin()">
+                                                    {{ mostrarClaveAdmin ? 'visibility_off' : 'visibility' }}
+                                                </mat-icon>
+                                            </div>
+                                        </div>
+
+                                        <div class="campo-detalle">
+                                            <label>USUARIO</label>
+                                            <input [(ngModel)]="detalle.nombreUsuario" (input)="detalle.nombreUsuario = detalle.nombreUsuario.toUpperCase()" />
+                                        </div>
+
+                                        <div class="campo-detalle">
+                                            <label>CLAVE USUARIO</label>
+                                            <div class="input-con-toggle">
+                                                <input [type]="mostrarClaveUsuario ? 'text' : 'password'"
+                                                    [(ngModel)]="detalle.claveUsuario" />
+                                                <mat-icon class="toggle-icon" (click)="toggleClaveUsuario()">
+                                                    {{ mostrarClaveUsuario ? 'visibility_off' : 'visibility' }}
+                                                </mat-icon>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="campo-detalle">
+                                            <label>USUARIO ADICIONAL</label>
+                                            <input [(ngModel)]="detalle.nombreUsuarioAdicional" (input)="detalle.nombreUsuarioAdicional = detalle.nombreUsuarioAdicional.toUpperCase()" />
+                                        </div>
+
+                                        <div class="campo-detalle">
+                                            <label>CLAVE ADICIONAL</label>
+                                            <div class="input-con-toggle">
+                                                <input [type]="mostrarClaveAdicional ? 'text' : 'password'"
+                                                    [(ngModel)]="detalle.claveUsuarioAdicional" />
+                                                <mat-icon class="toggle-icon" (click)="toggleClaveAdicional()">
+                                                    {{ mostrarClaveAdicional ? 'visibility_off' : 'visibility' }}
+                                                </mat-icon>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- PASO 3: SOFTWARE INSTALADO -->
+
+                            <!-- <div *ngIf="paso === 3" class="seccion-detalle">
+                                <div class="seleccion-detalle">
+                                    <div class="detalle-campo">
+                                        <mat-icon>layers</mat-icon>
+                                        <label>SOFTWARE INSTALADO</label>
+                                    </div>
+                                </div>
+
+                                <div class="detalle-grid">
+
+                                    !-- Antivirus --
+                                    <div class="software-item" [class.seleccionado]="softwareSeleccionado.antivirus">
+                                        <div class="software-header">
+                                            <mat-icon>security</mat-icon>
+                                            <span>Antivirus</span>
+                                            <button class="btn-soft" (click)="abrirPanel('antivirus')">
+                                                {{ softwareSeleccionado.antivirus ? 'Editar' : 'Agregar' }}
+                                            </button>
+                                        </div>
+                                        <div class="software-resumen" *ngIf="softwareSeleccionado.antivirus">
+                                            <span>{{ softwareSeleccionado.antivirus.nombre }}</span>
+                                        </div>
+                                    </div>
+
+                                    !-- Backup --
+                                    <div class="software-item" [class.seleccionado]="softwareSeleccionado.backup">
+                                        <div class="software-header">
+                                            <mat-icon>backup</mat-icon>
+                                            <span>Backup</span>
+                                            <button class="btn-soft" (click)="abrirPanel('backup')">
+                                                {{ softwareSeleccionado.backup ? 'Editar' : 'Agregar' }}
+                                            </button>
+                                        </div>
+                                        <div class="software-resumen" *ngIf="softwareSeleccionado.backup">
+                                            <span>{{ softwareSeleccionado.backup.programa }}</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div> -->
+
                         </ng-container>
                     </div>
+
                 </div>
             </div>
         </div>
 
-        <!-- BOTONES  -->
+        <!-- ================================================ -->
+        <!-- PANEL INTERNO PARA AGREGAR/EDITAR SOFTWARE       -->
+        <!-- ================================================ -->
+        <!-- <div class="panel-overlay" *ngIf="panelActivo">
+            <div class="panel-contenido">
+
+                <div class="panel-header">
+                    <h3>{{ panelTitulo }}</h3>
+                    <button class="btn-cerrar-panel" (click)="cerrarPanel()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
+
+                <div class="panel-body">
+
+                    !-- Campos según el tipo --
+                    <ng-container [ngSwitch]="panelTipo">
+
+                        !-- ANTIVIRUS --
+                        <ng-container *ngSwitchCase="'antivirus'">
+                            <div class="campo-panel">
+                                <label>NOMBRE ANTIVIRUS</label>
+                                <input [(ngModel)]="panelData.nombre" placeholder="Ej: Bitdefender" />
+                            </div>
+                            <div class="campo-panel">
+                                <label>POLÍTICA</label>
+                                <input [(ngModel)]="panelData.politica" placeholder="Ej: Protección en tiempo real" />
+                            </div>
+                        </ng-container>
+
+                        !-- BACKUP --
+                        <ng-container *ngSwitchCase="'backup'">
+                            <div class="campo-panel">
+                                <label>NOMBRE BACKUP</label>
+                                <input [(ngModel)]="panelData.nombre" placeholder="Ej: Acronis True Image" />
+                            </div>
+                            <div class="campo-panel">
+                                <label>PROGRAMA</label>
+                                <input [(ngModel)]="panelData.programa" placeholder="Ej: Bacula, Cobian" />
+                            </div>
+                            <div class="campo-panel">
+                                <label>FRECUENCIA</label>
+                                <select [(ngModel)]="panelData.frecuencia">
+                                    <option value="">Seleccione...</option>
+                                    <option value="DIARIO">Diario</option>
+                                    <option value="SEMANAL">Semanal</option>
+                                    <option value="MENSUAL">Mensual</option>
+                                </select>
+                            </div>
+                            <div class="campo-panel">
+                                <label>UBICACIÓN</label>
+                                <input [(ngModel)]="panelData.ubicacion" placeholder="Ej: \\server\backups" />
+                            </div>
+                        </ng-container>
+
+                        !-- OFFICE --
+                        <ng-container *ngSwitchCase="'office'">
+                            <div class="campo-panel">
+                                <label>NOMBRE OFFICE</label>
+                                <input [(ngModel)]="panelData.nombre" placeholder="Ej: Microsoft Office 365" />
+                            </div>
+                            <div class="campo-panel">
+                                <label>TIPO LICENCIA</label>
+                                <input [(ngModel)]="panelData.licencia" placeholder="Ej: Perpetua, Suscripción" />
+                            </div>
+                        </ng-container>
+
+                    </ng-container>
+
+                </div>
+
+                <div class="panel-footer">
+                    <button class="btn-panel-cancelar" (click)="cerrarPanel()">Cancelar</button>
+                    <button class="btn-panel-guardar" (click)="guardarPanel()">Guardar</button>
+                </div>
+
+            </div>
+        </div> -->
+
+        <!-- BOTONES -->
         <div class="modal-footer">
 
             <!-- CASO 1: YA ESTA ASIGNADA -->
             <ng-container *ngIf="yaAsignada">
-
-                <!-- Boton Cancelar (siempre visible) -->
                 <button class="btn-cancelar" (click)="cerrar()">
                     <mat-icon>close</mat-icon> Cancelar
                 </button>
-
-                <!-- Boton Reasignar (solo visible cuando NO está en modo devolución) -->
                 <button *ngIf="!mostrarDevolucion" class="btn-reasignar" (click)="activarReasignacion()">
                     <mat-icon>refresh</mat-icon> Reasignar
                 </button>
-
-                <!-- Boton Devolver (solo visible cuando NO esta en modo devolución) -->
                 <button *ngIf="!mostrarDevolucion" class="btn-devolver" (click)="activarDevolucion()">
                     <mat-icon>assignment_return</mat-icon> Devolver
                 </button>
-
-                <!-- Boton Confirmar Devolución (visible cuando está en modo devolución y viene de Devolver) -->
                 <button *ngIf="mostrarDevolucion && !esReasignacion" class="btn-confirmar-devolver"
                     (click)="confirmarDevolver()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
                     <mat-icon>done_all</mat-icon> Confirmar Devolucion
                 </button>
-
-                <!-- Boton Confirmar Reasignación (visible cuando está en modo devolución y viene de Reasignar) -->
                 <button *ngIf="mostrarDevolucion && esReasignacion" class="btn-confirmar-reasignar"
                     (click)="confirmarReasignar()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
                     <mat-icon>refresh</mat-icon> Confirmar Reasignacion
                 </button>
-
             </ng-container>
 
             <!-- CASO 2: NO ESTA ASIGNADA (NUEVA ASIGNACION) -->
@@ -273,24 +451,62 @@
                     <mat-icon>close</mat-icon> Cancelar
                 </button>
 
-                <!-- Boton Volver Atras (solo visible cuando HAY seleccion) -->
-                <button *ngIf="tieneSeleccion()" class="btn-devolver" (click)="limpiarSeleccionTotal()">
-                    <mat-icon>keyboard_arrow_left</mat-icon> Volver
-                </button>
+                <!-- PASO 1: Selección de empleado -->
+                <ng-container *ngIf="paso === 1 && tieneSeleccion()">
+                    <!-- Boton Volver Atras (solo visible cuando HAY seleccion) -->
+                    <button class="btn-devolver" (click)="limpiarSeleccionTotal()">
+                        <mat-icon>keyboard_arrow_left</mat-icon> Volver
+                    </button>
 
-                <!-- Boton Asignar (solo visible cuando HAY seleccion) -->
-                <button *ngIf="tieneSeleccion()" class="btn-asignar" [disabled]="!puedeAsignar()" (click)="asignar()">
-                    <mat-icon>done_all</mat-icon> Asignar
-                </button>
+                    <!-- Boton Siguiente (ir a detalle) -->
+                    <button class="btn-asignar" [disabled]="!empleadoSeleccionado" (click)="irAlDetalle()">
+                        Siguiente <mat-icon>keyboard_arrow_right</mat-icon>
+                    </button>
+                </ng-container>
+
+                <!-- PASO 2: Detalle del equipo -->
+
+                <ng-container *ngIf="paso === 2">
+                    <button class="btn-devolver" (click)="paso = 1">
+                        <mat-icon>keyboard_arrow_left</mat-icon> Volver
+                    </button>
+                    <button class="btn-asignar" [disabled]="!puedeAsignar()" (click)="asignar()">
+                        <mat-icon>done_all</mat-icon> Asignar Equipo
+                    </button>
+                </ng-container>
+
+
+                <!-- <ng-container *ngIf="paso === 2">
+                    !-- Boton Volver (a paso 1) --
+                    <button class="btn-devolver" (click)="paso = 1">
+                        <mat-icon>keyboard_arrow_left</mat-icon> Volver
+                    </button>
+
+                    !-- Boton paso 3 --
+                    <button class="btn-asignar" (click)="irAlPaso3()">
+                        <mat-icon>keyboard_arrow_right</mat-icon> Siguiente
+                    </button>
+                </ng-container> -->
+
+                <!-- PASO 3: Software instalado -->
+                <!-- <ng-container *ngIf="paso === 3">
+                    <button class="btn-devolver" (click)="paso = 2">
+                        <mat-icon>keyboard_arrow_left</mat-icon> Volver
+                    </button>
+                    <button class="btn-asignar" [disabled]="!puedeAsignar()" (click)="asignar()">
+                        
+                        <mat-icon>done_all</mat-icon> Asignar Equipo
+                    </button>
+                </ng-container> -->
 
             </ng-container>
 
         </div>
+
         <!-- Mensaje de error -->
         <div *ngIf="fechaDevolucion && !isFechaDevolucionValida()" class="error-mensaje">
             <mat-icon>warning</mat-icon>
             La fecha de devolución no puede ser anterior a {{ equipo.fechaAsignacion | date:'dd/MM/yyyy' }}
         </div>
     </div>
-
 </div>

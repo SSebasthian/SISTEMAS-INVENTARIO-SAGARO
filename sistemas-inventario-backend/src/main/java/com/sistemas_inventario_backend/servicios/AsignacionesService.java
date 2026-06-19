@@ -25,6 +25,9 @@ public class AsignacionesService {
     private final ImpresoraRepository impresoraRepository;
     private final CatalogoRepository catalogoRepository;
     private final DispositivoTecnologico_TipoRepository tipoRepository;
+    private final EquipoDeComputo_DetalleRepository detalleRepository;
+
+
 
     // ========== ASIGNAR ==========
 
@@ -73,6 +76,17 @@ public class AsignacionesService {
         }
 
         Asignaciones guardada = asignacionRepository.save(asignacion);
+
+        // Si viene detalle, guardarlo asociado a la asignación
+        if (solicitud.getDetalle() != null) {
+            EquipoDeComputo_Detalle detalle = solicitud.getDetalle();
+            detalle.setAsignacion(guardada);
+            detalle.setEquipo(equipoDeComputoRepository.findById(guardada.getSerialActivo()).orElse(null));
+            detalle.setActivo(true);
+            detalleRepository.save(detalle);
+        }
+
+
         return convertirADTO(guardada);
     }
 
@@ -91,7 +105,17 @@ public class AsignacionesService {
             asignacion.setObservaciones(observacionesDevolucion);
         }
 
+
+        EquipoDeComputo_Detalle detalle = detalleRepository.findByAsignacionConsecutivo(asignacionId)
+                .orElse(null);
+        if (detalle != null) {
+            detalle.setActivo(false);
+            detalleRepository.save(detalle);
+        }
+
+
         asignacionRepository.save(asignacion);
+
     }
 
 

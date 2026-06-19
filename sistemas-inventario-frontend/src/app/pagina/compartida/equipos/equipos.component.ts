@@ -57,65 +57,65 @@ export class EquiposComponent implements OnInit {
 
   cargarEquipos(): void {
     this.consultarEquipoService.listarEquipos().subscribe({
-        next: (equipos) => {
-            const peticiones = equipos.map(equipo =>
-                this.consultarAsignacionesService.obtenerAsignacionActual(equipo.serial)
-            );
-            forkJoin(peticiones).subscribe({
-                next: (respuestas: any[]) => {
-                    this.equipos = equipos.map((equipo, index) => {  // ← "equipo" singular
-                        const asignacion = respuestas[index];
+      next: (equipos) => {
+        const peticiones = equipos.map(equipo =>
+          this.consultarAsignacionesService.obtenerAsignacionActual(equipo.serial)
+        );
+        forkJoin(peticiones).subscribe({
+          next: (respuestas: any[]) => {
+            this.equipos = equipos.map((equipo, index) => {  // ← "equipo" singular
+              const asignacion = respuestas[index];
 
-                        if (asignacion && asignacion.activo === true) {
-                            equipo.asignado = true;  // ✅ CORRECTO: "equipo" singular
+              if (asignacion && asignacion.activo === true) {
+                equipo.asignado = true;  // CORRECTO: "equipo" singular
 
-                            if (asignacion.empleadoNombre) {
-                                equipo.tipoAsignacion = 'empleado';
-                                equipo.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
-                                equipo.asignadoCedula = asignacion.empleadoCedula;
-                                equipo.asignadoArea = asignacion.areaDescripcion || null;
-                                equipo.fechaAsignacion = asignacion.fechaAsignacion;
-                            } else if (asignacion.areaDescripcion) {
-                                equipo.tipoAsignacion = 'area';
-                                equipo.asignadoA = asignacion.areaDescripcion;
-                                equipo.fechaAsignacion = asignacion.fechaAsignacion;
-                            }
-
-                            equipo.asignacionId = asignacion.codigo || asignacion.consecutivo;
-                            let obs = asignacion.observaciones || '';
-                            equipo.observacionesOriginal = obs.replace(/^ASIGNACION:\s*/, '');
-                            equipo.observaciones = asignacion.observaciones;
-                        } else {
-                            equipo.asignado = false;
-                            equipo.tipoAsignacion = null;
-                            equipo.asignadoA = null;
-                            equipo.asignadoCedula = null;
-                            equipo.asignadoArea = null;
-                            equipo.fechaAsignacion = null;
-                            equipo.observaciones = null;
-                            equipo.observacionesOriginal = null;
-                            equipo.asignacionId = null;
-                        }
-                        return equipo;
-                    });
-
-                    this.equiposFiltrados = [...this.equipos];
-                    this.actualizarPaginacion();
-                },
-                error: (err) => {
-                    console.error('Error al obtener asignaciones:', err);
-                    this.equipos = equipos;
-                    this.equiposFiltrados = [...this.equipos];
-                    this.actualizarPaginacion();
+                if (asignacion.empleadoNombre) {
+                  equipo.tipoAsignacion = 'empleado';
+                  equipo.asignadoA = `${asignacion.empleadoNombre} ${asignacion.empleadoApellido}`;
+                  equipo.asignadoCedula = asignacion.empleadoCedula;
+                  equipo.asignadoArea = asignacion.areaDescripcion || null;
+                  equipo.fechaAsignacion = asignacion.fechaAsignacion;
+                } else if (asignacion.areaDescripcion) {
+                  equipo.tipoAsignacion = 'area';
+                  equipo.asignadoA = asignacion.areaDescripcion;
+                  equipo.fechaAsignacion = asignacion.fechaAsignacion;
                 }
+
+                equipo.asignacionId = asignacion.codigo || asignacion.consecutivo;
+                let obs = asignacion.observaciones || '';
+                equipo.observacionesOriginal = obs.replace(/^ASIGNACION:\s*/, '');
+                equipo.observaciones = asignacion.observaciones;
+              } else {
+                equipo.asignado = false;
+                equipo.tipoAsignacion = null;
+                equipo.asignadoA = null;
+                equipo.asignadoCedula = null;
+                equipo.asignadoArea = null;
+                equipo.fechaAsignacion = null;
+                equipo.observaciones = null;
+                equipo.observacionesOriginal = null;
+                equipo.asignacionId = null;
+              }
+              return equipo;
             });
-        },
-        error: (err) => {
-            console.error('Error al cargar equipos:', err);
-            this.notificacionSnackbarService.error('Error', 'No se pudieron cargar los equipos');
-        }
+
+            this.equiposFiltrados = [...this.equipos];
+            this.actualizarPaginacion();
+          },
+          error: (err) => {
+            console.error('Error al obtener asignaciones:', err);
+            this.equipos = equipos;
+            this.equiposFiltrados = [...this.equipos];
+            this.actualizarPaginacion();
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error al cargar equipos:', err);
+        this.notificacionSnackbarService.error('Error', 'No se pudieron cargar los equipos');
+      }
     });
-}
+  }
 
 
 
@@ -787,22 +787,14 @@ export class EquiposComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result?.success) {
+        // El modal ya realizó la asignación y devolvió los datos
         if (result.devuelta) {
-          // Si fue una devolución
-          this.notificacionSnackbarService.success('Devolucion Realizada', 'Movil devuelto correctamente');
+          this.notificacionSnackbarService.success('Devolución Realizada', 'Equipo devuelto correctamente');
         } else {
-          // Si fue una asignación
-          this.registrarAsignacionesService.asignar(result.data).subscribe({
-            next: () => {
-              this.notificacionSnackbarService.success('Asignacion Realizada', 'Movil asignada correctamente');
-              this.cargarEquipos();
-            },
-            error: (err) => {
-              this.notificacionSnackbarService.error('Error', err.error?.error || 'Error al asignar');
-            }
-          });
+          // Solo mostrar mensaje de éxito, la asignación ya la hizo el modal
+          this.notificacionSnackbarService.success('Asignación Realizada', 'Equipo asignado correctamente');
         }
-        this.cargarEquipos(); // Recargar lista
+        this.cargarEquipos(); // Recargar lista para actualizar estado
       }
     });
 

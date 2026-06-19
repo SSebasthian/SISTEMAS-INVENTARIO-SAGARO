@@ -1,10 +1,10 @@
-<br><br>
+<!-- <br><br>
 <div class="contenido">
 
-    <!-- RESUMEN RECURSOS -->
+    !-- RESUMEN RECURSOS --
     <div class="resumen-recursos">
 
-        <!-- Tarjeta: Total Correos -->
+        !-- Tarjeta: Total Correos --
         <div class="tarjeta-resumen total" [class.activa]="detalleVisible === 'totalCorreos'">
             <button class="btn-detalle" (click)="toggleDetalle('totalCorreos')">
                 <mat-icon>
@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <!-- Tarjeta: Total Telefonos -->
+        !-- Tarjeta: Total Telefonos --
         <div class="tarjeta-resumen activos" [class.activa]="detalleVisible === 'totalTelefonos'">
             <button class="btn-detalle" (click)="toggleDetalle('totalTelefonos')">
                 <mat-icon>{{ detalleVisible === 'totalTelefonos' ? 'close' : 'whatshot' }}</mat-icon>
@@ -40,13 +40,13 @@
                 <h4><mat-icon>phone</mat-icon> Total Telefonos: {{ obtenerTotalTelefonos() }}</h4>
                 <div class="detalle-grid">
                     <p>Activos: {{ obtenerTelefonosActivos() }}</p>
-                    <!-- <p>Inactivos: {{ obtenerTelefonosInactivos() }}</p> -->
+                    !-- <p>Inactivos: {{ obtenerTelefonosInactivos() }}</p> --
                     <p>Asignados: {{ obtenerTelefonosAsignados() }}</p>
                 </div>
             </div>
         </div>
 
-        <!-- Tarjeta: Total Cuentas -->
+        !-- Tarjeta: Total Cuentas --
         <div class="tarjeta-resumen inactivos" [class.activa]="detalleVisible === 'totalCuentas'">
             <button class="btn-detalle" (click)="toggleDetalle('totalCuentas')">
                 <mat-icon>{{ detalleVisible === 'totalCuentas' ? 'close' : 'whatshot' }}</mat-icon>
@@ -66,7 +66,7 @@
             </div>
         </div>
 
-        <!-- Tarjeta: Asignaciones Totales (opcional) -->
+        !-- Tarjeta: Asignaciones Totales (opcional) --
         <div class="tarjeta-resumen disponibles" [class.activa]="detalleVisible === 'totalAsignaciones'">
             <button class="btn-detalle" (click)="toggleDetalle('totalAsignaciones')">
                 <mat-icon>{{ detalleVisible === 'totalAsignaciones' ? 'close' : 'whatshot' }}</mat-icon>
@@ -89,7 +89,7 @@
     </div>
 
 
-    <!-- FILTRO GENERAL -->
+!-- FILTRO GENERAL --
     <div class="botones-inicio">
         <button class="btn-limpiar-filtros">
             <mat-icon>clear_all</mat-icon>
@@ -134,4 +134,4 @@
 
         </table>
     </div>
-</div>
+</div> -->

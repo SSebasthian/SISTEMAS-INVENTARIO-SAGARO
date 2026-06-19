@@ -19,6 +19,7 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
   templateUrl: './asig-equipo.component.html',
   styleUrl: './asig-equipo.component.css'
 })
+
 export class AsigEquipoComponent {
 
 
@@ -46,6 +47,37 @@ export class AsigEquipoComponent {
 
   // Imagen
   imagenModeloSeleccionado: SafeResourceUrl = '';
+  paso: number = 1;  // 1 = selección de empleado, 2 = detalle del equipo
+  mostrarClaveAdmin: boolean = false;
+  mostrarClaveUsuario: boolean = false;
+  mostrarClaveAdicional: boolean = false;
+
+
+  // ==================== DETALLE DEL EQUIPO ====================
+  detalle: any = {
+    nombreEquipo: '',
+    ip: null,
+    nombreUsuario: '',
+    claveUsuario: '',
+    nombreUsuarioAdministrador: 'SISTEMAS',
+    claveUsuarioAdministrador: '',
+    nombreUsuarioAdicional: '',
+    claveUsuarioAdicional: ''
+  };
+
+  // ==================== SOFTWARE SELECCIONADO ====================
+  // softwareSeleccionado: any = {
+  //   antivirus: null,
+  //   backup: null,
+  //   office: null
+  // };
+
+  // ==================== PANEL INTERNO ====================
+  // panelActivo: boolean = false;
+  // panelTipo: string = ''; // 'antivirus' | 'backup' | 'office'
+  // panelTitulo: string = '';
+  // panelData: any = {};
+
 
 
 
@@ -135,6 +167,7 @@ export class AsigEquipoComponent {
     this.mostrarDevolucion = false;
     this.esReasignacion = false;
     this.errorFechaDevolucion = false;
+    this.paso = 1;
   }
 
 
@@ -186,49 +219,77 @@ export class AsigEquipoComponent {
   }
 
   asignar(): void {
-    // Validar que haya un empleado seleccionado
+    // Validaciones iniciales
+    if (this.yaAsignada) {
+      this.notificacionSnackbarService.warning('Equipo ya asignado', 'Este equipo ya tiene una asignación activa. Use Reasignar o Devolver.');
+      return;
+    }
+
     if (!this.empleadoSeleccionado) {
       this.notificacionSnackbarService.warning('Empleado requerido', 'Seleccione un empleado');
       return;
     }
 
-    // Validar que el empleado tenga cedula
     if (!this.empleadoSeleccionado.cedula || this.empleadoSeleccionado.cedula.trim() === '') {
-      this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene cedula valida');
+      this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene cédula válida');
       return;
     }
 
-    // Validar que el empleado tenga area
     if (!this.empleadoSeleccionado.area?.codigo) {
-      this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene un area asignada');
+      this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene un área asignada');
       return;
     }
 
-    // Validar fecha de asignacion
     if (!this.fechaAsignacion) {
-      this.notificacionSnackbarService.warning('Fecha requerida', 'Seleccione una fecha de asignacion');
+      this.notificacionSnackbarService.warning('Fecha requerida', 'Seleccione una fecha de asignación');
       return;
     }
 
-    let observacionesFormateadas = '';
-    if (this.observaciones && this.observaciones.trim() !== '') {
-      observacionesFormateadas = `ASIGNACION: ${this.observaciones}`;
-    } else {
-      observacionesFormateadas = 'ASIGNACION: SIN OBSERVACIONES';
-    }
+    // Formatear observaciones
+    const observacionesFormateadas = this.observaciones?.trim()
+      ? `ASIGNACION: ${this.observaciones}`
+      : 'ASIGNACION: SIN OBSERVACIONES';
 
-    const asignacionData = {
+    // Armar el objeto detalle
+    const detalleData = {
+      nombreEquipo: this.detalle?.nombreEquipo || '',
+      nombreUsuario: this.detalle?.nombreUsuario || '',
+      claveUsuario: this.detalle?.claveUsuario || '',  
+      nombreUsuarioAdministrador: this.detalle?.nombreUsuarioAdministrador || '',
+      claveUsuarioAdministrador: this.detalle?.claveUsuarioAdministrador || '',
+      nombreUsuarioAdicional: this.detalle?.nombreUsuarioAdicional || '',
+      claveUsuarioAdicional: this.detalle?.claveUsuarioAdicional || '',
+      ip: this.detalle?.ip || null
+    };
+
+    // Payload completo
+    const asignacionPayload = {
       empleadoCedula: this.empleadoSeleccionado.cedula,
-      areaCodigo: this.empleadoSeleccionado.area.codigo,  // ← Enviar el area del empleado
-      catalogoCodigo: 1,  // Dispositivo de Computo
+      areaCodigo: this.empleadoSeleccionado.area.codigo,
+      catalogoCodigo: 1,
       tipoCodigo: this.equipo.tipo?.codigo,
       serialActivo: this.equipo.serial,
       fechaAsignacion: this.fechaAsignacion,
-      observaciones: observacionesFormateadas
+      observaciones: observacionesFormateadas,
+      detalle: detalleData
     };
 
-    this.dialogRef.close({ success: true, data: asignacionData });
+    // Enviar al servicio
+    this.registrarAsignacionesService.asignar(asignacionPayload).subscribe({
+      next: (resp) => {
+        //  Solo cerrar el modal aquí, cuando la respuesta es exitosa
+        this.notificacionSnackbarService.success('Exito', 'Equipo asignado con detalle');
+        this.dialogRef.close({ success: true, data: resp });
+      },
+      error: (err) => {
+        //  Manejar el error sin cerrar el modal (el usuario puede corregir)
+        const mensaje = err.error?.error || err.error?.message || 'Error al asignar';
+        // No cerrar el modal para permitir que el usuario corrija los datos
+      }
+    });
+
   }
+
 
   activarDevolucion(): void {
     this.mostrarDevolucion = true;
@@ -417,4 +478,97 @@ export class AsigEquipoComponent {
     // Si esta asignada y no en modo devolución
     return 'Equipo Asignado';
   }
+
+  irAlDetalle(): void {
+    this.paso = 2;
+  }
+
+  irAlPaso3(): void {
+    this.paso = 3;
+  }
+
+  cambiarPaso(nuevoPaso: number): void {
+    this.paso = nuevoPaso;
+  }
+
+  // Metodos para alternar
+  toggleClaveAdmin(): void {
+    this.mostrarClaveAdmin = !this.mostrarClaveAdmin;
+  }
+  toggleClaveUsuario(): void {
+    this.mostrarClaveUsuario = !this.mostrarClaveUsuario;
+  }
+  toggleClaveAdicional(): void {
+    this.mostrarClaveAdicional = !this.mostrarClaveAdicional;
+  }
+
+
+
+
+  // ==================== MÉTODOS ====================
+  //abrirPanel(tipo: string): void {
+  //  this.panelActivo = true;
+  //  this.panelTipo = tipo;
+  //
+  //  // Cargar datos existentes si los hay
+  //  if (tipo === 'antivirus' && this.softwareSeleccionado.antivirus) {
+  //    this.panelData = { ...this.softwareSeleccionado.antivirus };
+  //    this.panelTitulo = 'Editar Antivirus';
+  //  } else if (tipo === 'backup' && this.softwareSeleccionado.backup) {
+  //    this.panelData = { ...this.softwareSeleccionado.backup };
+  //    this.panelTitulo = 'Editar Backup';
+  //  } else if (tipo === 'office' && this.softwareSeleccionado.office) {
+  //    this.panelData = { ...this.softwareSeleccionado.office };
+  //    this.panelTitulo = 'Editar Office';
+  //  } else {
+  //    // Nuevo
+  //    this.panelData = {
+  //      nombre: '',
+  //      politica: '',
+  //      programa: '',
+  //      frecuencia: '',
+  //      ubicacion: '',
+  //      licencia: ''
+  //    };
+  //    this.panelTitulo = tipo === 'antivirus' ? 'Agregar Antivirus' :
+  //      tipo === 'backup' ? 'Agregar Backup' :
+  //        'Agregar Office';
+  //  }
+  //}
+
+  //cerrarPanel(): void {
+  //  this.panelActivo = false;
+  //  this.panelData = {};
+  //}
+  //
+  //guardarPanel(): void {
+  //  // Validación simple
+  //  if (!this.panelData.nombre) {
+  //    // Puedes mostrar un snackbar o alerta
+  //    return;
+  //  }
+  //
+  //  // Guardar según tipo
+  //  if (this.panelTipo === 'antivirus') {
+  //    this.softwareSeleccionado.antivirus = {
+  //      nombre: this.panelData.nombre,
+  //      politica: this.panelData.politica || 'Sin política'
+  //    };
+  //  } else if (this.panelTipo === 'backup') {
+  //    this.softwareSeleccionado.backup = {
+  //      nombre: this.panelData.nombre,
+  //      programa: this.panelData.programa || 'N/A',
+  //      frecuencia: this.panelData.frecuencia || 'N/A',
+  //      ubicacion: this.panelData.ubicacion || 'N/A'
+  //    };
+  //  } else if (this.panelTipo === 'office') {
+  //    this.softwareSeleccionado.office = {
+  //      nombre: this.panelData.nombre,
+  //      licencia: this.panelData.licencia || 'No especificada'
+  //    };
+  //  }
+  //
+  //  this.cerrarPanel();
+  //}
+
 }

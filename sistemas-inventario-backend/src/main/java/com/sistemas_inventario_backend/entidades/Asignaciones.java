@@ -42,4 +42,7 @@ public class Asignaciones {
 
     @Column(nullable = false)
     private Boolean activo = true;
+
+    @OneToOne(mappedBy = "asignacion")
+    private EquipoDeComputo_Detalle detalle;
 }
