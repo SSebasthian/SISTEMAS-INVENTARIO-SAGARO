@@ -13,6 +13,9 @@ import { ChangeDetectorRef } from '@angular/core';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
 import { ConsultarAntivirusService } from '../../../arquitectura/servicio/consulta/ConsultarAntivirus.service';
 import { ConsultarAntivirusPoliticaService } from '../../../arquitectura/servicio/consulta/ConsultarAntivirusPolitica.service';
+import { ConsultarBackupService } from '../../../arquitectura/servicio/consulta/ConsultarBackup.service';
+import { RegistroBackupInformacionService } from '../../../arquitectura/servicio/registro/RegistroBackupInformacion.service';
+import { ConsultarBackupInformacionService } from '../../../arquitectura/servicio/consulta/ConsultarBackupInformacion.service';
 
 
 
@@ -26,9 +29,11 @@ import { ConsultarAntivirusPoliticaService } from '../../../arquitectura/servici
 export class AsigEquipoComponent {
 
 
+
   // ================================================================
   // PROPIEDADES DEL COMPONENTE
   // ================================================================
+
 
   // Datos del equipo y asignacion
   equipo: any;
@@ -37,14 +42,17 @@ export class AsigEquipoComponent {
   mostrarDevolucion: boolean = false;
   errorFechaDevolucion: boolean = false;
 
+
   // Fechas
   fechaAsignacion: string = new Date().toISOString().split('T')[0];
   fechaDevolucion: string = '';
 
-  // Textos
+
+  // Textos y observaciones 
   observaciones: string = '';
   observacionesOriginal: string = '';
   detalleDevolucion: string = '';
+
 
   // Empleados
   empleados: EmpleadoLlamarDatos[] = [];
@@ -52,11 +60,14 @@ export class AsigEquipoComponent {
   busquedaEmpleado: string = '';
   empleadoSeleccionado: EmpleadoLlamarDatos | null = null;
 
+
   // Imagen
   imagenModeloSeleccionado: SafeResourceUrl = '';
 
+
   // Navegacion por pasos - ASIGNACION EQUIPO
   paso: number = 1;
+
 
   // Visibilidad de claves - ASIGNACION EQUIPO
   mostrarClaveAdmin: boolean = false;
@@ -64,7 +75,7 @@ export class AsigEquipoComponent {
   mostrarClaveAdicional: boolean = false;
 
 
-  // ==================== DETALLE DEL EQUIPO ====================
+  // DETALLE DEL EQUIPO (PASO 2)
   detalle: any = {
     nombreEquipo: '',
     ip: null,
@@ -76,25 +87,47 @@ export class AsigEquipoComponent {
     claveUsuarioAdicional: ''
   };
 
-  // Antivirus y politicas
+
+  // CATALOGOS DE SOFTWARE (ANTIVIRUS Y BACKUP)
   antivirusList: any[] = [];
   politicasList: any[] = [];
+  backupList: any[] = [];
+  backupInformacionList: any[] = [];
 
 
-  // Software seleccionado 
+  // SOFTWARE SELECCIONADO (RESUMEN PARA EL PASO 3)
   softwareSeleccionado: any = {
     antivirus: null,
-    // backup: null,
+    backup: null,
   };
 
-  // Panel interno para agregar/editar software
+
+  // PANEL INTERNO (AGREGAR/EDITAR SOFTWARE)
   panelActivo: boolean = false;
   panelTipo: string = ''; // 'antivirus' | 'backup' 
   panelTitulo: string = '';
+
+
+  // Datos del panel para antivirus
   panelData: any = {
     antivirusCodigo: null,
     politicaCodigo: null,
   };
+
+
+  // Datos del panel para backup (incluye multiples ubicaciones)
+  modoUbicacion: string = 'normales';
+  errorDia: string = '';
+  backupFormData: any = {
+    backupCodigo: null,
+    nombre: '',
+    programa: '',
+    frecuencia: '',
+    ubicaciones: [''],
+    ubicacionesExcluidas: [''],
+    dia: null
+  };
+
 
 
 
@@ -108,26 +141,29 @@ export class AsigEquipoComponent {
     private notificacionSnackbarService: NotificacionSnackbarService,
     private consultarAntivirusService: ConsultarAntivirusService,
     private consultarAntivirusPoliticaService: ConsultarAntivirusPoliticaService,
+    private consultarBackupService: ConsultarBackupService,
+    private consultarBackupInformacionService: ConsultarBackupInformacionService,
+    private registroBackupInformacionService: RegistroBackupInformacionService,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef
   ) {
     this.equipo = data.equipo;
-
-    // Verificar si ya esta asignada
     this.yaAsignada = this.equipo.asignado === true;
+
     if (this.yaAsignada) {
       let obs = this.equipo.observaciones || '';
       this.observacionesOriginal = obs.replace(/^ASIGNACION:\s*/, '');
     }
 
+    // Carga inicial de datos
     this.cargarEmpleados();
     this.cargarImagenModelo();
   }
 
 
 
-
   // ==================== CARGA DE DATOS ====================
+
 
   cargarEmpleados(): void {
     this.empleadoService.listarEmpleadosActivos().subscribe({
@@ -140,6 +176,7 @@ export class AsigEquipoComponent {
       }
     });
   }
+
 
   cargarImagenModelo(): void {
     if (this.equipo?.modelo?.rutaImagen) {
@@ -164,6 +201,7 @@ export class AsigEquipoComponent {
     });
   }
 
+
   cargarPoliticasPorAntivirus(antivirusCodigo: number): void {
     if (antivirusCodigo) {
       this.consultarAntivirusPoliticaService.listarPorAntivirus(antivirusCodigo).subscribe({
@@ -177,6 +215,36 @@ export class AsigEquipoComponent {
       });
     } else {
       this.politicasList = [];
+    }
+  }
+
+
+  cargarBackups(): void {
+    this.consultarBackupService.listarActivos().subscribe({
+      next: (data) => {
+        this.backupList = data;
+      },
+      error: () => {
+        console.warn('No se pudieron cargar backups');
+        this.backupList = [];
+      }
+    });
+  }
+
+
+  cargarBackupInformacion(backupCodigo: number): void {
+    if (backupCodigo) {
+      this.consultarBackupInformacionService.listarPorBackup(backupCodigo).subscribe({
+        next: (data) => {
+          this.backupInformacionList = data;
+        },
+        error: () => {
+          this.notificacionSnackbarService.error('Error', 'No se pudo cargar información de backup');
+          this.backupInformacionList = [];
+        }
+      });
+    } else {
+      this.backupInformacionList = [];
     }
   }
 
@@ -201,11 +269,6 @@ export class AsigEquipoComponent {
   }
 
 
-  limpiarSeleccion(): void {
-    this.empleadoSeleccionado = null;
-  }
-
-
   limpiarSeleccionTotal(): void {
     this.empleadoSeleccionado = null;
     this.busquedaEmpleado = '';
@@ -226,6 +289,7 @@ export class AsigEquipoComponent {
     return this.empleadoSeleccionado !== null;
   }
 
+
   puedeAsignar(): boolean {
     return this.empleadoSeleccionado !== null && !!this.fechaAsignacion;
   }
@@ -242,7 +306,7 @@ export class AsigEquipoComponent {
       ? this.equipo.fechaAsignacion
       : this.fechaAsignacion;
 
-    if (!fechaAsignacionStr) return true; // Si no hay fecha de asignación, no validar
+    if (!fechaAsignacionStr) return true; // Si no hay fecha de asignacion, no validar
 
     const fechaAsignacion = new Date(fechaAsignacionStr);
     const fechaDevolucion = new Date(this.fechaDevolucion);
@@ -275,21 +339,19 @@ export class AsigEquipoComponent {
     this.paso = 3;
   }
 
-  cambiarPaso(nuevoPaso: number): void {
-    this.paso = nuevoPaso;
-  }
-
 
   // ==================== ACCIONES PRINCIPALES ====================
+
 
   cerrar(): void {
     this.dialogRef.close({ success: false });
   }
 
+
   asignar(): void {
     // Validaciones iniciales
     if (this.yaAsignada) {
-      this.notificacionSnackbarService.warning('Equipo ya asignado', 'Este equipo ya tiene una asignación activa. Use Reasignar o Devolver.');
+      this.notificacionSnackbarService.warning('Equipo ya asignado', 'Este equipo ya tiene una asignacion activa. Use Reasignar o Devolver.');
       return;
     }
 
@@ -299,17 +361,17 @@ export class AsigEquipoComponent {
     }
 
     if (!this.empleadoSeleccionado.cedula || this.empleadoSeleccionado.cedula.trim() === '') {
-      this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene cédula válida');
+      this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene cedula valida');
       return;
     }
 
     if (!this.empleadoSeleccionado.area?.codigo) {
-      this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene un área asignada');
+      this.notificacionSnackbarService.error('Error', 'El empleado seleccionado no tiene un area asignada');
       return;
     }
 
     if (!this.fechaAsignacion) {
-      this.notificacionSnackbarService.warning('Fecha requerida', 'Seleccione una fecha de asignación');
+      this.notificacionSnackbarService.warning('Fecha requerida', 'Seleccione una fecha de asignacion');
       return;
     }
 
@@ -418,15 +480,6 @@ export class AsigEquipoComponent {
   }
 
 
-  // Metodo para devolver (reiniciar seleccion)
-  devolver(): void {
-    this.empleadoSeleccionado = null;
-    this.busquedaEmpleado = '';
-    this.empleadosFiltrados = this.empleados; //  Restaurar lista completa
-    this.fechaDevolucion = '';
-  }
-
-
   // Activar modo reasignacion (para Reasignar)
   activarReasignacion(): void {
     this.mostrarDevolucion = true;
@@ -434,7 +487,6 @@ export class AsigEquipoComponent {
     this.fechaDevolucion = new Date().toISOString().split('T')[0];
     this.detalleDevolucion = '';
   }
-
 
 
   confirmarReasignar(): void {
@@ -525,8 +577,150 @@ export class AsigEquipoComponent {
   }
 
 
+  // Metodo para devolver (reiniciar seleccion)
+  devolver(): void {
+    this.empleadoSeleccionado = null;
+    this.busquedaEmpleado = '';
+    this.empleadosFiltrados = this.empleados; //  Restaurar lista completa
+    this.fechaDevolucion = '';
+  }
 
-  // AUXILIARES
+
+
+
+  // ====== METODOS PARA UBICACIONES (BACKUP) =====
+
+
+
+  // Agregar una nueva ubicación vacía
+  agregarUbicacion(): void {
+    this.backupFormData.ubicaciones.push('');
+  }
+
+
+  // Eliminar una ubicación por índice
+  eliminarUbicacion(index: number): void {
+    if (this.backupFormData.ubicaciones.length > 1) {
+      this.backupFormData.ubicaciones.splice(index, 1);
+    } else {
+      this.notificacionSnackbarService.warning('Advertencia', 'Debe haber al menos una ubicacion');
+    }
+  }
+
+
+  agregarUbicacionExcluida(): void {
+    this.backupFormData.ubicacionesExcluidas.push('');
+  }
+
+
+  // Eliminar una ubicación excluida por índice
+  eliminarUbicacionExcluida(index: number): void {
+    if (this.backupFormData.ubicacionesExcluidas.length > 1) {
+      this.backupFormData.ubicacionesExcluidas.splice(index, 1);
+    } else {
+      this.notificacionSnackbarService.warning('Advertencia', 'Debe haber al menos una ubicacion excluida');
+    }
+  }
+
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
+
+  cambiarModoUbicacion(modo: string): void {
+    this.modoUbicacion = modo;
+  }
+
+  agregarUbicacionSegunModo(): void {
+    if (this.modoUbicacion === 'normales') {
+      this.agregarUbicacion();
+    } else {
+      this.agregarUbicacionExcluida();
+    }
+  }
+
+
+  eliminarUbicacionSegunModo(index: number): void {
+    if (this.modoUbicacion === 'normales') {
+      this.eliminarUbicacion(index);
+    } else {
+      this.eliminarUbicacionExcluida(index);
+    }
+  }
+
+
+  validarDia(): void {
+    const frecuencia = this.backupFormData.frecuencia;
+    const dia = this.backupFormData.dia;
+    this.errorDia = '';
+
+    if (!frecuencia) return;
+
+    // Si es DIARIO, no se permite día (se deshabilita el input)
+    if (frecuencia === 'DIARIO') {
+      this.backupFormData.dia = null;
+      this.errorDia = 'No se requiere día para frecuencia DIARIO';
+      return;
+    }
+
+    if (dia === null || dia === undefined || dia === '') return;
+
+    const numDia = Number(dia);
+    if (isNaN(numDia)) {
+      this.errorDia = 'Ingrese un número válido';
+      return;
+    }
+
+    if (frecuencia === 'SEMANAL') {
+      if (numDia < 1 || numDia > 7) {
+        this.errorDia = 'Para frecuencia SEMANAL, el día debe ser entre 1 y 7';
+      }
+    } else if (frecuencia === 'MENSUAL' || frecuencia === 'MANUAL') {
+      if (numDia < 1 || numDia > 31) {
+        this.errorDia = 'Para frecuencia MENSUAL o MANUAL, el día debe ser entre 1 y 31';
+      }
+    }
+  }
+
+
+
+
+  // AUXILIARES 
+
+
+  actualizarNombreBackup(): void {
+    const codigo = this.backupFormData.backupCodigo !== null && this.backupFormData.backupCodigo !== undefined
+      ? Number(this.backupFormData.backupCodigo)
+      : null;
+
+    const nombreEquipo = this.detalle?.nombreEquipo || '';
+
+    if (codigo === 1) {
+      this.backupFormData.nombre = nombreEquipo ? `${nombreEquipo}-FD` : '';
+    } else if (codigo === null || codigo === 0) {
+      this.backupFormData.nombre = '';
+      this.backupFormData.frecuencia = '';
+      this.backupFormData.dia = null;
+      this.backupFormData.ubicaciones = [''];
+      this.backupFormData.ubicacionesExcluidas = [''];
+      this.errorDia = '';
+      this.validarDia();
+    } else {
+      this.backupFormData.nombre = nombreEquipo;
+    }
+  }
+
+
+  get backupDisabled(): boolean {
+    const codigo = this.backupFormData.backupCodigo !== null && this.backupFormData.backupCodigo !== undefined
+      ? Number(this.backupFormData.backupCodigo)
+      : null;
+    // Deshabilitar si no hay selección (null) o si es código 0 (NO APLICA)
+    return codigo === null || codigo === 0;
+  }
+
+
 
 
   // Metodo para obtener el titulo segun el estado
@@ -555,15 +749,15 @@ export class AsigEquipoComponent {
     this.mostrarClaveAdmin = !this.mostrarClaveAdmin;
   }
 
+
   toggleClaveUsuario(): void {
     this.mostrarClaveUsuario = !this.mostrarClaveUsuario;
   }
 
+
   toggleClaveAdicional(): void {
     this.mostrarClaveAdicional = !this.mostrarClaveAdicional;
   }
-
-
 
 
 
@@ -587,14 +781,70 @@ export class AsigEquipoComponent {
             this.cerrarPanel();
           }
         });
-      } else {
-        this.inicializarPanelAntivirus();
       }
-    } else {
-      // Por ahora, solo soportamos antivirus
-      this.cerrarPanel();
-      return;
+
+    } else if (tipo === 'backup') {
+      if (this.backupList.length === 0) {
+        this.cargarBackups();
+      }
+
+      // Si hay un backup seleccionado
+      if (this.softwareSeleccionado.backup) {
+        // Verificar si es NO APLICA
+        if (this.softwareSeleccionado.backup.esNoAplica) {
+          this.backupFormData.backupCodigo = 0;
+          this.backupFormData.nombre = '';
+          this.backupFormData.programa = '';
+          this.backupFormData.frecuencia = '';
+          this.backupFormData.dia = null;
+          this.backupFormData.ubicaciones = [''];
+          this.backupFormData.ubicacionesExcluidas = [''];
+          this.backupInformacionList = [];
+          this.panelTitulo = 'Editar Backup (No Aplica)';
+        } else {
+          // Cargar ambos campos por separado
+          const ubicacionStr = this.softwareSeleccionado.backup.ubicacion || '';
+          const ubicacionExcluidaStr = this.softwareSeleccionado.backup.ubicacionExcluida || '';
+          const { normales, excluidas } = this.ubicacionParse(ubicacionStr, ubicacionExcluidaStr);
+
+          this.backupFormData.backupCodigo = this.softwareSeleccionado.backup.backupCodigo || null;
+          this.backupFormData.nombre = this.softwareSeleccionado.backup.nombreBackup || '';
+          this.backupFormData.programa = this.softwareSeleccionado.backup.programa || '';
+          this.backupFormData.frecuencia = this.softwareSeleccionado.backup.frecuencia || '';
+          this.backupFormData.dia = this.softwareSeleccionado.backup.dia || null;
+          this.backupFormData.ubicaciones = normales;
+          this.backupFormData.ubicacionesExcluidas = excluidas;
+
+          if (this.backupFormData.backupCodigo) {
+            this.cargarBackupInformacion(this.backupFormData.backupCodigo);
+          }
+          this.panelTitulo = 'Editar Backup';
+        }
+      } else {
+        // Nuevo backup
+        this.backupFormData = {
+          backupCodigo: null,
+          nombre: '',
+          programa: '',
+          frecuencia: '',
+          ubicaciones: [''],
+          ubicacionesExcluidas: [''],
+          dia: null
+        };
+        this.actualizarNombreBackup();
+        this.backupInformacionList = [];
+        this.panelTitulo = 'Agregar Backup';
+      }
     }
+  }
+
+  private ubicacionParse(ubicacionStr: string, ubicacionExcluidaStr: string): { normales: string[]; excluidas: string[] } {
+    const normales = ubicacionStr ? ubicacionStr.split(';').filter(s => s.trim() !== '') : [''];
+    const excluidas = ubicacionExcluidaStr ? ubicacionExcluidaStr.split(';').filter(s => s.trim() !== '') : [''];
+    return {
+      normales: normales.length > 0 ? normales : [''],
+      excluidas: excluidas.length > 0 ? excluidas : ['']
+    };
   }
 
 
@@ -623,8 +873,19 @@ export class AsigEquipoComponent {
 
   cerrarPanel(): void {
     this.panelActivo = false;
-    this.panelData = {};
+    this.panelData = { antivirusCodigo: null, politicaCodigo: null };
+    this.backupFormData = {
+      backupCodigo: null,
+      nombre: '',
+      programa: '',
+      frecuencia: '',
+      ubicaciones: [''],
+      ubicacionesExcluidas: [''],
+      dia: null
+    };
+    this.modoUbicacion = 'normales';
   }
+
 
   guardarPanel(): void {
     if (this.panelTipo === 'antivirus') {
@@ -648,11 +909,141 @@ export class AsigEquipoComponent {
       this.cdr.detectChanges();
 
       this.cerrarPanel();
-    } else {
-      // Si no es antivirus, cerrar sin hacer nada
-      this.cerrarPanel();
+    } else if (this.panelTipo === 'backup') {
+      const codigo = this.backupFormData.backupCodigo !== null && this.backupFormData.backupCodigo !== undefined
+        ? Number(this.backupFormData.backupCodigo)
+        : null;
+
+      // Sin selección → limpiar
+      if (codigo === null) {
+        this.softwareSeleccionado.backup = null;
+        this.cdr.detectChanges();
+        this.cerrarPanel();
+        return;
+      }
+
+      // NO APLICA → objeto especial
+      if (codigo === 0) {
+        this.softwareSeleccionado.backup = {
+          esNoAplica: true,
+          nombre: 'NO APLICA',
+          nombreBackup: '',
+          frecuencia: '',
+          dia: null,
+          ubicacion: '',
+          ubicacionExcluida: ''
+        };
+        this.cdr.detectChanges();
+        this.cerrarPanel();
+        return;
+      }
+
+      // Validar campos obligatorios
+      if (!this.backupFormData.nombre || !this.backupFormData.frecuencia) {
+        this.notificacionSnackbarService.warning('Campos incompletos', 'Complete: Nombre y Frecuencia');
+        return;
+      }
+
+      const frecuencia = this.backupFormData.frecuencia;
+      const dia = this.backupFormData.dia;
+
+      if (frecuencia !== 'DIARIO') {
+        if (dia === null || dia === undefined) {
+          this.notificacionSnackbarService.warning('Dia requerido', 'Debe ingresar un dia para la frecuencia seleccionada');
+          return;
+        }
+        if (frecuencia === 'SEMANAL' && (dia < 1 || dia > 7)) {
+          this.notificacionSnackbarService.warning('Dia invalido', 'Para frecuencia SEMANAL, el dia debe ser entre 1 y 7');
+          return;
+        }
+        if ((frecuencia === 'MENSUAL' || frecuencia === 'MANUAL') && (dia < 1 || dia > 31)) {
+          this.notificacionSnackbarService.warning('Dia invalido', 'Para frecuencia MENSUAL o MANUAL, el dia debe ser entre 1 y 31');
+          return;
+        }
+      } else {
+        // Si es DIARIO, el día no es necesario, pero si el usuario ingresó uno, lo ignoramos o lo ponemos a null
+        // Podemos forzar a null para que no se guarde
+        this.backupFormData.dia = null;
+      }
+
+
+      // Obtener nombre del programa seleccionado
+      const programaSeleccionado = this.backupList.find(b => b.codigo === codigo);
+      const nombrePrograma = programaSeleccionado?.nombre || 'Sin programa';
+
+      //  Limpiar y unir ubicaciones (cada lista por separado)
+      const ubicacionesFiltradas = this.backupFormData.ubicaciones.filter((u: string) => u.trim() !== '');
+      const excluidasFiltradas = this.backupFormData.ubicacionesExcluidas.filter((u: string) => u.trim() !== '');
+
+      const ubicacionStr = ubicacionesFiltradas.join(';') || null;
+      const ubicacionExcluidaStr = excluidasFiltradas.join(';') || null;
+
+      const infoPayload = {
+        nombre: this.backupFormData.nombre,
+        frecuencia: this.backupFormData.frecuencia,
+        ubicacion: ubicacionStr,
+        ubicacionExcluida: ubicacionExcluidaStr, // Campo separado
+        dia: this.backupFormData.dia || null,
+        backup: { codigo: codigo },
+        activo: true
+      };
+
+      // Verificar si estamos editando
+      const esEdicion = this.softwareSeleccionado.backup?.backupInformacionCodigo != null;
+
+      if (esEdicion) {
+        const id = this.softwareSeleccionado.backup.backupInformacionCodigo;
+        this.registroBackupInformacionService.actualizar(id, infoPayload).subscribe({
+          next: (resp) => {
+            this.softwareSeleccionado.backup = {
+              backupCodigo: codigo,
+              backupInformacionCodigo: id,
+              nombre: nombrePrograma,
+              nombreBackup: resp.nombre,
+              programa: this.backupFormData.programa || 'N/A',
+              frecuencia: resp.frecuencia,
+              ubicacion: resp.ubicacion,
+              ubicacionExcluida: resp.ubicacionExcluida, // Incluir excluidas
+              dia: resp.dia,
+              esNoAplica: false
+            };
+            this.cdr.detectChanges();
+            this.notificacionSnackbarService.success('Exito', 'Backup actualizado');
+            this.cerrarPanel();
+          },
+          error: (err) => {
+            const mensaje = err.error?.message || 'Error al actualizar información de backup';
+            this.notificacionSnackbarService.error('Error', mensaje);
+          }
+        });
+      } else {
+        this.registroBackupInformacionService.guardar(infoPayload).subscribe({
+          next: (resp) => {
+            this.softwareSeleccionado.backup = {
+              backupCodigo: codigo,
+              backupInformacionCodigo: resp.codigo,
+              nombre: nombrePrograma,
+              nombreBackup: resp.nombre,
+              programa: this.backupFormData.programa || 'N/A',
+              frecuencia: resp.frecuencia,
+              ubicacion: resp.ubicacion,
+              ubicacionExcluida: resp.ubicacionExcluida,
+              dia: resp.dia,
+              esNoAplica: false
+            };
+            this.cdr.detectChanges();
+            this.notificacionSnackbarService.success('Exito', 'Backup guardado');
+            this.cerrarPanel();
+          },
+          error: (err) => {
+            const mensaje = err.error?.message || 'Error al guardar información de backup';
+            this.notificacionSnackbarService.error('Error', mensaje);
+          }
+        });
+      }
     }
   }
+
 
 
 
