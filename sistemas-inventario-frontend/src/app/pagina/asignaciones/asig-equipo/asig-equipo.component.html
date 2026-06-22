@@ -184,7 +184,7 @@
                             </ng-container>
                         </div>
 
-                        <!-- Contenido según paso (solo si hay empleado seleccionado) -->
+                        <!-- Contenido segun paso (solo si hay empleado seleccionado) -->
                         <ng-container *ngIf="empleadoSeleccionado">
 
                             <!-- PASO 1: Fechas y descripción -->
@@ -227,7 +227,8 @@
                                         <!-- Nombre Equipo -->
                                         <div class="campo-detalle">
                                             <label>NOMBRE EQUIPO</label>
-                                            <input [(ngModel)]="detalle.nombreEquipo" (input)="detalle.nombreEquipo = detalle.nombreEquipo.toUpperCase()" />
+                                            <input [(ngModel)]="detalle.nombreEquipo"
+                                                (input)="detalle.nombreEquipo = detalle.nombreEquipo.toUpperCase()" />
                                         </div>
 
                                         <!-- IP (1-255) -->
@@ -240,7 +241,8 @@
 
                                         <div class="campo-detalle">
                                             <label>USUARIO ADMIN</label>
-                                            <input [(ngModel)]="detalle.nombreUsuarioAdministrador" (input)="detalle.nombreUsuarioAdministrador = detalle.nombreUsuarioAdministrador.toUpperCase()" />
+                                            <input [(ngModel)]="detalle.nombreUsuarioAdministrador"
+                                                (input)="detalle.nombreUsuarioAdministrador = detalle.nombreUsuarioAdministrador.toUpperCase()" />
                                         </div>
 
                                         <div class="campo-detalle">
@@ -256,7 +258,8 @@
 
                                         <div class="campo-detalle">
                                             <label>USUARIO</label>
-                                            <input [(ngModel)]="detalle.nombreUsuario" (input)="detalle.nombreUsuario = detalle.nombreUsuario.toUpperCase()" />
+                                            <input [(ngModel)]="detalle.nombreUsuario"
+                                                (input)="detalle.nombreUsuario = detalle.nombreUsuario.toUpperCase()" />
                                         </div>
 
                                         <div class="campo-detalle">
@@ -273,7 +276,8 @@
 
                                         <div class="campo-detalle">
                                             <label>USUARIO ADICIONAL</label>
-                                            <input [(ngModel)]="detalle.nombreUsuarioAdicional" (input)="detalle.nombreUsuarioAdicional = detalle.nombreUsuarioAdicional.toUpperCase()" />
+                                            <input [(ngModel)]="detalle.nombreUsuarioAdicional"
+                                                (input)="detalle.nombreUsuarioAdicional = detalle.nombreUsuarioAdicional.toUpperCase()" />
                                         </div>
 
                                         <div class="campo-detalle">
@@ -292,7 +296,7 @@
 
                             <!-- PASO 3: SOFTWARE INSTALADO -->
 
-                            <!-- <div *ngIf="paso === 3" class="seccion-detalle">
+                            <div *ngIf="paso === 3" class="seccion-detalle">
                                 <div class="seleccion-detalle">
                                     <div class="detalle-campo">
                                         <mat-icon>layers</mat-icon>
@@ -302,22 +306,25 @@
 
                                 <div class="detalle-grid">
 
-                                    !-- Antivirus --
-                                    <div class="software-item" [class.seleccionado]="softwareSeleccionado.antivirus">
-                                        <div class="software-header">
-                                            <mat-icon>security</mat-icon>
-                                            <span>Antivirus</span>
-                                            <button class="btn-soft" (click)="abrirPanel('antivirus')">
-                                                {{ softwareSeleccionado.antivirus ? 'Editar' : 'Agregar' }}
-                                            </button>
-                                        </div>
-                                        <div class="software-resumen" *ngIf="softwareSeleccionado.antivirus">
-                                            <span>{{ softwareSeleccionado.antivirus.nombre }}</span>
+                                    <!-- Antivirus -->
+                                    <div class="software-card" [class.seleccionado]="softwareSeleccionado.antivirus">
+                                        <div class="software-card-header" (click)="abrirPanel('antivirus')">
+                                            <div class="software-icon">
+                                                <mat-icon>security</mat-icon>
+                                            </div>
+                                            <div class="software-info">
+                                                <div class="software-nombre">
+                                                    {{ softwareSeleccionado.antivirus?.nombre || 'Antivirus' }}
+                                                </div>
+                                                <div class="software-estado" *ngIf="!softwareSeleccionado.antivirus">
+                                                    <span class="badge sin-asignar">Sin asignar</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    !-- Backup --
-                                    <div class="software-item" [class.seleccionado]="softwareSeleccionado.backup">
+                                    <!-- Backup -->
+                                    <!-- <div class="software-item" [class.seleccionado]="softwareSeleccionado.backup">
                                         <div class="software-header">
                                             <mat-icon>backup</mat-icon>
                                             <span>Backup</span>
@@ -328,10 +335,10 @@
                                         <div class="software-resumen" *ngIf="softwareSeleccionado.backup">
                                             <span>{{ softwareSeleccionado.backup.programa }}</span>
                                         </div>
-                                    </div>
+                                    </div> -->
 
                                 </div>
-                            </div> -->
+                            </div>
 
                         </ng-container>
                     </div>
@@ -343,72 +350,81 @@
         <!-- ================================================ -->
         <!-- PANEL INTERNO PARA AGREGAR/EDITAR SOFTWARE       -->
         <!-- ================================================ -->
-        <!-- <div class="panel-overlay" *ngIf="panelActivo">
+        <div class="panel-overlay" *ngIf="panelActivo">
             <div class="panel-contenido">
 
                 <div class="panel-header">
+
+                    <mat-icon>security</mat-icon>
                     <h3>{{ panelTitulo }}</h3>
-                    <button class="btn-cerrar-panel" (click)="cerrarPanel()">
-                        <mat-icon>close</mat-icon>
-                    </button>
                 </div>
 
                 <div class="panel-body">
+                    <div class="contenido-panel">
+                        <!-- Campos segun el tipo -->
+                        <ng-container [ngSwitch]="panelTipo">
 
-                    !-- Campos según el tipo --
-                    <ng-container [ngSwitch]="panelTipo">
+                            <!-- ANTIVIRUS -->
+                            <ng-container *ngSwitchCase="'antivirus'">
+                                <div class="campo-panel">
+                                    <label>ANTIVIRUS</label>
+                                    <select [(ngModel)]="panelData.antivirusCodigo"
+                                        (change)="cargarPoliticasPorAntivirus(panelData.antivirusCodigo)">
+                                        <option [value]="null" disabled selected>Seleccione...</option>
+                                        <option *ngFor="let av of antivirusList" [value]="av.codigo">{{ av.nombre }}
+                                        </option>
+                                    </select>
+                                </div><br>
+                                <div class="campo-panel">
+                                    <label>POLITICA</label>
+                                    <select [(ngModel)]="panelData.politicaCodigo">
+                                        <option [value]="null" disabled selected>Seleccione...</option>
+                                        <option *ngFor="let pol of politicasList" [value]="pol.codigo">{{ pol.politica
+                                            }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </ng-container>
 
-                        !-- ANTIVIRUS --
-                        <ng-container *ngSwitchCase="'antivirus'">
-                            <div class="campo-panel">
-                                <label>NOMBRE ANTIVIRUS</label>
-                                <input [(ngModel)]="panelData.nombre" placeholder="Ej: Bitdefender" />
-                            </div>
-                            <div class="campo-panel">
-                                <label>POLÍTICA</label>
-                                <input [(ngModel)]="panelData.politica" placeholder="Ej: Protección en tiempo real" />
-                            </div>
+                            <!-- BACKUP -->
+                            <!-- <ng-container *ngSwitchCase="'backup'">
+                                <div class="campo-panel">
+                                    <label>NOMBRE BACKUP</label>
+                                    <input [(ngModel)]="panelData.nombre" placeholder="Ej: Acronis True Image" />
+                                </div>
+                                <div class="campo-panel">
+                                    <label>PROGRAMA</label>
+                                    <input [(ngModel)]="panelData.programa" placeholder="Ej: Bacula, Cobian" />
+                                </div>
+                                <div class="campo-panel">
+                                    <label>FRECUENCIA</label>
+                                    <select [(ngModel)]="panelData.frecuencia">
+                                        <option value="">Seleccione...</option>
+                                        <option value="DIARIO">Diario</option>
+                                        <option value="SEMANAL">Semanal</option>
+                                        <option value="MENSUAL">Mensual</option>
+                                    </select>
+                                </div>
+                                <div class="campo-panel">
+                                    <label>UBICACIÓN</label>
+                                    <input [(ngModel)]="panelData.ubicacion" placeholder="Ej: \\server\backups" />
+                                </div>
+                            </ng-container> -->
+
+                            <!-- OFFICE -->
+                            <!-- <ng-container *ngSwitchCase="'office'">
+                                <div class="campo-panel">
+                                    <label>NOMBRE OFFICE</label>
+                                    <input [(ngModel)]="panelData.nombre" placeholder="Ej: Microsoft Office 365" />
+                                </div>
+                                <div class="campo-panel">
+                                    <label>TIPO LICENCIA</label>
+                                    <input [(ngModel)]="panelData.licencia" placeholder="Ej: Perpetua, Suscripción" />
+                                </div>
+                            </ng-container> -->
+
                         </ng-container>
-
-                        !-- BACKUP --
-                        <ng-container *ngSwitchCase="'backup'">
-                            <div class="campo-panel">
-                                <label>NOMBRE BACKUP</label>
-                                <input [(ngModel)]="panelData.nombre" placeholder="Ej: Acronis True Image" />
-                            </div>
-                            <div class="campo-panel">
-                                <label>PROGRAMA</label>
-                                <input [(ngModel)]="panelData.programa" placeholder="Ej: Bacula, Cobian" />
-                            </div>
-                            <div class="campo-panel">
-                                <label>FRECUENCIA</label>
-                                <select [(ngModel)]="panelData.frecuencia">
-                                    <option value="">Seleccione...</option>
-                                    <option value="DIARIO">Diario</option>
-                                    <option value="SEMANAL">Semanal</option>
-                                    <option value="MENSUAL">Mensual</option>
-                                </select>
-                            </div>
-                            <div class="campo-panel">
-                                <label>UBICACIÓN</label>
-                                <input [(ngModel)]="panelData.ubicacion" placeholder="Ej: \\server\backups" />
-                            </div>
-                        </ng-container>
-
-                        !-- OFFICE --
-                        <ng-container *ngSwitchCase="'office'">
-                            <div class="campo-panel">
-                                <label>NOMBRE OFFICE</label>
-                                <input [(ngModel)]="panelData.nombre" placeholder="Ej: Microsoft Office 365" />
-                            </div>
-                            <div class="campo-panel">
-                                <label>TIPO LICENCIA</label>
-                                <input [(ngModel)]="panelData.licencia" placeholder="Ej: Perpetua, Suscripción" />
-                            </div>
-                        </ng-container>
-
-                    </ng-container>
-
+                    </div>
                 </div>
 
                 <div class="panel-footer">
@@ -417,7 +433,7 @@
                 </div>
 
             </div>
-        </div> -->
+        </div>
 
         <!-- BOTONES -->
         <div class="modal-footer">
@@ -465,39 +481,28 @@
                 </ng-container>
 
                 <!-- PASO 2: Detalle del equipo -->
-
                 <ng-container *ngIf="paso === 2">
+                    <!-- Boton Volver (a paso 1) -->
                     <button class="btn-devolver" (click)="paso = 1">
                         <mat-icon>keyboard_arrow_left</mat-icon> Volver
                     </button>
-                    <button class="btn-asignar" [disabled]="!puedeAsignar()" (click)="asignar()">
-                        <mat-icon>done_all</mat-icon> Asignar Equipo
+
+                    <!-- Boton paso 3 -->
+                    <button class="btn-asignar" (click)="irAlPaso3()">
+                        Siguiente<mat-icon>keyboard_arrow_right</mat-icon>
                     </button>
                 </ng-container>
 
-
-                <!-- <ng-container *ngIf="paso === 2">
-                    !-- Boton Volver (a paso 1) --
-                    <button class="btn-devolver" (click)="paso = 1">
-                        <mat-icon>keyboard_arrow_left</mat-icon> Volver
-                    </button>
-
-                    !-- Boton paso 3 --
-                    <button class="btn-asignar" (click)="irAlPaso3()">
-                        <mat-icon>keyboard_arrow_right</mat-icon> Siguiente
-                    </button>
-                </ng-container> -->
-
                 <!-- PASO 3: Software instalado -->
-                <!-- <ng-container *ngIf="paso === 3">
+                <ng-container *ngIf="paso === 3">
                     <button class="btn-devolver" (click)="paso = 2">
                         <mat-icon>keyboard_arrow_left</mat-icon> Volver
                     </button>
                     <button class="btn-asignar" [disabled]="!puedeAsignar()" (click)="asignar()">
-                        
+
                         <mat-icon>done_all</mat-icon> Asignar Equipo
                     </button>
-                </ng-container> -->
+                </ng-container>
 
             </ng-container>
 

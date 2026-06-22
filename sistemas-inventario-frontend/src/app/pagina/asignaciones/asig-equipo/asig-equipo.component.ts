@@ -9,7 +9,10 @@ import { ConsultarEmpleadoService } from '../../../arquitectura/servicio/consult
 import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 import { RegistrarAsignacionesService } from '../../../arquitectura/servicio/registro/RegistrarAsignaciones.service';
 import { A11yModule } from "@angular/cdk/a11y";
+import { ChangeDetectorRef } from '@angular/core';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
+import { ConsultarAntivirusService } from '../../../arquitectura/servicio/consulta/ConsultarAntivirus.service';
+import { ConsultarAntivirusPoliticaService } from '../../../arquitectura/servicio/consulta/ConsultarAntivirusPolitica.service';
 
 
 
@@ -23,7 +26,11 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 export class AsigEquipoComponent {
 
 
-  // ==================== PROPIEDADES ====================
+  // ================================================================
+  // PROPIEDADES DEL COMPONENTE
+  // ================================================================
+
+  // Datos del equipo y asignacion
   equipo: any;
   yaAsignada: boolean = false;
   esReasignacion: boolean = false;
@@ -47,7 +54,11 @@ export class AsigEquipoComponent {
 
   // Imagen
   imagenModeloSeleccionado: SafeResourceUrl = '';
-  paso: number = 1;  // 1 = selección de empleado, 2 = detalle del equipo
+
+  // Navegacion por pasos - ASIGNACION EQUIPO
+  paso: number = 1;
+
+  // Visibilidad de claves - ASIGNACION EQUIPO
   mostrarClaveAdmin: boolean = false;
   mostrarClaveUsuario: boolean = false;
   mostrarClaveAdicional: boolean = false;
@@ -65,18 +76,25 @@ export class AsigEquipoComponent {
     claveUsuarioAdicional: ''
   };
 
-  // ==================== SOFTWARE SELECCIONADO ====================
-  // softwareSeleccionado: any = {
-  //   antivirus: null,
-  //   backup: null,
-  //   office: null
-  // };
+  // Antivirus y politicas
+  antivirusList: any[] = [];
+  politicasList: any[] = [];
 
-  // ==================== PANEL INTERNO ====================
-  // panelActivo: boolean = false;
-  // panelTipo: string = ''; // 'antivirus' | 'backup' | 'office'
-  // panelTitulo: string = '';
-  // panelData: any = {};
+
+  // Software seleccionado 
+  softwareSeleccionado: any = {
+    antivirus: null,
+    // backup: null,
+  };
+
+  // Panel interno para agregar/editar software
+  panelActivo: boolean = false;
+  panelTipo: string = ''; // 'antivirus' | 'backup' 
+  panelTitulo: string = '';
+  panelData: any = {
+    antivirusCodigo: null,
+    politicaCodigo: null,
+  };
 
 
 
@@ -88,7 +106,10 @@ export class AsigEquipoComponent {
     private consultarAsignacionesService: ConsultarAsignacionesService,
     private registrarAsignacionesService: RegistrarAsignacionesService,
     private notificacionSnackbarService: NotificacionSnackbarService,
-    private sanitizer: DomSanitizer
+    private consultarAntivirusService: ConsultarAntivirusService,
+    private consultarAntivirusPoliticaService: ConsultarAntivirusPoliticaService,
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef
   ) {
     this.equipo = data.equipo;
 
@@ -102,6 +123,7 @@ export class AsigEquipoComponent {
     this.cargarEmpleados();
     this.cargarImagenModelo();
   }
+
 
 
 
@@ -129,9 +151,38 @@ export class AsigEquipoComponent {
   }
 
 
+  cargarAntivirus(): void {
+    this.consultarAntivirusService.listarActivos().subscribe({
+      next: (data) => {
+        this.antivirusList = data;
+        console.log('Antivirus cargados:', data); // Para depurar
+      },
+      error: (err) => {
+        console.error('Error al cargar antivirus:', err);
+        this.notificacionSnackbarService.error('Error', 'No se pudieron cargar los antivirus');
+      }
+    });
+  }
+
+  cargarPoliticasPorAntivirus(antivirusCodigo: number): void {
+    if (antivirusCodigo) {
+      this.consultarAntivirusPoliticaService.listarPorAntivirus(antivirusCodigo).subscribe({
+        next: (data) => {
+          this.politicasList = data;
+        },
+        error: () => {
+          this.notificacionSnackbarService.error('Error', 'No se pudieron cargar políticas');
+          this.politicasList = [];
+        }
+      });
+    } else {
+      this.politicasList = [];
+    }
+  }
+
+
+
   // ==================== FILTROS Y SELECCION ====================
-
-
 
   filtrarEmpleados(): void {
     const termino = this.busquedaEmpleado.toLowerCase();
@@ -212,6 +263,23 @@ export class AsigEquipoComponent {
   }
 
 
+
+  // ================ NAVEGACION POR PASOS   ====================
+
+
+  irAlDetalle(): void {
+    this.paso = 2;
+  }
+
+  irAlPaso3(): void {
+    this.paso = 3;
+  }
+
+  cambiarPaso(nuevoPaso: number): void {
+    this.paso = nuevoPaso;
+  }
+
+
   // ==================== ACCIONES PRINCIPALES ====================
 
   cerrar(): void {
@@ -254,7 +322,7 @@ export class AsigEquipoComponent {
     const detalleData = {
       nombreEquipo: this.detalle?.nombreEquipo || '',
       nombreUsuario: this.detalle?.nombreUsuario || '',
-      claveUsuario: this.detalle?.claveUsuario || '',  
+      claveUsuario: this.detalle?.claveUsuario || '',
       nombreUsuarioAdministrador: this.detalle?.nombreUsuarioAdministrador || '',
       claveUsuarioAdministrador: this.detalle?.claveUsuarioAdministrador || '',
       nombreUsuarioAdicional: this.detalle?.nombreUsuarioAdicional || '',
@@ -460,14 +528,15 @@ export class AsigEquipoComponent {
 
   // AUXILIARES
 
-  // Metodo para obtener el titulo según el estado
+
+  // Metodo para obtener el titulo segun el estado
   getTitulo(): string {
     // Si no está asignada
     if (!this.yaAsignada) {
       return 'Asignar Equipo';
     }
 
-    // Si está asignada y está en modo devolución
+    // Si está asignada y está en modo devolucion
     if (this.mostrarDevolucion) {
       if (this.esReasignacion) {
         return 'Reasignacion de Equipo';
@@ -475,29 +544,21 @@ export class AsigEquipoComponent {
       return 'Devolucion de Equipo';
     }
 
-    // Si esta asignada y no en modo devolución
+    // Si esta asignada y no en modo devolucion
     return 'Equipo Asignado';
   }
 
-  irAlDetalle(): void {
-    this.paso = 2;
-  }
 
-  irAlPaso3(): void {
-    this.paso = 3;
-  }
-
-  cambiarPaso(nuevoPaso: number): void {
-    this.paso = nuevoPaso;
-  }
 
   // Metodos para alternar
   toggleClaveAdmin(): void {
     this.mostrarClaveAdmin = !this.mostrarClaveAdmin;
   }
+
   toggleClaveUsuario(): void {
     this.mostrarClaveUsuario = !this.mostrarClaveUsuario;
   }
+
   toggleClaveAdicional(): void {
     this.mostrarClaveAdicional = !this.mostrarClaveAdicional;
   }
@@ -505,70 +566,95 @@ export class AsigEquipoComponent {
 
 
 
-  // ==================== MÉTODOS ====================
-  //abrirPanel(tipo: string): void {
-  //  this.panelActivo = true;
-  //  this.panelTipo = tipo;
-  //
-  //  // Cargar datos existentes si los hay
-  //  if (tipo === 'antivirus' && this.softwareSeleccionado.antivirus) {
-  //    this.panelData = { ...this.softwareSeleccionado.antivirus };
-  //    this.panelTitulo = 'Editar Antivirus';
-  //  } else if (tipo === 'backup' && this.softwareSeleccionado.backup) {
-  //    this.panelData = { ...this.softwareSeleccionado.backup };
-  //    this.panelTitulo = 'Editar Backup';
-  //  } else if (tipo === 'office' && this.softwareSeleccionado.office) {
-  //    this.panelData = { ...this.softwareSeleccionado.office };
-  //    this.panelTitulo = 'Editar Office';
-  //  } else {
-  //    // Nuevo
-  //    this.panelData = {
-  //      nombre: '',
-  //      politica: '',
-  //      programa: '',
-  //      frecuencia: '',
-  //      ubicacion: '',
-  //      licencia: ''
-  //    };
-  //    this.panelTitulo = tipo === 'antivirus' ? 'Agregar Antivirus' :
-  //      tipo === 'backup' ? 'Agregar Backup' :
-  //        'Agregar Office';
-  //  }
-  //}
 
-  //cerrarPanel(): void {
-  //  this.panelActivo = false;
-  //  this.panelData = {};
-  //}
-  //
-  //guardarPanel(): void {
-  //  // Validación simple
-  //  if (!this.panelData.nombre) {
-  //    // Puedes mostrar un snackbar o alerta
-  //    return;
-  //  }
-  //
-  //  // Guardar según tipo
-  //  if (this.panelTipo === 'antivirus') {
-  //    this.softwareSeleccionado.antivirus = {
-  //      nombre: this.panelData.nombre,
-  //      politica: this.panelData.politica || 'Sin política'
-  //    };
-  //  } else if (this.panelTipo === 'backup') {
-  //    this.softwareSeleccionado.backup = {
-  //      nombre: this.panelData.nombre,
-  //      programa: this.panelData.programa || 'N/A',
-  //      frecuencia: this.panelData.frecuencia || 'N/A',
-  //      ubicacion: this.panelData.ubicacion || 'N/A'
-  //    };
-  //  } else if (this.panelTipo === 'office') {
-  //    this.softwareSeleccionado.office = {
-  //      nombre: this.panelData.nombre,
-  //      licencia: this.panelData.licencia || 'No especificada'
-  //    };
-  //  }
-  //
-  //  this.cerrarPanel();
-  //}
+  // ==================== PANEL INTERNO (AGREGAR/EDITAR SOFTWARE) ====================
+
+  abrirPanel(tipo: string): void {
+    this.panelActivo = true;
+    this.panelTipo = tipo;
+
+    if (tipo === 'antivirus') {
+      // Cargar antivirus solo si aun no estan cargados
+      if (this.antivirusList.length === 0) {
+        this.consultarAntivirusService.listarActivos().subscribe({
+          next: (data) => {
+            this.antivirusList = data;
+            // Despues de cargar, proceder con la logica normal
+            this.inicializarPanelAntivirus();
+          },
+          error: () => {
+            this.notificacionSnackbarService.error('Error', 'No se pudieron cargar antivirus');
+            this.cerrarPanel();
+          }
+        });
+      } else {
+        this.inicializarPanelAntivirus();
+      }
+    } else {
+      // Por ahora, solo soportamos antivirus
+      this.cerrarPanel();
+      return;
+    }
+  }
+
+
+  private inicializarPanelAntivirus(): void {
+    // Si ya hay un antivirus seleccionado, precargar sus datos
+    if (this.softwareSeleccionado.antivirus) {
+      this.panelData = {
+        antivirusCodigo: this.softwareSeleccionado.antivirus.antivirusCodigo || null,
+        politicaCodigo: this.softwareSeleccionado.antivirus.politicaCodigo || null
+      };
+      // Cargar políticas del antivirus seleccionado
+      if (this.panelData.antivirusCodigo) {
+        this.cargarPoliticasPorAntivirus(this.panelData.antivirusCodigo);
+      }
+      this.panelTitulo = 'Editar Antivirus';
+    } else {
+      this.panelData = {
+        antivirusCodigo: null,
+        politicaCodigo: null
+      };
+      this.politicasList = [];
+      this.panelTitulo = 'Agregar Antivirus';
+    }
+  }
+
+
+  cerrarPanel(): void {
+    this.panelActivo = false;
+    this.panelData = {};
+  }
+
+  guardarPanel(): void {
+    if (this.panelTipo === 'antivirus') {
+      // Validar que se haya seleccionado antivirus y política
+      if (!this.panelData.antivirusCodigo || !this.panelData.politicaCodigo) {
+        this.notificacionSnackbarService.warning('Campos incompletos', 'Seleccione antivirus y politica');
+        return;
+      }
+
+      // Buscar nombres para mostrar en el resumen
+      const antivirus = this.antivirusList.find(a => a.codigo === Number(this.panelData.antivirusCodigo));
+      const politica = this.politicasList.find(p => p.codigo === Number(this.panelData.politicaCodigo));
+
+      // Guardar en softwareSeleccionado
+      this.softwareSeleccionado.antivirus = {
+        antivirusCodigo: this.panelData.antivirusCodigo,
+        politicaCodigo: this.panelData.politicaCodigo,
+        nombre: antivirus?.nombre || 'Sin nombre',
+        politica: politica?.politica || 'Sin politica'
+      };
+      this.cdr.detectChanges();
+
+      this.cerrarPanel();
+    } else {
+      // Si no es antivirus, cerrar sin hacer nada
+      this.cerrarPanel();
+    }
+  }
+
+
 
 }
+

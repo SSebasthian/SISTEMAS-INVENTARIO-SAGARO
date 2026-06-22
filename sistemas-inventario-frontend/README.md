@@ -89,6 +89,8 @@
 `ng generate service arquitectura/servicio/consulta/ConsultarRecursoTipo` (Servicio CONSULTAR RECURSO TIPO)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarPlataforma` (Servicio CONSULTAR PLATAFORMA)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarPlataformaRol` (Servicio CONSULTAR PLATAFORMA ROL)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarAntivirus` (Servicio CONSULTAR PLATAFORMA ROL)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarAntivirusPolitica` (Servicio CONSULTAR PLATAFORMA ROL)<br>
 
 
 
