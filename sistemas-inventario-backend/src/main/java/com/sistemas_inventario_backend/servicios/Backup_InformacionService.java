@@ -59,14 +59,22 @@ public class Backup_InformacionService {
     @Transactional
     public Backup_Informacion actualizar(Long codigo, Backup_Informacion datos) {
         Backup_Informacion existente = obtenerPorCodigo(codigo);
+
+        // Actualizar campos simples
         existente.setNombre(datos.getNombre());
         existente.setFrecuencia(datos.getFrecuencia());
         existente.setUbicacion(datos.getUbicacion());
-        existente.setUbicacionExcluida(datos.getUbicacionExcluida());
+        existente.setUbicacionExcluida(datos.getUbicacionExcluida()); // si existe
         existente.setDia(datos.getDia());
         existente.setActivo(datos.getActivo());
-        // Validación similar
-        this.validarDiaSegunFrecuencia(existente);
+
+        // Actualizar la relacion con el programa (backup)
+        if (datos.getBackup() != null && datos.getBackup().getCodigo() != null) {
+            Backup backup = backupRepository.findById(datos.getBackup().getCodigo())
+                    .orElseThrow(() -> new RuntimeException("Backup no encontrado"));
+            existente.setBackup(backup);
+        }
+
         return repository.save(existente);
     }
 

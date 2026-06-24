@@ -712,7 +712,9 @@
     width: 100%;
     box-sizing: border-box;
 }
-
+.campo-panel-correo select{
+    font-size: 12.3px;
+}
 
 .campo-panel select:focus {
     outline: none;
@@ -863,8 +865,104 @@
 }
  
 
+/* CORREO */
+.fila-doble-correo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
 
-/* BOTONES */
+.fila-doble-correo > div:last-child {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.checkbox-backup {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.backup-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+}
+
+.backup-container mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.backup-container span {
+    font-size: 10px;
+    white-space: nowrap;
+    animation: keyframes-fill .3s;
+}
+
+.backup-container .check-outline {
+    display: block;
+    animation: keyframes-fill .3s;
+}
+
+.backup-container .check-solid {
+    display: none;
+    animation: keyframes-fill .3s;
+    color: #4caf50;
+}
+
+.backup-container input:checked ~ span {
+    color: #4caf50;
+    font-weight: 600;
+}
+
+.backup-container input:checked ~ .check-outline {
+    display: none;
+}
+
+.backup-container input:checked ~ .check-solid {
+    display: block;
+}
+
+.backup-container input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+
+
+
+.backup-container input:disabled ~ mat-icon,
+.backup-container input:disabled ~ span {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@keyframes keyframes-fill {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+/* BOTONES  pasos y asignacion */
 
 .btn-eliminar-ubicacion,
 .btn-agregar-ubicacion,

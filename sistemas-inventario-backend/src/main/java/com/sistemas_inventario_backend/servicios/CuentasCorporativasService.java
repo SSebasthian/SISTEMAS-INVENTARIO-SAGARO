@@ -6,6 +6,7 @@ import com.sistemas_inventario_backend.repositorios.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -79,4 +80,8 @@ public class CuentasCorporativasService {
         return repository.findById(codigo)
                 .orElseThrow(() -> new RuntimeException("Cuenta no encontrada"));
     }
+
+
+
+
 }

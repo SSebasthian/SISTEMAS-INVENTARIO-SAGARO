@@ -71,6 +71,8 @@
 `ng generate service arquitectura/servicio/Registro/RegistroCorreo` (Servicio REGISTRAR CORREO)<br>
 `ng generate service arquitectura/servicio/Registro/RegistroLineaTelefono` (Servicio REGISTRAR LINEA TELEFONO)<br>
 `ng generate service arquitectura/servicio/Registro/RegistroCuenta` (Servicio REGISTRAR CUENTA)<br>
+`ng generate service arquitectura/servicio/Registro/RegistroBackup_Informacion` (Servicio REGISTRAR INFORMACION DE BACKUP)<br>
+
 
 
 `ng generate component pagina/compartida/empleados` (Empleados vista)<br>
@@ -89,8 +91,12 @@
 `ng generate service arquitectura/servicio/consulta/ConsultarRecursoTipo` (Servicio CONSULTAR RECURSO TIPO)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarPlataforma` (Servicio CONSULTAR PLATAFORMA)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarPlataformaRol` (Servicio CONSULTAR PLATAFORMA ROL)<br>
-`ng generate service arquitectura/servicio/consulta/ConsultarAntivirus` (Servicio CONSULTAR PLATAFORMA ROL)<br>
-`ng generate service arquitectura/servicio/consulta/ConsultarAntivirusPolitica` (Servicio CONSULTAR PLATAFORMA ROL)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarAntivirus` (Servicio CONSULTAR ANTIVITUS)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarAntivirusPolitica` (Servicio ANTIVITUS POLITICA)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarBackup` (Servicio CONSULTAR BACKUP ROL)<br>
+`ng generate service arquitectura/servicio/consulta/consultarBackup_Informacion` (Servicio CONSULTAR INFORMACION DE BACKUP)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarCorreo` (Servicio CONSULTAR CORREO CORPORTATIVO)<br>
+
 
 
 

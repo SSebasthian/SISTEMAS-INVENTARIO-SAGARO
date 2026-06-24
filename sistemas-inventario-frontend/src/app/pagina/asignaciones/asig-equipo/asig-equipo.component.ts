@@ -16,7 +16,7 @@ import { ConsultarAntivirusPoliticaService } from '../../../arquitectura/servici
 import { ConsultarBackupService } from '../../../arquitectura/servicio/consulta/ConsultarBackup.service';
 import { RegistroBackupInformacionService } from '../../../arquitectura/servicio/registro/RegistroBackupInformacion.service';
 import { ConsultarBackupInformacionService } from '../../../arquitectura/servicio/consulta/ConsultarBackupInformacion.service';
-
+import { ConsultarCorreoService } from '../../../arquitectura/servicio/consulta/ConsultarCorreo.service';
 
 
 @Component({
@@ -88,17 +88,20 @@ export class AsigEquipoComponent {
   };
 
 
-  // CATALOGOS DE SOFTWARE (ANTIVIRUS Y BACKUP)
+  // CATALOGOS DE SOFTWARE (ANTIVIRUS - BACKUP - CORREO)
   antivirusList: any[] = [];
   politicasList: any[] = [];
   backupList: any[] = [];
   backupInformacionList: any[] = [];
+  correosList: any[] = [];
 
 
   // SOFTWARE SELECCIONADO (RESUMEN PARA EL PASO 3)
   softwareSeleccionado: any = {
     antivirus: null,
-    backup: null,
+    backupGeneral: null,
+    backupCorreo: null,
+    correo: null,
   };
 
 
@@ -128,6 +131,12 @@ export class AsigEquipoComponent {
     dia: null
   };
 
+  //Correo
+  panelCorreo: any = {
+    correoCodigo: null,
+    realizarBackup: false,
+    programa: 1,
+  };
 
 
 
@@ -144,6 +153,7 @@ export class AsigEquipoComponent {
     private consultarBackupService: ConsultarBackupService,
     private consultarBackupInformacionService: ConsultarBackupInformacionService,
     private registroBackupInformacionService: RegistroBackupInformacionService,
+    private consultarCorreoService: ConsultarCorreoService,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef
   ) {
@@ -209,7 +219,7 @@ export class AsigEquipoComponent {
           this.politicasList = data;
         },
         error: () => {
-          this.notificacionSnackbarService.error('Error', 'No se pudieron cargar políticas');
+          this.notificacionSnackbarService.error('Error', 'No se pudieron cargar politicas');
           this.politicasList = [];
         }
       });
@@ -239,7 +249,7 @@ export class AsigEquipoComponent {
           this.backupInformacionList = data;
         },
         error: () => {
-          this.notificacionSnackbarService.error('Error', 'No se pudo cargar información de backup');
+          this.notificacionSnackbarService.error('Error', 'No se pudo cargar informacion de backup');
           this.backupInformacionList = [];
         }
       });
@@ -249,6 +259,30 @@ export class AsigEquipoComponent {
   }
 
 
+  cargarCorreos(): void {
+    this.consultarCorreoService.listarActivos().subscribe({
+      next: (data) => {
+        this.correosList = data;
+      },
+      error: (err) => {
+        console.error('Error al cargar correos:', err);
+        this.notificacionSnackbarService.error('Error', 'No se pudieron cargar los correos');
+      }
+    });
+  }
+
+
+  onCorreoSeleccionado(): void {
+    const correo = this.correosList.find(c => c.codigo === Number(this.panelCorreo.correoCodigo));
+    if (correo) {
+      // Generar nombre con prefijo Z-
+      this.backupFormData.nombre = this.generarNombreBackup(correo.direccion);
+      // NO asignar programa automáticamente
+      // NO tocar backupFormData.backupCodigo
+      this.actualizarNombreBackup(); // Ajusta prefijo Z- según programa actual (si hay)
+      this.panelCorreo.realizarBackup = false;
+    }
+  }
 
   // ==================== FILTROS Y SELECCION ====================
 
@@ -407,7 +441,7 @@ export class AsigEquipoComponent {
     // Enviar al servicio
     this.registrarAsignacionesService.asignar(asignacionPayload).subscribe({
       next: (resp) => {
-        //  Solo cerrar el modal aquí, cuando la respuesta es exitosa
+        //  Solo cerrar el modal aqui, cuando la respuesta es exitosa
         this.notificacionSnackbarService.success('Exito', 'Equipo asignado con detalle');
         this.dialogRef.close({ success: true, data: resp });
       },
@@ -592,13 +626,13 @@ export class AsigEquipoComponent {
 
 
 
-  // Agregar una nueva ubicación vacía
+  // Agregar una nueva ubicacion vacia
   agregarUbicacion(): void {
     this.backupFormData.ubicaciones.push('');
   }
 
 
-  // Eliminar una ubicación por índice
+  // Eliminar una ubicacion por indice
   eliminarUbicacion(index: number): void {
     if (this.backupFormData.ubicaciones.length > 1) {
       this.backupFormData.ubicaciones.splice(index, 1);
@@ -613,7 +647,7 @@ export class AsigEquipoComponent {
   }
 
 
-  // Eliminar una ubicación excluida por índice
+  // Eliminar una ubicacion excluida por indice
   eliminarUbicacionExcluida(index: number): void {
     if (this.backupFormData.ubicacionesExcluidas.length > 1) {
       this.backupFormData.ubicacionesExcluidas.splice(index, 1);
@@ -657,29 +691,45 @@ export class AsigEquipoComponent {
 
     if (!frecuencia) return;
 
-    // Si es DIARIO, no se permite día (se deshabilita el input)
+    // Si es DIARIO, no se requiere dia
     if (frecuencia === 'DIARIO') {
       this.backupFormData.dia = null;
-      this.errorDia = 'No se requiere día para frecuencia DIARIO';
+      this.errorDia = 'No se requiere dia para frecuencia DIARIO';
+      // No mostramos notificacion para DIARIO porque es informativo
       return;
     }
 
-    if (dia === null || dia === undefined || dia === '') return;
+    if (dia === null || dia === undefined || dia === '') {
+      this.errorDia = 'Debe ingresar un dia';
+      // No mostramos notificacion aqui porque es un campo vacio, se mostrará al guardar
+      return;
+    }
 
     const numDia = Number(dia);
     if (isNaN(numDia)) {
-      this.errorDia = 'Ingrese un número válido';
+      this.errorDia = 'Ingrese un numero valido';
+      this.notificacionSnackbarService.warning('Dia invalido', 'Ingrese un numero valido para el dia');
       return;
     }
 
+    let valido = true;
     if (frecuencia === 'SEMANAL') {
       if (numDia < 1 || numDia > 7) {
-        this.errorDia = 'Para frecuencia SEMANAL, el día debe ser entre 1 y 7';
+        this.errorDia = 'Para frecuencia SEMANAL, el dia debe ser entre 1 y 7';
+        this.notificacionSnackbarService.warning('Dia fuera de rango', 'Para frecuencia SEMANAL, el dia debe ser entre 1 y 7');
+        valido = false;
       }
     } else if (frecuencia === 'MENSUAL' || frecuencia === 'MANUAL') {
-      if (numDia < 1 || numDia > 31) {
-        this.errorDia = 'Para frecuencia MENSUAL o MANUAL, el día debe ser entre 1 y 31';
+      if (numDia < 1 || numDia > 30) { // Usamos 30 según lo solicitado
+        this.errorDia = 'Para frecuencia MENSUAL o MANUAL, el dia debe ser entre 1 y 30';
+        this.notificacionSnackbarService.warning('Dia fuera de rango', 'Para frecuencia MENSUAL o MANUAL, el dia debe ser entre 1 y 30');
+        valido = false;
       }
+    }
+
+    if (valido) {
+      this.errorDia = '';
+      // Si era inválido y ahora es válido, no mostramos notificacion de Exito (para no molestar)
     }
   }
 
@@ -694,8 +744,37 @@ export class AsigEquipoComponent {
       ? Number(this.backupFormData.backupCodigo)
       : null;
 
-    const nombreEquipo = this.detalle?.nombreEquipo || '';
+    // ============================================================
+    // CASO ESPECIAL: PANEL DE CORREO
+    // ============================================================
+    if (this.panelTipo === 'correo') {
+      // BACULA (codigo 1): regenerar nombre desde el correo con prefijo "Z-"
+      if (codigo === 1) {
+        const correo = this.correosList.find(c => c.codigo === Number(this.panelCorreo.correoCodigo));
+        if (correo) {
+          this.backupFormData.nombre = this.generarNombreBackup(correo.direccion);
+        }
+      }
+      // NO APLICA (0) o sin seleccion (null): limpiar nombre y otros campos
+      else if (codigo === null || codigo === 0) {
+        this.backupFormData.nombre = '';
+        this.backupFormData.frecuencia = '';
+        this.backupFormData.dia = null;
+      }
+      // Otros programas: quitar el prefijo "Z-" si existe
+      else {
+        if (this.backupFormData.nombre && this.backupFormData.nombre.startsWith('Z-')) {
+          this.backupFormData.nombre = this.backupFormData.nombre.slice(2);
+        }
+      }
+      // Salimos para no ejecutar la logica general
+      return;
+    }
 
+    // ============================================================
+    // LOGICA GENERAL (BACKUP, no correo)
+    // ============================================================
+    const nombreEquipo = this.detalle?.nombreEquipo || '';
     if (codigo === 1) {
       this.backupFormData.nombre = nombreEquipo ? `${nombreEquipo}-FD` : '';
     } else if (codigo === null || codigo === 0) {
@@ -712,11 +791,12 @@ export class AsigEquipoComponent {
   }
 
 
+
   get backupDisabled(): boolean {
     const codigo = this.backupFormData.backupCodigo !== null && this.backupFormData.backupCodigo !== undefined
       ? Number(this.backupFormData.backupCodigo)
       : null;
-    // Deshabilitar si no hay selección (null) o si es código 0 (NO APLICA)
+    // Deshabilitar si no hay seleccion (null) o si es codigo 0 (NO APLICA)
     return codigo === null || codigo === 0;
   }
 
@@ -788,10 +868,9 @@ export class AsigEquipoComponent {
         this.cargarBackups();
       }
 
-      // Si hay un backup seleccionado
-      if (this.softwareSeleccionado.backup) {
-        // Verificar si es NO APLICA
-        if (this.softwareSeleccionado.backup.esNoAplica) {
+      if (this.softwareSeleccionado.backupGeneral) {
+        const backup = this.softwareSeleccionado.backupGeneral;
+        if (backup.esNoAplica) {
           this.backupFormData.backupCodigo = 0;
           this.backupFormData.nombre = '';
           this.backupFormData.programa = '';
@@ -802,16 +881,15 @@ export class AsigEquipoComponent {
           this.backupInformacionList = [];
           this.panelTitulo = 'Editar Backup (No Aplica)';
         } else {
-          // Cargar ambos campos por separado
-          const ubicacionStr = this.softwareSeleccionado.backup.ubicacion || '';
-          const ubicacionExcluidaStr = this.softwareSeleccionado.backup.ubicacionExcluida || '';
+          const ubicacionStr = backup.ubicacion || '';
+          const ubicacionExcluidaStr = backup.ubicacionExcluida || '';
           const { normales, excluidas } = this.ubicacionParse(ubicacionStr, ubicacionExcluidaStr);
 
-          this.backupFormData.backupCodigo = this.softwareSeleccionado.backup.backupCodigo || null;
-          this.backupFormData.nombre = this.softwareSeleccionado.backup.nombreBackup || '';
-          this.backupFormData.programa = this.softwareSeleccionado.backup.programa || '';
-          this.backupFormData.frecuencia = this.softwareSeleccionado.backup.frecuencia || '';
-          this.backupFormData.dia = this.softwareSeleccionado.backup.dia || null;
+          this.backupFormData.backupCodigo = backup.backupCodigo || null;
+          this.backupFormData.nombre = backup.nombreBackup || '';
+          this.backupFormData.programa = backup.programa || '';
+          this.backupFormData.frecuencia = backup.frecuencia || '';
+          this.backupFormData.dia = backup.dia || null;
           this.backupFormData.ubicaciones = normales;
           this.backupFormData.ubicacionesExcluidas = excluidas;
 
@@ -835,8 +913,60 @@ export class AsigEquipoComponent {
         this.backupInformacionList = [];
         this.panelTitulo = 'Agregar Backup';
       }
+
+
+    } else if (tipo === 'correo') {
+      if (this.correosList.length === 0) {
+        this.cargarCorreos();
+      }
+      if (this.backupList.length === 0) {
+        this.cargarBackups();
+      }
+
+      if (this.softwareSeleccionado.correo) {
+        this.panelCorreo.correoCodigo = this.softwareSeleccionado.correo.codigo;
+
+        if (this.softwareSeleccionado.backupCorreo) {
+          const bc = this.softwareSeleccionado.backupCorreo;
+          this.panelCorreo.realizarBackup = true;
+          this.backupFormData.nombre = bc.nombre;
+          this.backupFormData.backupCodigo = bc.backupCodigo;
+          this.backupFormData.programa = bc.programa || '';
+          this.backupFormData.frecuencia = bc.frecuencia;
+          this.backupFormData.dia = bc.dia;
+          this.backupFormData.ubicaciones = bc.ubicacion?.split(';').filter((s: string) => s) || [''];
+          this.backupFormData.ubicacionesExcluidas = bc.ubicacionExcluida?.split(';').filter((s: string) => s) || [''];
+        } else {
+          this.panelCorreo.realizarBackup = false;
+          this.backupFormData = {
+            backupCodigo: null,
+            nombre: '',
+            programa: '',
+            frecuencia: '',
+            ubicaciones: [''],
+            ubicacionesExcluidas: [''],
+            dia: null
+          };
+        }
+        this.panelTitulo = 'Editar Correo';
+      } else {
+        // Nuevo correo
+        this.panelCorreo.correoCodigo = null;
+        this.panelCorreo.realizarBackup = false;
+        this.backupFormData = {
+          backupCodigo: null,
+          nombre: '',
+          programa: '',
+          frecuencia: '',
+          ubicaciones: [''],
+          ubicacionesExcluidas: [''],
+          dia: null
+        };
+        this.panelTitulo = 'Agregar Correo';
+      }
     }
   }
+
 
   private ubicacionParse(ubicacionStr: string, ubicacionExcluidaStr: string): { normales: string[]; excluidas: string[] } {
     const normales = ubicacionStr ? ubicacionStr.split(';').filter(s => s.trim() !== '') : [''];
@@ -855,7 +985,7 @@ export class AsigEquipoComponent {
         antivirusCodigo: this.softwareSeleccionado.antivirus.antivirusCodigo || null,
         politicaCodigo: this.softwareSeleccionado.antivirus.politicaCodigo || null
       };
-      // Cargar políticas del antivirus seleccionado
+      // Cargar politicas del antivirus seleccionado
       if (this.panelData.antivirusCodigo) {
         this.cargarPoliticasPorAntivirus(this.panelData.antivirusCodigo);
       }
@@ -871,6 +1001,24 @@ export class AsigEquipoComponent {
   }
 
 
+  generarNombreBackup(direccion: string): string {
+    if (!direccion) return '';
+    let nombreBase = direccion;
+    nombreBase = nombreBase.replace('@', '-');
+    const partes = nombreBase.split('.');
+    if (partes.length > 1) {
+      partes.pop();
+      nombreBase = partes.join('.');
+    }
+    nombreBase = nombreBase.replace(/\./g, '-');
+    return `Z-${nombreBase}`;
+  }
+
+
+
+
+
+
   cerrarPanel(): void {
     this.panelActivo = false;
     this.panelData = { antivirusCodigo: null, politicaCodigo: null };
@@ -883,13 +1031,17 @@ export class AsigEquipoComponent {
       ubicacionesExcluidas: [''],
       dia: null
     };
+    this.panelCorreo = {
+      correoCodigo: null,
+      realizarBackup: false
+    };
     this.modoUbicacion = 'normales';
   }
 
 
   guardarPanel(): void {
     if (this.panelTipo === 'antivirus') {
-      // Validar que se haya seleccionado antivirus y política
+      // Validar que se haya seleccionado antivirus y politica
       if (!this.panelData.antivirusCodigo || !this.panelData.politicaCodigo) {
         this.notificacionSnackbarService.warning('Campos incompletos', 'Seleccione antivirus y politica');
         return;
@@ -914,9 +1066,9 @@ export class AsigEquipoComponent {
         ? Number(this.backupFormData.backupCodigo)
         : null;
 
-      // Sin selección → limpiar
+      // Sin seleccion → limpiar
       if (codigo === null) {
-        this.softwareSeleccionado.backup = null;
+        this.softwareSeleccionado.backupGeneral = null;
         this.cdr.detectChanges();
         this.cerrarPanel();
         return;
@@ -924,7 +1076,7 @@ export class AsigEquipoComponent {
 
       // NO APLICA → objeto especial
       if (codigo === 0) {
-        this.softwareSeleccionado.backup = {
+        this.softwareSeleccionado.backupGeneral = {
           esNoAplica: true,
           nombre: 'NO APLICA',
           nombreBackup: '',
@@ -961,8 +1113,8 @@ export class AsigEquipoComponent {
           return;
         }
       } else {
-        // Si es DIARIO, el día no es necesario, pero si el usuario ingresó uno, lo ignoramos o lo ponemos a null
-        // Podemos forzar a null para que no se guarde
+        // Si es DIARIO, el dia no es necesario, pero si el usuario ingreso uno, lo ignoramos o lo ponemos a null
+        // Podemos forzar a null para que no se guarde 
         this.backupFormData.dia = null;
       }
 
@@ -989,13 +1141,13 @@ export class AsigEquipoComponent {
       };
 
       // Verificar si estamos editando
-      const esEdicion = this.softwareSeleccionado.backup?.backupInformacionCodigo != null;
+      const esEdicion = this.softwareSeleccionado.backupGeneral?.backupInformacionCodigo != null;
 
       if (esEdicion) {
-        const id = this.softwareSeleccionado.backup.backupInformacionCodigo;
+        const id = this.softwareSeleccionado.backupGeneral.backupInformacionCodigo;
         this.registroBackupInformacionService.actualizar(id, infoPayload).subscribe({
           next: (resp) => {
-            this.softwareSeleccionado.backup = {
+            this.softwareSeleccionado.backupGeneral = {
               backupCodigo: codigo,
               backupInformacionCodigo: id,
               nombre: nombrePrograma,
@@ -1004,7 +1156,7 @@ export class AsigEquipoComponent {
               frecuencia: resp.frecuencia,
               ubicacion: resp.ubicacion,
               ubicacionExcluida: resp.ubicacionExcluida, // Incluir excluidas
-              dia: resp.dia,
+              dia: this.backupFormData.dia,
               esNoAplica: false
             };
             this.cdr.detectChanges();
@@ -1012,14 +1164,14 @@ export class AsigEquipoComponent {
             this.cerrarPanel();
           },
           error: (err) => {
-            const mensaje = err.error?.message || 'Error al actualizar información de backup';
+            const mensaje = err.error?.message || 'Error al actualizar informacion de backup';
             this.notificacionSnackbarService.error('Error', mensaje);
           }
         });
       } else {
         this.registroBackupInformacionService.guardar(infoPayload).subscribe({
           next: (resp) => {
-            this.softwareSeleccionado.backup = {
+            this.softwareSeleccionado.backupGeneral = {
               backupCodigo: codigo,
               backupInformacionCodigo: resp.codigo,
               nombre: nombrePrograma,
@@ -1036,14 +1188,144 @@ export class AsigEquipoComponent {
             this.cerrarPanel();
           },
           error: (err) => {
-            const mensaje = err.error?.message || 'Error al guardar información de backup';
+            const mensaje = err.error?.message || 'Error al guardar informacion de backup';
             this.notificacionSnackbarService.error('Error', mensaje);
           }
         });
       }
+
+
+    } else if (this.panelTipo === 'correo') {
+      if (!this.panelCorreo.correoCodigo) {
+        this.notificacionSnackbarService.warning('Seleccion requerida', 'Debe seleccionar un correo');
+        return;
+      }
+
+      const correoSeleccionado = this.correosList.find(c => c.codigo === Number(this.panelCorreo.correoCodigo));
+      if (!correoSeleccionado) {
+        this.notificacionSnackbarService.error('Error', 'Correo no encontrado');
+        this.cerrarPanel();
+        return;
+      }
+
+      this.softwareSeleccionado.correo = correoSeleccionado;
+
+      if (this.panelCorreo.realizarBackup) {
+        // Validar que se haya seleccionado un programa de backup
+        if (!this.backupFormData.backupCodigo || this.backupFormData.backupCodigo === 0) {
+          this.notificacionSnackbarService.warning('Programa requerido', 'Seleccione un programa de backup');
+          return;
+        }
+        if (!this.backupFormData.frecuencia) {
+          this.notificacionSnackbarService.warning('Frecuencia requerida', 'Seleccione una frecuencia para el backup');
+          return;
+        }
+
+        // Validacion del dia según frecuencia
+        const frecuencia = this.backupFormData.frecuencia;
+        const dia = this.backupFormData.dia;
+        if (frecuencia !== 'DIARIO') {
+          if (dia === null || dia === undefined || dia === '') {
+            this.notificacionSnackbarService.warning('Dia requerido', 'Debe ingresar un dia para la frecuencia seleccionada');
+            return;
+          }
+          const numDia = Number(dia);
+          if (isNaN(numDia)) {
+            this.notificacionSnackbarService.warning('Dia inválido', 'Ingrese un número válido para el dia');
+            return;
+          }
+          if (frecuencia === 'SEMANAL' && (numDia < 1 || numDia > 7)) {
+            this.notificacionSnackbarService.warning('Dia fuera de rango', 'Para frecuencia SEMANAL, el dia debe ser entre 1 y 7');
+            return;
+          }
+          if ((frecuencia === 'MENSUAL' || frecuencia === 'MANUAL') && (numDia < 1 || numDia > 30)) {
+            this.notificacionSnackbarService.warning('Dia fuera de rango', 'Para frecuencia MENSUAL o MANUAL, el dia debe ser entre 1 y 30');
+            return;
+          }
+        } else {
+          // Si es DIARIO, no se requiere dia
+          this.backupFormData.dia = null;
+        }
+
+        // Obtener nombre del programa seleccionado
+        const programaSeleccionado = this.backupList.find(b => b.codigo === Number(this.backupFormData.backupCodigo));
+        const nombrePrograma = programaSeleccionado?.nombre || 'Sin programa';
+
+        // Preparar ubicaciones
+        const ubicacionesFiltradas = this.backupFormData.ubicaciones.filter((u: string) => u.trim() !== '');
+        const excluidasFiltradas = this.backupFormData.ubicacionesExcluidas.filter((u: string) => u.trim() !== '');
+        const ubicacionStr = ubicacionesFiltradas.join(';') || null;
+        const ubicacionExcluidaStr = excluidasFiltradas.join(';') || null;
+
+        const infoPayload = {
+          nombre: this.backupFormData.nombre,
+          frecuencia: this.backupFormData.frecuencia,
+          ubicacion: ubicacionStr,
+          ubicacionExcluida: ubicacionExcluidaStr,
+          dia: this.backupFormData.dia || null,
+          backup: { codigo: Number(this.backupFormData.backupCodigo) },
+          activo: true
+        };
+
+        const esEdicion = this.softwareSeleccionado.backupCorreo?.backupInformacionCodigo != null;
+
+        if (esEdicion) {
+          const id = this.softwareSeleccionado.backupCorreo.backupInformacionCodigo;
+          this.registroBackupInformacionService.actualizar(id, infoPayload).subscribe({
+            next: (resp) => {
+              this.softwareSeleccionado.backupCorreo = {
+                backupCodigo: this.backupFormData.backupCodigo,
+                backupInformacionCodigo: id,
+                nombre: resp.nombre,
+                nombreBackup: resp.nombre,
+                programa: nombrePrograma,
+                frecuencia: resp.frecuencia,
+                ubicacion: resp.ubicacion,
+                ubicacionExcluida: resp.ubicacionExcluida,
+                dia: this.backupFormData.dia,
+                esNoAplica: false
+              };
+              this.cdr.detectChanges();
+              this.notificacionSnackbarService.success('Exito', 'Correo y backup actualizados');
+              this.cerrarPanel();
+            },
+            error: (err) => {
+              this.notificacionSnackbarService.error('Error', err.error?.message || 'Error al actualizar backup');
+            }
+          });
+        } else {
+          this.registroBackupInformacionService.guardar(infoPayload).subscribe({
+            next: (resp) => {
+              this.softwareSeleccionado.backupCorreo = {
+                backupCodigo: this.backupFormData.backupCodigo,
+                backupInformacionCodigo: resp.codigo,
+                nombre: resp.nombre,
+                nombreBackup: resp.nombre,
+                programa: nombrePrograma,
+                frecuencia: resp.frecuencia,
+                ubicacion: resp.ubicacion,
+                ubicacionExcluida: resp.ubicacionExcluida,
+                dia: this.backupFormData.dia,
+                esNoAplica: false
+              };
+              this.cdr.detectChanges();
+              this.notificacionSnackbarService.success('Exito', 'Correo y backup guardados');
+              this.cerrarPanel();
+            },
+            error: (err) => {
+              this.notificacionSnackbarService.error('Error', err.error?.message || 'Error al guardar backup');
+            }
+          });
+        }
+      } else {
+        // Si no se marca backup, limpiar el backup del correo
+        this.softwareSeleccionado.backupCorreo = null;
+        this.cdr.detectChanges();
+        this.notificacionSnackbarService.success('Exito', 'Correo guardado');
+        this.cerrarPanel();
+      }
     }
   }
-
 
 
 
