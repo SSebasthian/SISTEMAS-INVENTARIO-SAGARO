@@ -277,6 +277,20 @@
     overflow-y: hidden;
 }
 
+.tabla-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.tabla-container::-webkit-scrollbar-track {
+    background: #a9aaad;
+    border-radius: 10px;
+}
+
+.tabla-container::-webkit-scrollbar-thumb {
+    background: #1e3a8a;
+    border-radius: 10px;
+}
+
 .tabla-equipos thead tr {
     background: #f8f9fa;
     border-bottom: 1px solid #e8e8e8;

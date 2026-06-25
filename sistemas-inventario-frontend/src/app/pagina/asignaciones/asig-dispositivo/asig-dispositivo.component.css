@@ -283,6 +283,20 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+.lista-empleados::-webkit-scrollbar {
+    width: 4px;
+}
+
+.lista-empleados::-webkit-scrollbar-track {
+    background: #a9aaad;
+    border-radius: 10px;
+}
+
+.lista-empleados::-webkit-scrollbar-thumb {
+    background: #1e3a8a;
+    border-radius: 10px;
+}
+
 .empleado-item {
     display: flex;
     justify-content: space-between;
@@ -296,6 +310,8 @@
 .empleado-item:hover {
     background: #f8fafc;
 }
+
+
 
 
 /* Informacion del empleado */

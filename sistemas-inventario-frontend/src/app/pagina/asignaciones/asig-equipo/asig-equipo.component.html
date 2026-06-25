@@ -300,11 +300,11 @@
                                 <div class="seleccion-detalle">
                                     <div class="detalle-campo">
                                         <mat-icon>layers</mat-icon>
-                                        <label>SOFTWARE INSTALADO</label>
+                                        <label>SOFTWARE OBLIGATORIO</label>
                                     </div>
                                 </div>
 
-                                <div class="detalle-grid">
+                                <div class="detalle-grid-aplicacion obligatorio">
 
                                     <!-- Antivirus -->
                                     <div class="software-card" [class.seleccionado]="softwareSeleccionado.antivirus">
@@ -314,11 +314,11 @@
                                             </div>
                                             <div class="software-info">
                                                 <div class="software-nombre">
-                                                    {{ softwareSeleccionado.antivirus?.nombre || 'Antivirus' }}
-                                                </div>
-                                                <div class="software-estado" *ngIf="!softwareSeleccionado.antivirus">
-                                                    <span class="badge sin-asignar">Sin asignar</span>
-                                                </div>
+                                                    {{
+                                                    softwareSeleccionado.antivirus?.nombre
+                                                    ? (softwareSeleccionado.antivirus.nombre.toLowerCase() | titlecase)
+                                                    : 'Antivirus'
+                                                    }} </div>
                                             </div>
                                         </div>
                                     </div>
@@ -331,12 +331,13 @@
                                             </div>
                                             <div class="software-info">
                                                 <div class="software-nombre">
-                                                    {{ softwareSeleccionado.backupGeneral?.nombre || 'Backup' }}
-                                                </div>
-                                                <div class="software-estado"
-                                                    *ngIf="!softwareSeleccionado.backupGeneral">
-                                                    <span class="badge sin-asignar">Sin asignar</span>
-                                                </div>
+                                                    {{
+                                                    softwareSeleccionado.backupGeneral?.nombre
+                                                    ? (softwareSeleccionado.backupGeneral.nombre.charAt(0).toUpperCase()
+                                                    +
+                                                    softwareSeleccionado.backupGeneral.nombre.slice(1).toLowerCase())
+                                                    : 'Backup'
+                                                    }} </div>
                                             </div>
                                         </div>
                                     </div>
@@ -352,10 +353,31 @@
                                                 <div class="software-nombre">
                                                     {{
                                                     softwareSeleccionado.correo?.direccion?.split('@')[1]?.split('.')[0]
-                                                    || 'Correo' }}
+                                                    ? (
+                                                    softwareSeleccionado.correo.direccion.split('@')[1].split('.')[0]
+                                                    .charAt(0).toUpperCase() +
+                                                    softwareSeleccionado.correo.direccion.split('@')[1].split('.')[0]
+                                                    .slice(1).toLowerCase()
+                                                    )
+                                                    : 'Correo'
+                                                    }}
                                                 </div>
-                                                <div class="software-estado" *ngIf="!softwareSeleccionado.correo">
-                                                    <span class="badge sin-asignar">Sin asignar</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- OFFICE -->
+
+                                    <div *ngIf="softwareTipoOffice" class="software-card" (click)="abrirPanel('office')"
+                                        [class.seleccionado]="softwareSeleccionadoOffice">
+                                        <div class="software-card-header">
+                                            <div class="software-icon">
+                                                <mat-icon>description</mat-icon>
+                                            </div>
+                                            <div class="software-info">
+                                                <div class="software-nombre">
+                                                    {{ (softwareSeleccionadoOffice?.nombre | titlecase) || 'Office' }}
                                                 </div>
                                             </div>
                                         </div>
@@ -363,6 +385,31 @@
 
 
                                 </div>
+
+                                <div class="seleccion-detalle">
+                                    <div class="detalle-campo">
+                                        <mat-icon>layers</mat-icon>
+                                        <label>SOFTWARE OPCIONAL</label>
+                                    </div>
+                                </div>
+
+                                <div class="detalle-grid-aplicacion opcional" *ngIf="softwareTiposActivos.length > 0;">
+                                    <div *ngFor="let tipo of softwareTiposActivos" class="software-card"
+                                        [class.seleccionado]="softwareSeleccionadoOpcional[tipo.codigo]?.length > 0">
+                                        <div class="software-card-header" (click)="abrirPanelOpcional(tipo.codigo)">
+                                            <div class="software-icon">
+                                                <mat-icon>extension</mat-icon>
+                                            </div>
+                                            <div class="software-info">
+                                                <div class="software-nombre">
+                                                    {{ softwareSeleccionadoOpcional[tipo.codigo]?.nombre ||
+                                                    (tipo.descripcion | titlecase) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
 
                         </ng-container>
@@ -603,19 +650,60 @@
                                 </div>
                             </ng-container>
 
-                            <!-- OFFICE -->
-                            <!-- <ng-container *ngSwitchCase="'office'">
+
+                            <!-- SOFTWARE OFFICE -->
+
+                            <ng-container *ngSwitchCase="'office'">
                                 <div class="campo-panel">
-                                    <label>NOMBRE OFFICE</label>
-                                    <input [(ngModel)]="panelData.nombre" placeholder="Ej: Microsoft Office 365" />
+                                    <label>PROGRAMA OFFICE</label>
+                                    <select [(ngModel)]="panelData.softwareCodigo">
+                                        <option [value]="null" disabled selected></option>
+                                        <option *ngFor="let sw of officeList" [value]="sw.codigo">
+                                            {{ sw.nombre }}
+                                        </option>
+                                    </select>
                                 </div>
-                                <div class="campo-panel">
-                                    <label>TIPO LICENCIA</label>
-                                    <input [(ngModel)]="panelData.licencia" placeholder="Ej: Perpetua, Suscripcion" />
+                            </ng-container>
+
+
+
+                            <!-- SOFTWARE OPCIONAL -->
+                            <ng-container *ngSwitchCase="'softwareOpcional'">
+                                <div class="campo-panel" *ngIf="panelTipoOpcionalCodigo !== null">
+
+                                    <div *ngIf="softwarePorTipo[panelTipoOpcionalCodigo]?.length; else sinSoftware"
+                                        class="lista-software-opcional">
+                                        <div *ngFor="let sw of softwarePorTipo[panelTipoOpcionalCodigo]"
+                                            class="software-item" [class.seleccionado]="estaSeleccionado(sw)"
+                                            (click)="toggleSeleccionSoftware(sw)">
+                                            <div class="software-item-icon">
+                                                <img *ngIf="sw.rutaImagen" [src]="sw.rutaImagen"
+                                                    alt="Icono de {{ sw.nombre }}" class="software-icono">
+                                                <mat-icon *ngIf="!sw.rutaImagen">extension</mat-icon>
+                                            </div>
+                                            <span class="software-item-nombre">{{ sw.nombre }}</span>
+                                            <mat-icon *ngIf="estaSeleccionado(sw)"
+                                                class="software-item-check">check_circle</mat-icon>
+                                        </div>
+                                    </div>
+
+                                    <ng-template #sinSoftware>
+                                        <p class="sin-datos">
+                                            <mat-icon>info</mat-icon> No hay software disponible para
+                                            este tipo.
+                                        </p>
+                                    </ng-template>
+
+                                    <div *ngIf="panelSeleccionesTemporales.length > 0" class="seleccionados-info">
+                                        <mat-icon>check_circle</mat-icon>
+                                        <span>{{ panelSeleccionesTemporales.length }} seleccionado(s)</span>
+                                    </div>
                                 </div>
-                            </ng-container> -->
+                            </ng-container>
 
                         </ng-container>
+
+
                     </div>
                 </div>
 

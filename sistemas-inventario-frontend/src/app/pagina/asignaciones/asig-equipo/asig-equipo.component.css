@@ -282,7 +282,7 @@
     margin-top: 10px;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    max-height: 297px;
+    max-height: 320px;
     overflow-y: auto;
     background: white;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -292,7 +292,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
+    padding: 9.5px 16px;
     cursor: pointer;
     transition: all 0.2s;
     border-bottom: 1px solid #f1f5f9;
@@ -590,21 +590,87 @@
 }
 
 
+/* VISTA DE ICONO SOFTWARE */
 
-/* ===== TARJETA DE SOFTWARE ===== */
+.detalle-grid-aplicacion {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 8px 6px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+    margin-top: 7px;
+}
+
+.detalle-grid-aplicacion.opcional {
+    grid-template-columns: repeat(3, 1fr);
+    max-height: 145px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Scroll Chrome, Edge, Opera */
+.detalle-grid-aplicacion::-webkit-scrollbar,
+.lista-empleados::-webkit-scrollbar,
+.lista-software-opcional::-webkit-scrollbar {
+    width: 4px;
+}
+
+.detalle-grid-aplicacion::-webkit-scrollbar-track,
+.lista-empleados::-webkit-scrollbar-track .lista-software-opcional::-webkit-scrollbar-track {
+    background: #a9aaad;
+    border-radius: 10px;
+}
+
+.detalle-grid-aplicacion::-webkit-scrollbar-thumb,
+.lista-empleados::-webkit-scrollbar-thumb,
+.lista-software-opcional::-webkit-scrollbar-thumb {
+    background: #1e3a8a;
+    border-radius: 10px;
+}
 
 
-.software-card {
-    border-radius: 12px;
-    transition: all 0.25s ease;
+.detalle-grid-aplicacion .software-card {
+    width: 70px;
+    height: 50px;
     overflow: hidden;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
+    text-align: center;
+    color: #595959;
+    font-weight: 500;
+}
+
+.detalle-grid-aplicacion.obligatorio .software-card {
+    height: 38px;
+    ;
+}
+
+.detalle-grid-aplicacion.opcional .software-card {
+    width: 80px;
+    height: 45px;
+    ;
+}
+
+.detalle-grid-aplicacion .software-card mat-icon {
+    font-size: 23px;
+    width: 23px;
+    height: 23px;
+    color: #595959;
+}
+
+
+.detalle-grid-aplicacion .software-card.seleccionado .software-icon mat-icon {
+  color: #3fb57a !important; 
+}
+.detalle-grid-aplicacion .software-card.seleccionado{
+    color: #3fb57a !important; 
 }
 
 
 
-/* ===== TARJETA DE SOFTWARE DIAGLO ===== */
+/* ===== OPCIONES DE TIPO SOFTWARE  ===== */
 
 .panel-overlay {
     position: fixed;
@@ -712,7 +778,8 @@
     width: 100%;
     box-sizing: border-box;
 }
-.campo-panel-correo select{
+
+.campo-panel-correo select {
     font-size: 12.3px;
 }
 
@@ -830,7 +897,7 @@
     border-left: 3px solid #ef4444;
     border-right: 3px solid #ef4444;
     padding-left: 8px;
-    
+
     border-radius: 10px;
 }
 
@@ -863,7 +930,7 @@
     opacity: 0.7;
     border-color: #d1d5db !important;
 }
- 
+
 
 /* CORREO */
 .fila-doble-correo {
@@ -873,7 +940,7 @@
     width: 100%;
 }
 
-.fila-doble-correo > div:last-child {
+.fila-doble-correo>div:last-child {
     flex: 1;
     display: flex;
     justify-content: flex-end;
@@ -916,16 +983,16 @@
     color: #4caf50;
 }
 
-.backup-container input:checked ~ span {
+.backup-container input:checked~span {
     color: #4caf50;
     font-weight: 600;
 }
 
-.backup-container input:checked ~ .check-outline {
+.backup-container input:checked~.check-outline {
     display: none;
 }
 
-.backup-container input:checked ~ .check-solid {
+.backup-container input:checked~.check-solid {
     display: block;
 }
 
@@ -939,8 +1006,8 @@
 
 
 
-.backup-container input:disabled ~ mat-icon,
-.backup-container input:disabled ~ span {
+.backup-container input:disabled~mat-icon,
+.backup-container input:disabled~span {
     opacity: 0.5;
     cursor: not-allowed;
 }
@@ -960,6 +1027,156 @@
         opacity: 1;
     }
 }
+
+
+
+/* ===== TARJETA DE SOFTWARE ===== */
+
+.lista-software-opcional {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 4px 0;
+    justify-content: center;
+    max-height: 220px;
+    overflow-y: auto;
+    align-content: flex-start;
+}
+
+.software-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    font-size: 12px;
+    color: #1e293b;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    min-width: 72px;
+    min-height: 80px;
+    text-align: center;
+    position: relative;
+}
+
+.software-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+}
+
+.software-item.seleccionado {
+    background: #e0e7ff;
+    border-color: #3f51b5;
+    box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.15);
+}
+
+.software-item .software-item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+}
+
+.software-item .software-icono {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.software-item mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: #94a3b8;
+}
+
+.software-item .software-item-nombre {
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 1.2;
+    color: #334155;
+    max-width: 80px;
+    word-break: break-word;
+}
+
+.software-item .software-item-check {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    color: #3f51b5;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px white;
+}
+
+
+.sin-datos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 12px;
+    margin: 8px 0 0;
+    background: #f8fafc;
+    border: 1px dashed #d1d5db;
+    border-radius: 12px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 400;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sin-datos mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    color: #94a3b8;
+}
+
+
+.seleccionados-info {
+  display: flex;              
+  align-items: center;
+  justify-content: center;      
+  gap: 6px;
+  padding: 6px 16px 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #3f51b5;
+  width: 90%;                 
+  box-sizing: border-box;  
+  margin: auto;   
+}
+
+
+.seleccionados-info mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #3f51b5;
+} 
+
+
+
+
+
 
 
 /* BOTONES  pasos y asignacion */
@@ -1005,6 +1222,9 @@
     width: 18px;
     height: 18px;
 }
+
+
+
 
 
 /* BOTONES FUNCIONES */

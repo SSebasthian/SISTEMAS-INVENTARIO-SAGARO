@@ -315,6 +315,23 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+.lista-empleados::-webkit-scrollbar,
+.lista-areas::-webkit-scrollbar {
+    width: 4px;
+}
+
+.lista-empleados::-webkit-scrollbar-track,
+.lista-areas::-webkit-scrollbar-track {
+    background: #a9aaad;
+    border-radius: 10px;
+}
+
+.lista-empleados::-webkit-scrollbar-thumb,
+.lista-areas::-webkit-scrollbar-thumb {
+    background: #1e3a8a;
+    border-radius: 10px;
+}
+
 .empleado-item,
 .area-item {
     display: flex;

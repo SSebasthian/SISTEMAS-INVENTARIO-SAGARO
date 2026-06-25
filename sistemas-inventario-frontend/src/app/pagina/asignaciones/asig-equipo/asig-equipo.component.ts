@@ -17,6 +17,10 @@ import { ConsultarBackupService } from '../../../arquitectura/servicio/consulta/
 import { RegistroBackupInformacionService } from '../../../arquitectura/servicio/registro/RegistroBackupInformacion.service';
 import { ConsultarBackupInformacionService } from '../../../arquitectura/servicio/consulta/ConsultarBackupInformacion.service';
 import { ConsultarCorreoService } from '../../../arquitectura/servicio/consulta/ConsultarCorreo.service';
+import { ConsultarSoftwareTipoService } from '../../../arquitectura/servicio/consulta/ConsultarSoftwareTipo.service';
+import { ConsultarSoftwareService } from '../../../arquitectura/servicio/consulta/ConsultarSoftware.service';
+
+
 
 
 @Component({
@@ -138,7 +142,15 @@ export class AsigEquipoComponent {
     programa: 1,
   };
 
-
+  // Software Opcional
+  softwareTipoOffice: any = null;
+  softwareTiposActivos: any[] = [];
+  softwarePorTipo: { [key: number]: any[] } = {};
+  softwareSeleccionadoOpcional: { [key: number]: any } = {};
+  panelTipoOpcionalCodigo: number | null = null;
+  panelSeleccionesTemporales: any[] = [];
+  officeList: any[] = [];
+  softwareSeleccionadoOffice: any = null;
 
 
   constructor(
@@ -154,6 +166,8 @@ export class AsigEquipoComponent {
     private consultarBackupInformacionService: ConsultarBackupInformacionService,
     private registroBackupInformacionService: RegistroBackupInformacionService,
     private consultarCorreoService: ConsultarCorreoService,
+    private consultarSoftwareTipoService: ConsultarSoftwareTipoService,
+    private consultarSoftwareService: ConsultarSoftwareService,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef
   ) {
@@ -168,6 +182,7 @@ export class AsigEquipoComponent {
     // Carga inicial de datos
     this.cargarEmpleados();
     this.cargarImagenModelo();
+    this.cargarSoftwareTiposActivos();
   }
 
 
@@ -277,12 +292,33 @@ export class AsigEquipoComponent {
     if (correo) {
       // Generar nombre con prefijo Z-
       this.backupFormData.nombre = this.generarNombreBackup(correo.direccion);
-      // NO asignar programa automáticamente
+      // NO asignar programa automaticamente
       // NO tocar backupFormData.backupCodigo
       this.actualizarNombreBackup(); // Ajusta prefijo Z- según programa actual (si hay)
       this.panelCorreo.realizarBackup = false;
     }
   }
+
+
+  cargarSoftwareTiposActivos(): void {
+    this.consultarSoftwareTipoService.listarActivos().subscribe({
+      next: (data) => {
+        // Guarda el tipo con codigo 1 (si existe)
+        this.softwareTipoOffice = data.find(tipo => tipo.codigo === 1) || null;
+
+        // El resto de tipos (excluyendo codigo 1) para la seccion "Software Opcional"
+        this.softwareTiposActivos = data.filter(tipo => tipo.codigo !== 1);
+
+        console.log('Tipos opcionales:', this.softwareTiposActivos);
+        console.log('Navegador (codigo 1):', this.softwareTipoOffice);
+      },
+      error: (err) => {
+        console.error('Error al cargar tipos de software:', err);
+        this.notificacionSnackbarService.error('Error', 'No se pudieron cargar los tipos de software');
+      }
+    });
+  }
+
 
   // ==================== FILTROS Y SELECCION ====================
 
@@ -441,7 +477,7 @@ export class AsigEquipoComponent {
     // Enviar al servicio
     this.registrarAsignacionesService.asignar(asignacionPayload).subscribe({
       next: (resp) => {
-        //  Solo cerrar el modal aqui, cuando la respuesta es exitosa
+        //  Solo cerrar el modal aqui, cuando la respuesta es Exitosa
         this.notificacionSnackbarService.success('Exito', 'Equipo asignado con detalle');
         this.dialogRef.close({ success: true, data: resp });
       },
@@ -701,7 +737,7 @@ export class AsigEquipoComponent {
 
     if (dia === null || dia === undefined || dia === '') {
       this.errorDia = 'Debe ingresar un dia';
-      // No mostramos notificacion aqui porque es un campo vacio, se mostrará al guardar
+      // No mostramos notificacion aqui porque es un campo vacio, se mostrara al guardar
       return;
     }
 
@@ -729,7 +765,7 @@ export class AsigEquipoComponent {
 
     if (valido) {
       this.errorDia = '';
-      // Si era inválido y ahora es válido, no mostramos notificacion de Exito (para no molestar)
+      // Si era invalido y ahora es valido, no mostramos notificacion de Exito (para no molestar)
     }
   }
 
@@ -805,12 +841,12 @@ export class AsigEquipoComponent {
 
   // Metodo para obtener el titulo segun el estado
   getTitulo(): string {
-    // Si no está asignada
+    // Si no esta asignada
     if (!this.yaAsignada) {
       return 'Asignar Equipo';
     }
 
-    // Si está asignada y está en modo devolucion
+    // Si esta asignada y esta en modo devolucion
     if (this.mostrarDevolucion) {
       if (this.esReasignacion) {
         return 'Reasignacion de Equipo';
@@ -964,6 +1000,30 @@ export class AsigEquipoComponent {
         };
         this.panelTitulo = 'Agregar Correo';
       }
+    } else if (tipo === 'office') {
+      // Cargar la lista de software de tipo 1 (Office) si no está cargada
+      if (this.officeList.length === 0) {
+        this.consultarSoftwareService.listarPorTipo(1).subscribe({
+          next: (data) => {
+            this.officeList = data;
+            // Precargar la selección actual si existe
+            this.panelData.softwareCodigo = this.softwareSeleccionadoOffice?.codigo || null;
+            this.panelActivo = true;
+            this.panelTipo = 'office';
+            this.panelTitulo = 'Seleccionar Office';
+          },
+          error: () => {
+            this.notificacionSnackbarService.error('Error', 'No se pudo cargar el software de Office');
+            this.cerrarPanel();
+          }
+        });
+      } else {
+        // Si ya está cargada, solo preparar el panel
+        this.panelData.softwareCodigo = this.softwareSeleccionadoOffice?.codigo || null;
+        this.panelActivo = true;
+        this.panelTipo = 'office';
+        this.panelTitulo = 'Seleccionar Office';
+      }
     }
   }
 
@@ -1021,6 +1081,9 @@ export class AsigEquipoComponent {
 
   cerrarPanel(): void {
     this.panelActivo = false;
+    this.panelTipo = '';
+    this.panelTipoOpcionalCodigo = null;
+    this.panelSeleccionesTemporales = [];
     this.panelData = { antivirusCodigo: null, politicaCodigo: null };
     this.backupFormData = {
       backupCodigo: null,
@@ -1069,6 +1132,7 @@ export class AsigEquipoComponent {
       // Sin seleccion → limpiar
       if (codigo === null) {
         this.softwareSeleccionado.backupGeneral = null;
+        this.softwareSeleccionado.backup = null;
         this.cdr.detectChanges();
         this.cerrarPanel();
         return;
@@ -1085,6 +1149,7 @@ export class AsigEquipoComponent {
           ubicacion: '',
           ubicacionExcluida: ''
         };
+        this.softwareSeleccionado.backup = true;
         this.cdr.detectChanges();
         this.cerrarPanel();
         return;
@@ -1183,6 +1248,7 @@ export class AsigEquipoComponent {
               dia: resp.dia,
               esNoAplica: false
             };
+            this.softwareSeleccionado.backup = true;
             this.cdr.detectChanges();
             this.notificacionSnackbarService.success('Exito', 'Backup guardado');
             this.cerrarPanel();
@@ -1231,7 +1297,7 @@ export class AsigEquipoComponent {
           }
           const numDia = Number(dia);
           if (isNaN(numDia)) {
-            this.notificacionSnackbarService.warning('Dia inválido', 'Ingrese un número válido para el dia');
+            this.notificacionSnackbarService.warning('Dia invalido', 'Ingrese un número valido para el dia');
             return;
           }
           if (frecuencia === 'SEMANAL' && (numDia < 1 || numDia > 7)) {
@@ -1324,10 +1390,115 @@ export class AsigEquipoComponent {
         this.notificacionSnackbarService.success('Exito', 'Correo guardado');
         this.cerrarPanel();
       }
+
+    } else if (this.panelTipo === 'softwareOpcional') {
+      const tipoCodigo = this.panelTipoOpcionalCodigo;
+      if (!tipoCodigo) {
+        this.notificacionSnackbarService.warning('Error', 'Tipo de software no valido');
+        return;
+      }
+      // Guardar todas las selecciones temporales
+      this.softwareSeleccionadoOpcional[tipoCodigo] = [...this.panelSeleccionesTemporales];
+      this.notificacionSnackbarService.success(
+        'Exito',
+        `Se seleccionaron ${this.panelSeleccionesTemporales.length} programa(s)`
+      );
+      this.cerrarPanel();
+    } else if (this.panelTipo === 'office') {
+      const codigo = this.panelData.softwareCodigo;
+      if (codigo) {
+        const codigoNum = Number(codigo); // ← forzar a número
+        const software = this.officeList.find(s => s.codigo === codigoNum);
+        if (software) {
+          this.softwareSeleccionadoOffice = software;
+          this.notificacionSnackbarService.success('Exito', `Office: ${software.nombre} seleccionado`);
+        } else {
+          this.notificacionSnackbarService.error('Error', 'Software no encontrado');
+          return;
+        }
+      } else {
+        this.softwareSeleccionadoOffice = null;
+        this.notificacionSnackbarService.info('Seleccion eliminada', 'Office desasignado');
+      }
+      this.cerrarPanel();
     }
   }
 
 
+  // PANEL SOFTWARE OPCIONAL
+
+  private procesarSeleccionOffice(): void {
+    const codigo = this.panelData.softwareCodigo;
+    if (codigo) {
+      const codigoNum = Number(codigo);
+      const software = this.officeList.find(s => s.codigo === codigoNum);
+      if (software) {
+        this.softwareSeleccionadoOffice = software;
+        this.notificacionSnackbarService.success('Exito', `Office: ${software.nombre} seleccionado`);
+      } else {
+        this.notificacionSnackbarService.error('Error', 'Software no encontrado');
+        return;
+      }
+    } else {
+      this.softwareSeleccionadoOffice = null;
+      this.notificacionSnackbarService.info('Seleccion eliminada', 'Office desasignado');
+    }
+    this.cerrarPanel();
+  }
+
+  obtenerNombreTipo(codigo: number): string {
+    const tipo = this.softwareTiposActivos.find(t => t.codigo === codigo);
+    return tipo ? tipo.descripcion : 'Software';
+  }
+
+  toggleSeleccionSoftware(software: any): void {
+    const index = this.panelSeleccionesTemporales.findIndex(s => s.codigo === software.codigo);
+    if (index > -1) {
+      this.panelSeleccionesTemporales.splice(index, 1);
+    } else {
+      this.panelSeleccionesTemporales.push(software);
+    }
+  }
+
+  estaSeleccionado(software: any): boolean {
+    return this.panelSeleccionesTemporales.some(s => s.codigo === software.codigo);
+  }
+
+
+  abrirPanelOpcional(tipoCodigo: number): void {
+    this.panelActivo = true;
+    this.panelTipo = 'softwareOpcional';
+    this.panelTipoOpcionalCodigo = tipoCodigo;
+
+    if (!this.softwarePorTipo[tipoCodigo]) {
+      this.consultarSoftwareService.listarPorTipo(tipoCodigo).subscribe({
+        next: (data) => {
+          this.softwarePorTipo[tipoCodigo] = data;
+          // Cargar selecciones previas (si existen) como array
+          this.panelSeleccionesTemporales = this.softwareSeleccionadoOpcional[tipoCodigo] || [];
+        },
+        error: (err) => {
+          console.error('Error al cargar software del tipo', tipoCodigo, err);
+          this.notificacionSnackbarService.error('Error', 'No se pudo cargar el software');
+          this.cerrarPanel();
+        }
+      });
+    } else {
+      // Si ya esta en cache
+      this.panelSeleccionesTemporales = this.softwareSeleccionadoOpcional[tipoCodigo] || [];
+    }
+
+    const tipo = this.softwareTiposActivos.find(t => t.codigo === tipoCodigo);
+    this.panelTitulo = tipo ? this.capitalizarPrimera(tipo.descripcion) : 'Software Opcional';
+
+  }
+
+  private capitalizarPrimera(texto: string): string {
+  if (!texto) return '';
+  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+}
+
 
 }
+
 

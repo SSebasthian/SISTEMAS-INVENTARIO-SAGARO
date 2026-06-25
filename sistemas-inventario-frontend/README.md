@@ -96,8 +96,8 @@
 `ng generate service arquitectura/servicio/consulta/ConsultarBackup` (Servicio CONSULTAR BACKUP ROL)<br>
 `ng generate service arquitectura/servicio/consulta/consultarBackup_Informacion` (Servicio CONSULTAR INFORMACION DE BACKUP)<br>
 `ng generate service arquitectura/servicio/consulta/ConsultarCorreo` (Servicio CONSULTAR CORREO CORPORTATIVO)<br>
-
-
+`ng generate service arquitectura/servicio/consulta/ConsultarSoftwareTipo` (Servicio CONSULTAR SOFTWARE TIPO)<br>
+`ng generate service arquitectura/servicio/consulta/ConsultarSoftware` (Servicio CONSULTAR SOFTWARE)<br>
 
 
 `ng generate component pagina/asignaciones/asig-impresora` (Opciones de Asignacion - IMPRESORA)<br>
