@@ -14,4 +14,8 @@ export class ConsultarAntivirusPoliticaService {
   listarPorAntivirus(antivirusCodigo: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/por-antivirus/${antivirusCodigo}`);
   }
+
+  listarPorSoftware(softwareCodigo: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/por-software/${softwareCodigo}`);
+}
 }

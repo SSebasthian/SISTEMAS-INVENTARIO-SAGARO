@@ -26,16 +26,16 @@ public class Antivirus_PoliticaController {
         return service.listarTodos();
     }
 
-    @GetMapping("/por-antivirus/{antivirusCodigo}")
-    public List<Antivirus_Politica> listarPorAntivirus(@PathVariable Long antivirusCodigo) {
-        return service.listarPorAntivirus(antivirusCodigo);
+    // ✅ NUEVO ENDPOINT: listar politicas por software (antivirus)
+    @GetMapping("/por-software/{softwareCodigo}")
+    public List<Antivirus_Politica> listarPorSoftware(@PathVariable Long softwareCodigo) {
+        return service.listarPorSoftware(softwareCodigo);
     }
 
     @GetMapping("/{codigo}")
     public ResponseEntity<?> obtener(@PathVariable Long codigo) {
         try {
-            Antivirus_Politica politica = service.obtenerPorCodigo(codigo);
-            return ResponseEntity.ok(politica);
+            return ResponseEntity.ok(service.obtenerPorCodigo(codigo));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -44,8 +44,7 @@ public class Antivirus_PoliticaController {
     @PostMapping
     public ResponseEntity<?> guardar(@RequestBody Antivirus_Politica politica) {
         try {
-            Antivirus_Politica nueva = service.guardar(politica);
-            return ResponseEntity.ok(nueva);
+            return ResponseEntity.ok(service.guardar(politica));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -54,8 +53,7 @@ public class Antivirus_PoliticaController {
     @PutMapping("/{codigo}")
     public ResponseEntity<?> actualizar(@PathVariable Long codigo, @RequestBody Antivirus_Politica datos) {
         try {
-            Antivirus_Politica actualizada = service.actualizar(codigo, datos);
-            return ResponseEntity.ok(actualizada);
+            return ResponseEntity.ok(service.actualizar(codigo, datos));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -65,7 +63,7 @@ public class Antivirus_PoliticaController {
     public ResponseEntity<?> desactivar(@PathVariable Long codigo) {
         try {
             service.desactivar(codigo);
-            return ResponseEntity.ok(Map.of("mensaje", "Política desactivada"));
+            return ResponseEntity.ok(Map.of("mensaje", "Politica desactivada"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

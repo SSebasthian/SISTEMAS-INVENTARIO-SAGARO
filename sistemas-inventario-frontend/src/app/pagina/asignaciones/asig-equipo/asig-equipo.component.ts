@@ -11,7 +11,6 @@ import { RegistrarAsignacionesService } from '../../../arquitectura/servicio/reg
 import { A11yModule } from "@angular/cdk/a11y";
 import { ChangeDetectorRef } from '@angular/core';
 import { NotificacionSnackbarService } from '../../../arquitectura/servicio/notificacion/notificacion-snackbar.service';
-import { ConsultarAntivirusService } from '../../../arquitectura/servicio/consulta/ConsultarAntivirus.service';
 import { ConsultarAntivirusPoliticaService } from '../../../arquitectura/servicio/consulta/ConsultarAntivirusPolitica.service';
 import { ConsultarBackupService } from '../../../arquitectura/servicio/consulta/ConsultarBackup.service';
 import { RegistroBackupInformacionService } from '../../../arquitectura/servicio/registro/RegistroBackupInformacion.service';
@@ -157,17 +156,15 @@ export class AsigEquipoComponent {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<AsigEquipoComponent>,
     private empleadoService: ConsultarEmpleadoService,
-    private consultarAsignacionesService: ConsultarAsignacionesService,
     private registrarAsignacionesService: RegistrarAsignacionesService,
     private notificacionSnackbarService: NotificacionSnackbarService,
-    private consultarAntivirusService: ConsultarAntivirusService,
-    private consultarAntivirusPoliticaService: ConsultarAntivirusPoliticaService,
     private consultarBackupService: ConsultarBackupService,
     private consultarBackupInformacionService: ConsultarBackupInformacionService,
     private registroBackupInformacionService: RegistroBackupInformacionService,
     private consultarCorreoService: ConsultarCorreoService,
     private consultarSoftwareTipoService: ConsultarSoftwareTipoService,
     private consultarSoftwareService: ConsultarSoftwareService,
+    private consultarAntivirusPoliticaService: ConsultarAntivirusPoliticaService,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef
   ) {
@@ -214,10 +211,10 @@ export class AsigEquipoComponent {
 
 
   cargarAntivirus(): void {
-    this.consultarAntivirusService.listarActivos().subscribe({
+    this.consultarSoftwareService.listarPorTipo(1).subscribe({
       next: (data) => {
         this.antivirusList = data;
-        console.log('Antivirus cargados:', data); // Para depurar
+        console.log('Antivirus cargados desde software:', data);
       },
       error: (err) => {
         console.error('Error al cargar antivirus:', err);
@@ -229,19 +226,23 @@ export class AsigEquipoComponent {
 
   cargarPoliticasPorAntivirus(antivirusCodigo: number): void {
     if (antivirusCodigo) {
-      this.consultarAntivirusPoliticaService.listarPorAntivirus(antivirusCodigo).subscribe({
+      this.consultarAntivirusPoliticaService.listarPorSoftware(antivirusCodigo).subscribe({
         next: (data) => {
+          console.log('Políticas recibidas:', data);
           this.politicasList = data;
         },
-        error: () => {
-          this.notificacionSnackbarService.error('Error', 'No se pudieron cargar politicas');
+        error: (err) => {
+          console.error('Error al cargar políticas:', err);
+          this.notificacionSnackbarService.error('Error', 'No se pudieron cargar políticas');
           this.politicasList = [];
         }
       });
     } else {
+      console.warn('Antivirus código es null o undefined');
       this.politicasList = [];
     }
   }
+
 
 
   cargarBackups(): void {
@@ -884,12 +885,11 @@ export class AsigEquipoComponent {
     this.panelTipo = tipo;
 
     if (tipo === 'antivirus') {
-      // Cargar antivirus solo si aun no estan cargados
+      // Cargar antivirus desde software con tipo ANTIVIRUS (codigo 2)
       if (this.antivirusList.length === 0) {
-        this.consultarAntivirusService.listarActivos().subscribe({
+        this.consultarSoftwareService.listarPorTipo(1).subscribe({
           next: (data) => {
             this.antivirusList = data;
-            // Despues de cargar, proceder con la logica normal
             this.inicializarPanelAntivirus();
           },
           error: () => {
@@ -897,7 +897,11 @@ export class AsigEquipoComponent {
             this.cerrarPanel();
           }
         });
+      } else {
+        // Ya estan cargados, inicializar directamente
+        this.inicializarPanelAntivirus();
       }
+
 
     } else if (tipo === 'backup') {
       if (this.backupList.length === 0) {
@@ -1001,12 +1005,12 @@ export class AsigEquipoComponent {
         this.panelTitulo = 'Agregar Correo';
       }
     } else if (tipo === 'office') {
-      // Cargar la lista de software de tipo 1 (Office) si no está cargada
+      // Cargar la lista de software de tipo 2 (Office) si no esta cargada
       if (this.officeList.length === 0) {
-        this.consultarSoftwareService.listarPorTipo(1).subscribe({
+        this.consultarSoftwareService.listarPorTipo(2).subscribe({
           next: (data) => {
             this.officeList = data;
-            // Precargar la selección actual si existe
+            // Precargar la seleccion actual si existe
             this.panelData.softwareCodigo = this.softwareSeleccionadoOffice?.codigo || null;
             this.panelActivo = true;
             this.panelTipo = 'office';
@@ -1018,7 +1022,7 @@ export class AsigEquipoComponent {
           }
         });
       } else {
-        // Si ya está cargada, solo preparar el panel
+        // Si ya esta cargada, solo preparar el panel
         this.panelData.softwareCodigo = this.softwareSeleccionadoOffice?.codigo || null;
         this.panelActivo = true;
         this.panelTipo = 'office';
@@ -1039,26 +1043,21 @@ export class AsigEquipoComponent {
 
 
   private inicializarPanelAntivirus(): void {
-    // Si ya hay un antivirus seleccionado, precargar sus datos
     if (this.softwareSeleccionado.antivirus) {
-      this.panelData = {
-        antivirusCodigo: this.softwareSeleccionado.antivirus.antivirusCodigo || null,
-        politicaCodigo: this.softwareSeleccionado.antivirus.politicaCodigo || null
-      };
-      // Cargar politicas del antivirus seleccionado
+      this.panelData.antivirusCodigo = this.softwareSeleccionado.antivirus.antivirusCodigo || null;
+      this.panelData.politicaCodigo = this.softwareSeleccionado.antivirus.politicaCodigo || null;
       if (this.panelData.antivirusCodigo) {
         this.cargarPoliticasPorAntivirus(this.panelData.antivirusCodigo);
       }
       this.panelTitulo = 'Editar Antivirus';
     } else {
-      this.panelData = {
-        antivirusCodigo: null,
-        politicaCodigo: null
-      };
+      this.panelData.antivirusCodigo = null;
+      this.panelData.politicaCodigo = null;
       this.politicasList = [];
       this.panelTitulo = 'Agregar Antivirus';
     }
   }
+
 
 
   generarNombreBackup(direccion: string): string {
@@ -1494,9 +1493,9 @@ export class AsigEquipoComponent {
   }
 
   private capitalizarPrimera(texto: string): string {
-  if (!texto) return '';
-  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
-}
+    if (!texto) return '';
+    return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+  }
 
 
 }

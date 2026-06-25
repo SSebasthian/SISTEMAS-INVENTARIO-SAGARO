@@ -1,8 +1,10 @@
 package com.sistemas_inventario_backend.servicios;
-import com.sistemas_inventario_backend.entidades.Antivirus;
+
+
 import com.sistemas_inventario_backend.entidades.Antivirus_Politica;
+import com.sistemas_inventario_backend.entidades.Software;
 import com.sistemas_inventario_backend.repositorios.Antivirus_PoliticaRepository;
-import com.sistemas_inventario_backend.repositorios.AntivirusRepository;
+import com.sistemas_inventario_backend.repositorios.SoftwareRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,14 +16,15 @@ import java.util.List;
 public class AntivirusPoliticaService {
 
     private final Antivirus_PoliticaRepository repository;
-    private final AntivirusRepository antivirusRepository;
+    private final SoftwareRepository softwareRepository;
 
     public List<Antivirus_Politica> listarActivos() {
         return repository.findByActivoTrue();
     }
 
-    public List<Antivirus_Politica> listarPorAntivirus(Long antivirusCodigo) {
-        return repository.findByAntivirusCodigoAndActivoTrue(antivirusCodigo);
+    // Metodo para listar por software (antivirus)
+    public List<Antivirus_Politica> listarPorSoftware(Long softwareCodigo) {
+        return repository.findBySoftware_CodigoAndActivoTrue(softwareCodigo);
     }
 
     public List<Antivirus_Politica> listarTodos() {
@@ -35,12 +38,13 @@ public class AntivirusPoliticaService {
 
     @Transactional
     public Antivirus_Politica guardar(Antivirus_Politica politica) {
-        if (politica.getAntivirus() == null || politica.getAntivirus().getCodigo() == null) {
-            throw new RuntimeException("Debe asignar un antivirus");
+        if (politica.getSoftware() == null || politica.getSoftware().getCodigo() == null) {
+            throw new RuntimeException("Debe asignar un software (antivirus)");
         }
-        Antivirus antivirus = antivirusRepository.findById(politica.getAntivirus().getCodigo())
-                .orElseThrow(() -> new RuntimeException("Antivirus no encontrado"));
-        politica.setAntivirus(antivirus);
+        Software software = softwareRepository.findById(politica.getSoftware().getCodigo())
+                .orElseThrow(() -> new RuntimeException("Software no encontrado"));
+        // Opcional: validar que el software sea de tipo ANTIVIRUS
+        politica.setSoftware(software);
         politica.setActivo(true);
         return repository.save(politica);
     }
@@ -51,7 +55,7 @@ public class AntivirusPoliticaService {
         existente.setPolitica(datos.getPolitica());
         existente.setPuertosBloqueados(datos.getPuertosBloqueados());
         existente.setActivo(datos.getActivo());
-        // Si se cambia el antivirus, se puede manejar similar
+        // Si se cambia el software, se puede manejar similar
         return repository.save(existente);
     }
 

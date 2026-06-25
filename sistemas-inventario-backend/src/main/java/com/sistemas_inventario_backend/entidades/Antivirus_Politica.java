@@ -24,7 +24,7 @@ public class Antivirus_Politica {
     private Boolean activo = true;
 
     @ManyToOne
-    @JoinColumn(name = "antivirus_codigo", nullable = false)
-    private Antivirus antivirus;
+    @JoinColumn(name = "software_codigo", nullable = false)
+    private Software software;
 
 }
