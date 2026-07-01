@@ -7,7 +7,7 @@ import lombok.Setter;
 
 
 @Entity
-@Table(name = "equiposdecomputo_detalle", uniqueConstraints = {
+@Table(name = "equipodecomputo_detalle", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"ip"})
 })@Getter
 @Setter
@@ -41,7 +41,7 @@ public class EquipoDeComputo_Detalle {
 
     @OneToOne
     @JoinColumn(name = "asignacion_consecutivo", referencedColumnName = "consecutivo")
-    private Asignaciones asignacion;
+    private EquipoDeComputo_Asignaciones asignacion;
 
     private Boolean activo = true;
 }

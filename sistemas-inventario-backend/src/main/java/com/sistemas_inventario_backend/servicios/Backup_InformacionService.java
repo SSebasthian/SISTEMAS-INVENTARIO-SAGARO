@@ -43,13 +43,13 @@ public class Backup_InformacionService {
                 .orElseThrow(() -> new RuntimeException("Backup no encontrado"));
         info.setBackup(backup);
         info.setActivo(true);
-        // Validar día según frecuencia
+        // Validar dia según frecuencia
         if (info.getFrecuencia() != null && info.getDia() != null) {
             if ("SEMANAL".equalsIgnoreCase(info.getFrecuencia()) && (info.getDia() < 1 || info.getDia() > 7)) {
-                throw new RuntimeException("Para frecuencia SEMANAL, el día debe ser 1-7");
+                throw new RuntimeException("Para frecuencia SEMANAL, el dia debe ser 1-7");
             }
             if ("MENSUAL".equalsIgnoreCase(info.getFrecuencia()) && (info.getDia() < 1 || info.getDia() > 31)) {
-                throw new RuntimeException("Para frecuencia MENSUAL, el día debe ser 1-31");
+                throw new RuntimeException("Para frecuencia MENSUAL, el dia debe ser 1-31");
             }
         }
         this.validarDiaSegunFrecuencia(info);
@@ -91,19 +91,20 @@ public class Backup_InformacionService {
         Integer dia = info.getDia();
         if (frecuencia != null && dia != null) {
             if ("DIARIO".equalsIgnoreCase(frecuencia)) {
-                // Si es DIARIO, el día debe ser null (no aplica)
+                // Si es DIARIO, el dia debe ser null (no aplica)
                 info.setDia(null);
             } else if ("SEMANAL".equalsIgnoreCase(frecuencia)) {
                 if (dia < 1 || dia > 7) {
-                    throw new RuntimeException("Para frecuencia SEMANAL, el día debe ser un numero entre 1 y 7");
+                    throw new RuntimeException("Para frecuencia SEMANAL, el dia debe ser un numero entre 1 y 7");
                 }
             } else if ("MENSUAL".equalsIgnoreCase(frecuencia) || "MANUAL".equalsIgnoreCase(frecuencia)) {
                 if (dia < 1 || dia > 30) {
-                    throw new RuntimeException("Para frecuencia " + frecuencia + ", el día debe ser un numero entre 1 y 30");
+                    throw new RuntimeException("Para frecuencia " + frecuencia + ", el dia debe ser un numero entre 1 y 30");
                 }
             } else {
                 throw new RuntimeException("Frecuencia no valida: " + frecuencia);
             }
         }
     }
+
 }

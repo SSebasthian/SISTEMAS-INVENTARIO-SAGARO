@@ -23,6 +23,7 @@ public class CorreoCorporativoService {
     private final RecursoRepository recursoRepository;
     private final Recurso_TipoRepository recursoTipoRepository;
 
+
     public List<CorreosCorporativos> listarActivos() {
         return repository.findByActivoTrue();
     }
@@ -32,7 +33,7 @@ public class CorreoCorporativoService {
     @Transactional
     public CorreosCorporativos registrar(CorreoCorporativoSolicitud dto) {
         if (repository.findByDireccion(dto.getDireccion()).isPresent()) {
-            throw new RuntimeException("Ya existe un correo con la dirección: " + dto.getDireccion());
+            throw new RuntimeException("Ya existe un correo con la direccion: " + dto.getDireccion());
         }
 
         Recurso recurso = recursoRepository.findById(dto.getRecursoCodigo())
@@ -61,7 +62,7 @@ public class CorreoCorporativoService {
         existente.setDireccion(datos.getDireccion());
         existente.setActivo(datos.getActivo());
 
-        // Solo actualizar clave si viene un valor no vacío
+        // Solo actualizar clave si viene un valor no vacio
         if (datos.getClave() != null && !datos.getClave().isEmpty()) {
             existente.setClave(passwordEncoder.encode(datos.getClave()));
         }
@@ -85,5 +86,10 @@ public class CorreoCorporativoService {
 
     public List<CorreosCorporativos> buscarPorTermino(String termino) {
         return repository.findByDireccionContainingIgnoreCase(termino);
+    }
+
+    public CorreosCorporativos obtenerPorCodigo(Long codigo) {
+        return repository.findById(codigo)
+                .orElseThrow(() -> new RuntimeException("Correo no encontrado con codigo: " + codigo));
     }
 }

@@ -238,7 +238,7 @@ export class AsigEquipoComponent {
         }
       });
     } else {
-      console.warn('Antivirus código es null o undefined');
+      console.warn('Antivirus codigo es null o undefined');
       this.politicasList = [];
     }
   }
@@ -295,7 +295,7 @@ export class AsigEquipoComponent {
       this.backupFormData.nombre = this.generarNombreBackup(correo.direccion);
       // NO asignar programa automaticamente
       // NO tocar backupFormData.backupCodigo
-      this.actualizarNombreBackup(); // Ajusta prefijo Z- según programa actual (si hay)
+      this.actualizarNombreBackup(); // Ajusta prefijo Z- segun programa actual (si hay)
       this.panelCorreo.realizarBackup = false;
     }
   }
@@ -304,14 +304,13 @@ export class AsigEquipoComponent {
   cargarSoftwareTiposActivos(): void {
     this.consultarSoftwareTipoService.listarActivos().subscribe({
       next: (data) => {
-        // Guarda el tipo con codigo 1 (si existe)
-        this.softwareTipoOffice = data.find(tipo => tipo.codigo === 1) || null;
+        // Guarda el tipo con codigo 2 (si existe)
+        this.softwareTipoOffice = data.find(tipo => tipo.codigo === 2) || null;
 
-        // El resto de tipos (excluyendo codigo 1) para la seccion "Software Opcional"
-        this.softwareTiposActivos = data.filter(tipo => tipo.codigo !== 1);
-
-        console.log('Tipos opcionales:', this.softwareTiposActivos);
-        console.log('Navegador (codigo 1):', this.softwareTipoOffice);
+        // Excluir codigos 1 y 2 (ANTIVIRUS Y OFFICE)
+        this.softwareTiposActivos = data.filter(
+          tipo => tipo.codigo !== 1 && tipo.codigo !== 2
+        );
       },
       error: (err) => {
         console.error('Error al cargar tipos de software:', err);
@@ -463,6 +462,26 @@ export class AsigEquipoComponent {
       ip: this.detalle?.ip || null
     };
 
+
+    // Construir lista de backups
+    const backups: any[] = [];
+
+    // Backup general (si existe y no es "NO APLICA")
+    if (this.softwareSeleccionado.backupGeneral && !this.softwareSeleccionado.backupGeneral.esNoAplica) {
+      backups.push({
+        backupInformacionCodigo: this.softwareSeleccionado.backupGeneral.backupInformacionCodigo,
+        correoCodigo: 0
+      });
+    }
+
+    // Backup de correo (si existe)
+    if (this.softwareSeleccionado.backupCorreo) {
+      backups.push({
+        backupInformacionCodigo: this.softwareSeleccionado.backupCorreo.backupInformacionCodigo,
+        correoCodigo: this.softwareSeleccionado.correo?.codigo || null
+      });
+    }
+
     // Payload completo
     const asignacionPayload = {
       empleadoCedula: this.empleadoSeleccionado.cedula,
@@ -472,7 +491,8 @@ export class AsigEquipoComponent {
       serialActivo: this.equipo.serial,
       fechaAsignacion: this.fechaAsignacion,
       observaciones: observacionesFormateadas,
-      detalle: detalleData
+      detalle: detalleData,
+      backups: backups,
     };
 
     // Enviar al servicio
@@ -757,7 +777,7 @@ export class AsigEquipoComponent {
         valido = false;
       }
     } else if (frecuencia === 'MENSUAL' || frecuencia === 'MANUAL') {
-      if (numDia < 1 || numDia > 30) { // Usamos 30 según lo solicitado
+      if (numDia < 1 || numDia > 30) { // Usamos 30 segun lo solicitado
         this.errorDia = 'Para frecuencia MENSUAL o MANUAL, el dia debe ser entre 1 y 30';
         this.notificacionSnackbarService.warning('Dia fuera de rango', 'Para frecuencia MENSUAL o MANUAL, el dia debe ser entre 1 y 30');
         valido = false;
@@ -1286,7 +1306,7 @@ export class AsigEquipoComponent {
           return;
         }
 
-        // Validacion del dia según frecuencia
+        // Validacion del dia segun frecuencia
         const frecuencia = this.backupFormData.frecuencia;
         const dia = this.backupFormData.dia;
         if (frecuencia !== 'DIARIO') {
@@ -1296,7 +1316,7 @@ export class AsigEquipoComponent {
           }
           const numDia = Number(dia);
           if (isNaN(numDia)) {
-            this.notificacionSnackbarService.warning('Dia invalido', 'Ingrese un número valido para el dia');
+            this.notificacionSnackbarService.warning('Dia invalido', 'Ingrese un numero valido para el dia');
             return;
           }
           if (frecuencia === 'SEMANAL' && (numDia < 1 || numDia > 7)) {
@@ -1406,7 +1426,7 @@ export class AsigEquipoComponent {
     } else if (this.panelTipo === 'office') {
       const codigo = this.panelData.softwareCodigo;
       if (codigo) {
-        const codigoNum = Number(codigo); // ← forzar a número
+        const codigoNum = Number(codigo); // ← forzar a numero
         const software = this.officeList.find(s => s.codigo === codigoNum);
         if (software) {
           this.softwareSeleccionadoOffice = software;

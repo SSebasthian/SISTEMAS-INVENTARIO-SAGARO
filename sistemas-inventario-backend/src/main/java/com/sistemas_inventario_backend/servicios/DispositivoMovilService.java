@@ -20,7 +20,7 @@ public class DispositivoMovilService {
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
     private final SistemaOperativoRepository soRepository;
     private final SistemaOperativo_VersionRepository versionRepository;
-    private final AsignacionesRepository asignacionRepository;
+    private final EquipoDeComputo_AsignacionesRepository asignacionRepository;
 
 
     // ========== REGISTRAR ==========
@@ -183,7 +183,7 @@ public class DispositivoMovilService {
             }
 
             // AGREGAR INFORMACION DE ASIGNACION
-            Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(dispositivo.getSerial());
+            EquipoDeComputo_Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(dispositivo.getSerial());
 
             if (asignacion != null) {
                 dto.setAsignado(true);

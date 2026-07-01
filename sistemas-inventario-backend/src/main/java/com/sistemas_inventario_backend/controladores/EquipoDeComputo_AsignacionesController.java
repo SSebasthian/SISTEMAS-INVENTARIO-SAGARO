@@ -3,7 +3,7 @@ package com.sistemas_inventario_backend.controladores;
 import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionPorEmpleado;
 import com.sistemas_inventario_backend.DTOs.Solicitud.AsignacionesSolicitud;
 import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionesRespuesta;
-import com.sistemas_inventario_backend.servicios.AsignacionesService;
+import com.sistemas_inventario_backend.servicios.EquipoDeComputo_AsignacionesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,16 +16,16 @@ import java.util.Map;
 @RestController
 @RequestMapping("/asignaciones")
 @RequiredArgsConstructor
-public class AsignacionesController {
+public class EquipoDeComputo_AsignacionesController {
 
-    private final AsignacionesService asignacionesService;
+    private final EquipoDeComputo_AsignacionesService equipoDeComputoAsignacionesService;
 
     // ========== ASIGNAR ==========
 
     @PostMapping
     public ResponseEntity<?> asignar(@RequestBody AsignacionesSolicitud solicitud) {
         try {
-            AsignacionesRespuesta respuesta = asignacionesService.asignar(solicitud);
+            AsignacionesRespuesta respuesta = equipoDeComputoAsignacionesService.asignar(solicitud);
             return ResponseEntity.ok(respuesta);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -45,7 +45,7 @@ public class AsignacionesController {
                 fechaDevolucion = LocalDate.parse(fechaDevolucionStr);
             }
 
-            asignacionesService.devolver(id, fechaDevolucion, observaciones);
+            equipoDeComputoAsignacionesService.devolver(id, fechaDevolucion, observaciones);
             return ResponseEntity.ok(Map.of("mensaje", "Devolucion registrada correctamente"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -56,7 +56,7 @@ public class AsignacionesController {
     // ========== VERIFICAR SI ESTA ASIGNADO ==========
     @GetMapping("/{serial}/esta-asignado")
     public ResponseEntity<?> estaAsignado(@PathVariable String serial) {
-        boolean asignado = asignacionesService.estaAsignado(serial);
+        boolean asignado = equipoDeComputoAsignacionesService.estaAsignado(serial);
         return ResponseEntity.ok(Map.of(
                 "serial", serial,
                 "asignado", asignado
@@ -67,7 +67,7 @@ public class AsignacionesController {
     // ========== OBTENER ASIGNACION ACTUAL ==========
     @GetMapping("/{serial}/actual")
     public ResponseEntity<?> obtenerAsignacionActual(@PathVariable String serial) {
-        AsignacionesRespuesta asignacion = asignacionesService.obtenerAsignacionActual(serial);
+        AsignacionesRespuesta asignacion = equipoDeComputoAsignacionesService.obtenerAsignacionActual(serial);
         if (asignacion == null) {
             return ResponseEntity.ok(Map.of(
                     "serial", serial,
@@ -82,7 +82,7 @@ public class AsignacionesController {
     // ========== OBTENER HISTORIAL COMPLETO ==========
     @GetMapping("/{serial}/historial")
     public ResponseEntity<?> obtenerHistorial(@PathVariable String serial) {
-        List<AsignacionesRespuesta> historial = asignacionesService.obtenerHistorialCompleto(serial);
+        List<AsignacionesRespuesta> historial = equipoDeComputoAsignacionesService.obtenerHistorialCompleto(serial);
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("serial", serial);
         respuesta.put("totalAsignaciones", historial.size());
@@ -94,7 +94,7 @@ public class AsignacionesController {
     // ========== OBTENER ASIGNACIONES DE UN EMPLEADO ==========
     @GetMapping("/empleado/{cedula}")
     public ResponseEntity<?> obtenerPorEmpleado(@PathVariable String cedula) {
-        List<AsignacionesRespuesta> asignaciones = asignacionesService.obtenerAsignacionesPorEmpleado(cedula);
+        List<AsignacionesRespuesta> asignaciones = equipoDeComputoAsignacionesService.obtenerAsignacionesPorEmpleado(cedula);
         return ResponseEntity.ok(asignaciones);
     }
 
@@ -103,7 +103,7 @@ public class AsignacionesController {
 
     @GetMapping("/empleado/{cedula}/detalle")
     public ResponseEntity<?> obtenerAsignacionesPorEmpleadoConDetalle(@PathVariable String cedula) {
-        List<AsignacionPorEmpleado> asignaciones = asignacionesService.obtenerAsignacionesPorEmpleadoConDetalle(cedula);
+        List<AsignacionPorEmpleado> asignaciones = equipoDeComputoAsignacionesService.obtenerAsignacionesPorEmpleadoConDetalle(cedula);
         return ResponseEntity.ok(asignaciones);
     }
 }

@@ -18,7 +18,7 @@ public class ImpresoraService {
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final DispositivoTecnologico_MarcaRepository marcaRepository;
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
-    private final AsignacionesRepository asignacionRepository;
+    private final EquipoDeComputo_AsignacionesRepository asignacionRepository;
 
 
     // ========== REGISTRAR ==========
@@ -157,7 +157,7 @@ public class ImpresoraService {
             }
 
             // AGREGAR INFORMACION DE ASIGNACION
-            Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(impresora.getSerial());
+            EquipoDeComputo_Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(impresora.getSerial());
 
             if (asignacion != null) {
                 dto.setAsignado(true);

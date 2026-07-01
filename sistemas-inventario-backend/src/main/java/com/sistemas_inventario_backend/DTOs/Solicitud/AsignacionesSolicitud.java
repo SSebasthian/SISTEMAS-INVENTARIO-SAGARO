@@ -3,6 +3,7 @@ import com.sistemas_inventario_backend.entidades.EquipoDeComputo_Detalle;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class AsignacionesSolicitud {
@@ -16,4 +17,12 @@ public class AsignacionesSolicitud {
     private String observaciones;
 
     private EquipoDeComputo_Detalle detalle;
+
+    private List<BackupAsignacion> backups;
+
+    @Data
+    public static class BackupAsignacion {
+        private Long backupInformacionCodigo;
+        private Long correoCodigo; // null si es backup general
+    }
 }

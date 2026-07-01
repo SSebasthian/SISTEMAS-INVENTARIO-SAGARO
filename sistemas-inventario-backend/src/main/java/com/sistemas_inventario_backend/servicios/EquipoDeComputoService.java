@@ -20,7 +20,7 @@ public class EquipoDeComputoService {
     private final DispositivoTecnologico_ModeloRepository modeloRepository;
     private final SistemaOperativoRepository soRepository;
     private final SistemaOperativo_VersionRepository versionRepository;
-    private final AsignacionesRepository asignacionRepository;
+    private final EquipoDeComputo_AsignacionesRepository asignacionRepository;
 
 
     @Transactional
@@ -185,7 +185,7 @@ public class EquipoDeComputoService {
             }
 
             // AGREGAR INFORMACIÓN DE ASIGNACIÓN
-            Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(equipo.getSerial());
+            EquipoDeComputo_Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(equipo.getSerial());
 
             if (asignacion != null) {
                 dto.setAsignado(true);

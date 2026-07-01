@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class AsignacionesService {
+public class EquipoDeComputo_AsignacionesService {
 
-    private final AsignacionesRepository asignacionRepository;
+    private final EquipoDeComputo_AsignacionesRepository asignacionRepository;
     private final EmpleadoRepository empleadoRepository;
     private final AreaRepository areaRepository;
     private final EquipoDeComputoRepository equipoDeComputoRepository;
@@ -27,7 +27,8 @@ public class AsignacionesService {
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final EquipoDeComputo_DetalleRepository detalleRepository;
 
-
+    // Inyectar servicio de backup
+    private final EquipoDeComputo_BackupService equipoDeComputoBackupService;
 
     // ========== ASIGNAR ==========
 
@@ -36,19 +37,19 @@ public class AsignacionesService {
         validarExistenciaActivo(solicitud.getCatalogoCodigo(), solicitud.getSerialActivo());
 
         Catalogo catalogo = catalogoRepository.findById(solicitud.getCatalogoCodigo())
-                .orElseThrow(() -> new RuntimeException("Catálogo no válido"));
+                .orElseThrow(() -> new RuntimeException("Catalogo no valido"));
 
         DispositivoTecnologico_Tipo tipo = null;
         if (solicitud.getTipoCodigo() != null) {
             tipo = tipoRepository.findById(solicitud.getTipoCodigo())
-                    .orElseThrow(() -> new RuntimeException("Tipo no válido"));
+                    .orElseThrow(() -> new RuntimeException("Tipo no valido"));
         }
 
         if (asignacionRepository.existsBySerialActivoAndActivoTrue(solicitud.getSerialActivo())) {
-            throw new RuntimeException("El serial ya está asignado activamente");
+            throw new RuntimeException("El serial ya esta asignado activamente");
         }
 
-        Asignaciones asignacion = new Asignaciones();
+        EquipoDeComputo_Asignaciones asignacion = new EquipoDeComputo_Asignaciones();
         asignacion.setCatalogo(catalogo);
         asignacion.setTipo(tipo);
         asignacion.setSerialActivo(solicitud.getSerialActivo());
@@ -57,13 +58,13 @@ public class AsignacionesService {
         asignacion.setObservaciones(solicitud.getObservaciones());
         asignacion.setActivo(true);
 
-        // SIEMPRE guardar el área
+        // SIEMPRE guardar el area
         if (solicitud.getAreaCodigo() != null) {
             Area area = areaRepository.findById(solicitud.getAreaCodigo())
-                    .orElseThrow(() -> new RuntimeException("Área no encontrada"));
+                    .orElseThrow(() -> new RuntimeException("Area no encontrada"));
             asignacion.setArea(area);
         } else {
-            throw new RuntimeException("El área es requerida para la asignación");
+            throw new RuntimeException("El area es requerida para la asignacion");
         }
 
         // Guardar empleado si existe (puede ser null)
@@ -75,9 +76,9 @@ public class AsignacionesService {
             asignacion.setEmpleado(null);
         }
 
-        Asignaciones guardada = asignacionRepository.save(asignacion);
+        EquipoDeComputo_Asignaciones guardada = asignacionRepository.save(asignacion);
 
-        // Si viene detalle, guardarlo asociado a la asignación
+        // Si viene detalle, guardarlo asociado a la asignacion
         if (solicitud.getDetalle() != null) {
             EquipoDeComputo_Detalle detalle = solicitud.getDetalle();
             detalle.setAsignacion(guardada);
@@ -86,15 +87,25 @@ public class AsignacionesService {
             detalleRepository.save(detalle);
         }
 
+        // Guardar backups si vienen en la solicitud
+        if (solicitud.getBackups() != null && !solicitud.getBackups().isEmpty()) {
+            for (AsignacionesSolicitud.BackupAsignacion b : solicitud.getBackups()) {
+                equipoDeComputoBackupService.guardarBackup(
+                        guardada.getSerialActivo(),
+                        b.getBackupInformacionCodigo(),
+                        guardada.getConsecutivo(),
+                        b.getCorreoCodigo()
+                );
+            }
+        }
 
         return convertirADTO(guardada);
     }
 
-
     // ========== DEVOLVER ==========
     @Transactional
     public void devolver(Long asignacionId, LocalDate fechaDevolucion, String observacionesDevolucion) {
-        Asignaciones asignacion = asignacionRepository.findById(asignacionId)
+        EquipoDeComputo_Asignaciones asignacion = asignacionRepository.findById(asignacionId)
                 .orElseThrow(() -> new RuntimeException("Asignacion no encontrada con ID: " + asignacionId));
 
         asignacion.setActivo(false);
@@ -105,7 +116,7 @@ public class AsignacionesService {
             asignacion.setObservaciones(observacionesDevolucion);
         }
 
-
+        // Desactivar detalle
         EquipoDeComputo_Detalle detalle = detalleRepository.findByAsignacionConsecutivo(asignacionId)
                 .orElse(null);
         if (detalle != null) {
@@ -113,11 +124,11 @@ public class AsignacionesService {
             detalleRepository.save(detalle);
         }
 
+        // Desactivar todos los backups de esta asignacion
+        equipoDeComputoBackupService.desactivarBackupsPorAsignacion(asignacionId);
 
         asignacionRepository.save(asignacion);
-
     }
-
 
     // ========== CONSULTAS ==========
     public boolean estaAsignado(String serialActivo) {
@@ -125,7 +136,7 @@ public class AsignacionesService {
     }
 
     public AsignacionesRespuesta obtenerAsignacionActual(String serialActivo) {
-        Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(serialActivo);
+        EquipoDeComputo_Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(serialActivo);
         return asignacion != null ? convertirADTO(asignacion) : null;
     }
 
@@ -143,6 +154,13 @@ public class AsignacionesService {
                 .collect(Collectors.toList());
     }
 
+
+    public EquipoDeComputo_Asignaciones obtenerPorConsecutivo(Long consecutivo) {
+        return asignacionRepository.findById(consecutivo)
+                .orElseThrow(() -> new RuntimeException("Asignacion no encontrada con consecutivo: " + consecutivo));
+    }
+
+
     // ========== METODOS PRIVADOS ==========
     private void validarExistenciaActivo(Long catalogoCodigo, String serial) {
         if (catalogoCodigo == 1L) { // EQUIPO DE COMPUTO
@@ -155,11 +173,11 @@ public class AsignacionesService {
             if (!impresoraRepository.existsById(serial))
                 throw new RuntimeException("La impresora con serial " + serial + " no existe");
         } else {
-            throw new RuntimeException("Catalogo no válido: " + catalogoCodigo);
+            throw new RuntimeException("Catalogo no valido: " + catalogoCodigo);
         }
     }
 
-    private AsignacionesRespuesta convertirADTO(Asignaciones a) {
+    private AsignacionesRespuesta convertirADTO(EquipoDeComputo_Asignaciones a) {
         AsignacionesRespuesta dto = new AsignacionesRespuesta();
         dto.setConsecutivo(a.getConsecutivo());
         dto.setCatalogoCodigo(a.getCatalogo().getCodigo());
@@ -189,11 +207,9 @@ public class AsignacionesService {
         return dto;
     }
 
-
-    // OBTENER ASIGNACIONES POR EMPLEADO
-
+    // OBTENER ASIGNACIONES POR EMPLEADO CON DETALLE
     public List<AsignacionPorEmpleado> obtenerAsignacionesPorEmpleadoConDetalle(String cedula) {
-        List<Asignaciones> asignaciones = asignacionRepository.findByEmpleadoCedulaAndActivoTrue(cedula);
+        List<EquipoDeComputo_Asignaciones> asignaciones = asignacionRepository.findByEmpleadoCedulaAndActivoTrue(cedula);
 
         return asignaciones.stream().map(a -> {
             AsignacionPorEmpleado dto = new AsignacionPorEmpleado();
@@ -207,13 +223,13 @@ public class AsignacionesService {
                 dto.setTipoDescripcion(a.getTipo().getDescripcion());
             }
 
-            // Obtener marca y modelo según el catálogo
+            // Obtener marca y modelo según el catalogo
             if (a.getCatalogo().getCodigo() == 1L) { // Equipo
                 equipoDeComputoRepository.findById(a.getSerialActivo()).ifPresent(eq -> {
                     if (eq.getMarca() != null) dto.setMarca(eq.getMarca().getDescripcion());
                     if (eq.getModelo() != null) dto.setModelo(eq.getModelo().getDescripcion());
                 });
-            } else if (a.getCatalogo().getCodigo() == 2L) { // Móvil
+            } else if (a.getCatalogo().getCodigo() == 2L) { // Movil
                 dispositivoMovilRepository.findById(a.getSerialActivo()).ifPresent(dm -> {
                     if (dm.getMarca() != null) dto.setMarca(dm.getMarca().getDescripcion());
                     if (dm.getModelo() != null) dto.setModelo(dm.getModelo().getDescripcion());
