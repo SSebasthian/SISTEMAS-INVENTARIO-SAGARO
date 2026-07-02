@@ -26,6 +26,8 @@ public class EquipoDeComputo_AsignacionesService {
     private final CatalogoRepository catalogoRepository;
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final EquipoDeComputo_DetalleRepository detalleRepository;
+    private final BackupService backupService;
+    private final Backup_InformacionService backupInformacionService;
 
     // Inyectar servicio de backup
     private final EquipoDeComputo_BackupService equipoDeComputoBackupService;
@@ -95,6 +97,35 @@ public class EquipoDeComputo_AsignacionesService {
                         b.getBackupInformacionCodigo(),
                         guardada.getConsecutivo(),
                         b.getCorreoCodigo()
+                );
+            }
+        }
+
+        // Crear backup_informacion y luego guardar en equipodecomputo_backup
+        if (solicitud.getCorreosConBackup() != null && !solicitud.getCorreosConBackup().isEmpty()) {
+            for (AsignacionesSolicitud.CorreoConBackup cb : solicitud.getCorreosConBackup()) {
+                // Obtener el programa de backup
+                Backup backupPrograma = backupService.obtenerPorCodigo(cb.getBackupData().getBackupCodigo());
+
+                // Crear backup_informacion
+                Backup_Informacion backupInfo = new Backup_Informacion();
+                backupInfo.setNombre(cb.getBackupData().getNombre());
+                backupInfo.setFrecuencia(cb.getBackupData().getFrecuencia());
+                backupInfo.setUbicacion(String.join(";", cb.getBackupData().getUbicaciones()));
+                backupInfo.setUbicacionExcluida(String.join(";", cb.getBackupData().getUbicacionesExcluidas()));
+                backupInfo.setDia(cb.getBackupData().getDia());
+                backupInfo.setBackup(backupPrograma);
+                backupInfo.setActivo(true);
+
+                // Guardar backup_informacion
+                Backup_Informacion nueva = backupInformacionService.guardar(backupInfo);
+
+                // Guardar relacion en equipodecomputo_backup
+                equipoDeComputoBackupService.guardarBackup(
+                        guardada.getSerialActivo(),
+                        nueva.getCodigo(),
+                        guardada.getConsecutivo(),
+                        cb.getCorreoCodigo()
                 );
             }
         }

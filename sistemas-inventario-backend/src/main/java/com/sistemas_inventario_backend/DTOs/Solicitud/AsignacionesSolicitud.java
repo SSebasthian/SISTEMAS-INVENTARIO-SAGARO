@@ -15,14 +15,30 @@ public class AsignacionesSolicitud {
     private String serialActivo;
     private LocalDate fechaAsignacion;  // si es null se asigna now()
     private String observaciones;
-
     private EquipoDeComputo_Detalle detalle;
-
     private List<BackupAsignacion> backups;
+    private List<CorreoConBackup> correosConBackup;
+    
 
     @Data
     public static class BackupAsignacion {
         private Long backupInformacionCodigo;
         private Long correoCodigo; // null si es backup general
+    }
+
+    @Data
+    public static class CorreoConBackup {
+        private Long correoCodigo;
+        private BackupData backupData;  // datos para crear backup_informacion
+    }
+
+    @Data
+    public static class BackupData {
+        private Long backupCodigo;        // programa de backup
+        private String nombre;
+        private String frecuencia;
+        private List<String> ubicaciones;
+        private List<String> ubicacionesExcluidas;
+        private Integer dia;
     }
 }

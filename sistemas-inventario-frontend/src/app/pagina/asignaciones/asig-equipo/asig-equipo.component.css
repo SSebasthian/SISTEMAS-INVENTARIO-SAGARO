@@ -613,19 +613,23 @@
 /* Scroll Chrome, Edge, Opera */
 .detalle-grid-aplicacion::-webkit-scrollbar,
 .lista-empleados::-webkit-scrollbar,
-.lista-software-opcional::-webkit-scrollbar {
+.lista-software-opcional::-webkit-scrollbar,
+.contenedor-correos::-webkit-scrollbar {
     width: 4px;
 }
 
 .detalle-grid-aplicacion::-webkit-scrollbar-track,
-.lista-empleados::-webkit-scrollbar-track .lista-software-opcional::-webkit-scrollbar-track {
+.lista-empleados::-webkit-scrollbar-track ,
+.lista-software-opcional::-webkit-scrollbar-track ,
+.contenedor-correos::-webkit-scrollbar-track {
     background: #a9aaad;
     border-radius: 10px;
 }
 
 .detalle-grid-aplicacion::-webkit-scrollbar-thumb,
 .lista-empleados::-webkit-scrollbar-thumb,
-.lista-software-opcional::-webkit-scrollbar-thumb {
+.lista-software-opcional::-webkit-scrollbar-thumb,
+.contenedor-correos::-webkit-scrollbar-thumb {
     background: #1e3a8a;
     border-radius: 10px;
 }
@@ -662,10 +666,11 @@
 
 
 .detalle-grid-aplicacion .software-card.seleccionado .software-icon mat-icon {
-  color: #3fb57a !important; 
+    color: #3fb57a !important;
 }
-.detalle-grid-aplicacion .software-card.seleccionado{
-    color: #3fb57a !important; 
+
+.detalle-grid-aplicacion .software-card.seleccionado {
+    color: #3fb57a !important;
 }
 
 
@@ -753,7 +758,8 @@
 }
 
 
-.campo-panel label {
+.campo-panel label,
+.lista-correos h4 {
     font-weight: 600;
     font-size: 12px;
     color: #475569;
@@ -794,6 +800,118 @@
     color: #94a3b8;
 }
 
+/* CORREO BACKUP */
+
+
+.agregar-otro-correo {
+    padding-top: 6px;
+}
+
+.agregar-otro-correo a {
+    cursor: pointer;
+    font-size: 12px;
+    color: #3399FF;
+}
+
+.agregar-otro-correo a mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-bottom: -4px;
+}
+
+.contenedor-correos{
+    max-height: 201px;
+    overflow-y: auto;
+}
+
+.lista-correos hr {
+    margin-top: 20px;
+    border: 1.7px dashed rgba(58, 57, 57, 0.5);
+}
+
+.correo-card {
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #fafafa;
+}
+
+.correo-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.correo-header mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #3f51b5;
+}
+.correo-header .mat-icon-editar mat-icon {
+    color: #408ff7;
+    cursor: pointer;
+}
+.correo-header .mat-icon-eliminar mat-icon {
+    color: #ef4444;
+    cursor: pointer;
+}
+
+
+.correo-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 35px;
+    overflow: hidden;
+}
+
+.correo-info strong {
+    font-size: 12.5px;
+    padding-left: 5px;
+}
+
+.correo-info span {
+    color: #666;
+    font-size: 12px;
+    padding-left: 5px;
+    margin-top: 3px;
+}
+
+.correo-header .correo-backup mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: #948c8c;
+}
+
+.backup-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.backup-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-agregar-correo-texto.disabled {
+    opacity: .6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+
+
+
+
+
+
 .panel-footer {
     display: flex;
     justify-content: center;
@@ -803,7 +921,8 @@
 }
 
 .btn-panel-cancelar,
-.btn-panel-guardar {
+.btn-panel-guardar,
+.btn-panel-volver {
     padding: 8px 20px;
     border-radius: 10px;
     font-size: 13px;
@@ -813,11 +932,25 @@
     border: none;
 }
 
+.footer-backup {
+     display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
 
 .btn-panel-guardar {
     background: #3f51b5;
     color: white;
 }
+
+.btn-panel-volver {
+    background: #3399FF;
+    color: white;
+}
+
 
 /* backup */
 
@@ -1151,27 +1284,27 @@
 
 
 .seleccionados-info {
-  display: flex;              
-  align-items: center;
-  justify-content: center;      
-  gap: 6px;
-  padding: 6px 16px 6px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #3f51b5;
-  width: 90%;                 
-  box-sizing: border-box;  
-  margin: auto;   
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 16px 6px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #3f51b5;
+    width: 90%;
+    box-sizing: border-box;
+    margin: auto;
 }
 
 
 .seleccionados-info mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  color: #3f51b5;
-} 
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #3f51b5;
+}
 
 
 
@@ -1298,7 +1431,8 @@
 
 .btn-devolver:hover,
 .btn-confirmar-devolver:hover,
-.btn-panel-guardar:hover {
+.btn-panel-guardar:hover,
+.btn-panel-volver:hover {
     transform: translateY(-2px);
 }
 

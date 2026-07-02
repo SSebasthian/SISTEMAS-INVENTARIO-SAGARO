@@ -344,23 +344,34 @@
 
 
                                     <!-- Correo -->
-                                    <div class="software-card" [class.seleccionado]="softwareSeleccionado.correo">
+                                    <div class="software-card"
+                                        [class.seleccionado]="softwareSeleccionado.correos?.length > 0">
                                         <div class="software-card-header" (click)="abrirPanel('correo')">
                                             <div class="software-icon">
                                                 <mat-icon>mail_outline</mat-icon>
                                             </div>
                                             <div class="software-info">
                                                 <div class="software-nombre">
-                                                    {{
-                                                    softwareSeleccionado.correo?.direccion?.split('@')[1]?.split('.')[0]
-                                                    ? (
-                                                    softwareSeleccionado.correo.direccion.split('@')[1].split('.')[0]
-                                                    .charAt(0).toUpperCase() +
-                                                    softwareSeleccionado.correo.direccion.split('@')[1].split('.')[0]
-                                                    .slice(1).toLowerCase()
-                                                    )
-                                                    : 'Correo'
-                                                    }}
+                                                    <ng-container
+                                                        *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
+                                                        <!-- Extraer el dominio del primer correo -->
+                                                        <ng-container
+                                                            *ngIf="softwareSeleccionado.correos[0]?.direccion as direccion">
+                                                            {{ direccion.split('@')[1]?.split('.')[0] | titlecase }}
+                                                        </ng-container>
+                                                        <!-- Si hay mas correos, mostrar "+X mas" -->
+                                                        <span *ngIf="softwareSeleccionado.correos.length > 1"
+                                                            class="mas-correos">
+                                                            +{{ softwareSeleccionado.correos.length - 1 }} mas
+                                                        </span>
+                                                    </ng-container>
+                                                    <ng-template #sinCorreo>Correo</ng-template>
+                                                </div>
+                                                <!-- Badge con cantidad de correos -->
+                                                <div class="software-estado"
+                                                    *ngIf="softwareSeleccionado.correos?.length > 0">
+                                                    <span class="badge asignado">{{ softwareSeleccionado.correos.length
+                                                        }} correo(s)</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -590,9 +601,10 @@
                                         </div>
                                     </div>
                                     <!-- AGREGAR (change) -->
-                                    <select [(ngModel)]="panelCorreo.correoCodigo" (change)="onCorreoSeleccionado()">
+                                    <select [(ngModel)]="panelCorreo.correoCodigo" (change)="onCorreoSeleccionado()"
+                                        [disabled]="bloquearCorreo">
                                         <option [value]="null" disabled selected></option>
-                                        <option *ngFor="let c of correosList" [value]="c.codigo">{{ c.direccion }}
+                                        <option *ngFor="let c of correosFiltrados" [value]="c.codigo">{{ c.direccion }}
                                         </option>
                                     </select>
                                 </div>
@@ -606,7 +618,8 @@
                                             <select [(ngModel)]="backupFormData.backupCodigo"
                                                 (change)="actualizarNombreBackup()">
                                                 <option [value]="null" disabled selected></option>
-                                                <option *ngFor="let b of backupList" [value]="b.codigo">{{ b.nombre }}
+                                                <option *ngFor="let b of backupListFiltrada" [value]="b.codigo">{{
+                                                    b.nombre }}
                                                 </option>
                                             </select>
                                         </div>
@@ -642,11 +655,89 @@
                                                 class="ubicacion-item">
                                                 <div class="ubicacion-input-group">
                                                     <input [(ngModel)]="backupFormData.ubicaciones[i]" class="agregar"
-                                                        [disabled]="backupDisabled" />
+                                                        [disabled]="backupDisabled" required />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="footer-backup">
+                                        <button type="button" class="btn-panel-volver" (click)="volverCorreo()">
+                                            Volver
+                                        </button>
+
+
+                                        <button type="button" class="btn-panel-guardar" (click)="guardarBackupCorreo()">
+                                            Guardar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="agregar-otro-correo"
+                                    *ngIf="!(panelTipo === 'correo' && panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
+                                    <a class="btn-agregar-correo-texto" [class.disabled]="!panelCorreo.correoCodigo"
+                                        (click)="panelCorreo.correoCodigo && agregarCorreo()">
+                                        <mat-icon>add</mat-icon>
+                                        Agregar Correo Sin Backup
+                                    </a>
+                                </div>
+                                <div *ngIf="correosFormulario.length > 0 && !(panelTipo === 'correo' &&
+                                panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
+                                    <hr>
+                                    <h4>Correos agregados</h4>
+
+                                    <div class="contenedor-correos">
+                                        <div class="correo-card" *ngFor="let item of correosFormulario; let i = index">
+
+                                            <div class="correo-header">
+                                                <mat-icon>mail</mat-icon>
+
+                                                <div class="correo-info">
+
+                                                    <strong>{{ item.direccion }}</strong>
+
+                                                    <ng-container *ngIf="item.realizarBackup; else sinBackup">
+                                                        <div class="correo-backup">
+                                                            <div class="backup-info">
+                                                                <span class="backup-chip">
+                                                                    <mat-icon>storage</mat-icon>
+                                                                    {{ item.backup.programa.charAt(0).toUpperCase() +
+                                                                    item.backup.programa.slice(1).toLowerCase() }}
+                                                                </span>
+                                                                <span class="backup-chip">
+                                                                    <mat-icon>schedule</mat-icon>
+                                                                    {{ item.backup.frecuencia.charAt(0).toUpperCase() +
+                                                                    item.backup.frecuencia.slice(1).toLowerCase() }}
+                                                                </span>
+                                                                <span class="backup-chip" *ngIf="item.backup.dia">
+                                                                    <mat-icon>calendar_today</mat-icon>
+                                                                    Dia {{ item.backup.dia }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </ng-container>
+
+                                                    <ng-template #sinBackup>
+                                                        <span class="sin-backup">
+                                                            Sin backup
+                                                        </span>
+                                                    </ng-template>
+
+                                                </div>
+
+                                                <a class="mat-icon-editar" (click)="editarBackupCorreo(item, i)">
+                                                    <mat-icon>edit</mat-icon>
+                                                </a>
+                                                <a class="mat-icon-eliminar" (click)="correosFormulario.splice(i,1)">
+                                                    <mat-icon>delete</mat-icon>
+                                                </a>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+
                                 </div>
                             </ng-container>
 
@@ -664,7 +755,6 @@
                                     </select>
                                 </div>
                             </ng-container>
-
 
 
                             <!-- SOFTWARE OPCIONAL -->
@@ -707,7 +797,8 @@
                     </div>
                 </div>
 
-                <div class="panel-footer">
+                <div class="panel-footer"
+                    *ngIf="!(panelTipo === 'correo' && panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
                     <button class="btn-panel-cancelar" (click)="cerrarPanel()">Cancelar</button>
                     <button class="btn-panel-guardar" (click)="guardarPanel()">Guardar</button>
                 </div>
