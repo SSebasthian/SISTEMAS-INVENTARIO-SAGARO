@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class EquipoDeComputo_AsignacionesService {
+public class EquipoDeComputo_AsignacionService {
 
-    private final EquipoDeComputo_AsignacionesRepository asignacionRepository;
+    private final EquipoDeComputo_AsignacionRepository asignacionRepository;
     private final EmpleadoRepository empleadoRepository;
     private final AreaRepository areaRepository;
     private final EquipoDeComputoRepository equipoDeComputoRepository;
@@ -31,6 +31,8 @@ public class EquipoDeComputo_AsignacionesService {
 
     // Inyectar servicio de backup
     private final EquipoDeComputo_BackupService equipoDeComputoBackupService;
+    private final EquipoDeComputo_SoftwareService equipoDeComputoSoftwareService;
+
 
     // ========== ASIGNAR ==========
 
@@ -51,7 +53,7 @@ public class EquipoDeComputo_AsignacionesService {
             throw new RuntimeException("El serial ya esta asignado activamente");
         }
 
-        EquipoDeComputo_Asignaciones asignacion = new EquipoDeComputo_Asignaciones();
+        EquipoDeComputo_Asignacion asignacion = new EquipoDeComputo_Asignacion();
         asignacion.setCatalogo(catalogo);
         asignacion.setTipo(tipo);
         asignacion.setSerialActivo(solicitud.getSerialActivo());
@@ -78,7 +80,7 @@ public class EquipoDeComputo_AsignacionesService {
             asignacion.setEmpleado(null);
         }
 
-        EquipoDeComputo_Asignaciones guardada = asignacionRepository.save(asignacion);
+        EquipoDeComputo_Asignacion guardada = asignacionRepository.save(asignacion);
 
         // Si viene detalle, guardarlo asociado a la asignacion
         if (solicitud.getDetalle() != null) {
@@ -130,13 +132,24 @@ public class EquipoDeComputo_AsignacionesService {
             }
         }
 
+        if (solicitud.getSoftwares() != null && !solicitud.getSoftwares().isEmpty()) {
+            for (AsignacionesSolicitud.SoftwareAsignacion sa : solicitud.getSoftwares()) {
+                equipoDeComputoSoftwareService.asignarSoftware(
+                        guardada.getSerialActivo(),
+                        sa.getSoftwareCodigo(),
+                        guardada.getConsecutivo(),
+                        sa.getPoliticaCodigo()
+                );
+            }
+        }
+
         return convertirADTO(guardada);
     }
 
     // ========== DEVOLVER ==========
     @Transactional
     public void devolver(Long asignacionId, LocalDate fechaDevolucion, String observacionesDevolucion) {
-        EquipoDeComputo_Asignaciones asignacion = asignacionRepository.findById(asignacionId)
+        EquipoDeComputo_Asignacion asignacion = asignacionRepository.findById(asignacionId)
                 .orElseThrow(() -> new RuntimeException("Asignacion no encontrada con ID: " + asignacionId));
 
         asignacion.setActivo(false);
@@ -158,6 +171,10 @@ public class EquipoDeComputo_AsignacionesService {
         // Desactivar todos los backups de esta asignacion
         equipoDeComputoBackupService.desactivarBackupsPorAsignacion(asignacionId);
 
+        // Desactivar todos los software de esta asignacion
+        equipoDeComputoSoftwareService.desactivarSoftwarePorAsignacion(asignacionId);
+
+
         asignacionRepository.save(asignacion);
     }
 
@@ -167,7 +184,7 @@ public class EquipoDeComputo_AsignacionesService {
     }
 
     public AsignacionesRespuesta obtenerAsignacionActual(String serialActivo) {
-        EquipoDeComputo_Asignaciones asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(serialActivo);
+        EquipoDeComputo_Asignacion asignacion = asignacionRepository.findFirstBySerialActivoAndActivoTrue(serialActivo);
         return asignacion != null ? convertirADTO(asignacion) : null;
     }
 
@@ -186,7 +203,7 @@ public class EquipoDeComputo_AsignacionesService {
     }
 
 
-    public EquipoDeComputo_Asignaciones obtenerPorConsecutivo(Long consecutivo) {
+    public EquipoDeComputo_Asignacion obtenerPorConsecutivo(Long consecutivo) {
         return asignacionRepository.findById(consecutivo)
                 .orElseThrow(() -> new RuntimeException("Asignacion no encontrada con consecutivo: " + consecutivo));
     }
@@ -208,7 +225,7 @@ public class EquipoDeComputo_AsignacionesService {
         }
     }
 
-    private AsignacionesRespuesta convertirADTO(EquipoDeComputo_Asignaciones a) {
+    private AsignacionesRespuesta convertirADTO(EquipoDeComputo_Asignacion a) {
         AsignacionesRespuesta dto = new AsignacionesRespuesta();
         dto.setConsecutivo(a.getConsecutivo());
         dto.setCatalogoCodigo(a.getCatalogo().getCodigo());
@@ -240,7 +257,7 @@ public class EquipoDeComputo_AsignacionesService {
 
     // OBTENER ASIGNACIONES POR EMPLEADO CON DETALLE
     public List<AsignacionPorEmpleado> obtenerAsignacionesPorEmpleadoConDetalle(String cedula) {
-        List<EquipoDeComputo_Asignaciones> asignaciones = asignacionRepository.findByEmpleadoCedulaAndActivoTrue(cedula);
+        List<EquipoDeComputo_Asignacion> asignaciones = asignacionRepository.findByEmpleadoCedulaAndActivoTrue(cedula);
 
         return asignaciones.stream().map(a -> {
             AsignacionPorEmpleado dto = new AsignacionPorEmpleado();

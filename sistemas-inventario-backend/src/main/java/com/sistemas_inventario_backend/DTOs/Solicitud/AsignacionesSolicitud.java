@@ -18,7 +18,7 @@ public class AsignacionesSolicitud {
     private EquipoDeComputo_Detalle detalle;
     private List<BackupAsignacion> backups;
     private List<CorreoConBackup> correosConBackup;
-    
+    private List<SoftwareAsignacion> softwares;
 
     @Data
     public static class BackupAsignacion {
@@ -41,4 +41,12 @@ public class AsignacionesSolicitud {
         private List<String> ubicacionesExcluidas;
         private Integer dia;
     }
+
+    @Data
+    public static class SoftwareAsignacion {
+        private Long softwareCodigo;
+        private Long politicaCodigo; // solo para antivirus, null
+    }
+
+
 }

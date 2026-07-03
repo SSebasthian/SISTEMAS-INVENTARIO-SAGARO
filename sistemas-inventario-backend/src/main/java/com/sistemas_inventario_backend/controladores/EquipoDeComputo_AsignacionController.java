@@ -3,7 +3,7 @@ package com.sistemas_inventario_backend.controladores;
 import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionPorEmpleado;
 import com.sistemas_inventario_backend.DTOs.Solicitud.AsignacionesSolicitud;
 import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionesRespuesta;
-import com.sistemas_inventario_backend.servicios.EquipoDeComputo_AsignacionesService;
+import com.sistemas_inventario_backend.servicios.EquipoDeComputo_AsignacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +16,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/asignaciones")
 @RequiredArgsConstructor
-public class EquipoDeComputo_AsignacionesController {
+public class EquipoDeComputo_AsignacionController {
 
-    private final EquipoDeComputo_AsignacionesService equipoDeComputoAsignacionesService;
+    private final EquipoDeComputo_AsignacionService equipoDeComputoAsignacionesService;
 
     // ========== ASIGNAR ==========
 

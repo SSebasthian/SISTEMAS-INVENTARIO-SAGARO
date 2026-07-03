@@ -1,7 +1,7 @@
 package com.sistemas_inventario_backend.servicios;
 
 import com.sistemas_inventario_backend.entidades.*;
-import com.sistemas_inventario_backend.repositorios.EquipoDeComputo_AsignacionesRepository;
+import com.sistemas_inventario_backend.repositorios.EquipoDeComputo_AsignacionRepository;
 import com.sistemas_inventario_backend.repositorios.EquipoDeComputo_BackupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ public class EquipoDeComputo_BackupService {
 
     private final EquipoDeComputo_BackupRepository repository;
     private final Backup_InformacionService backupInformacionService;
-    private final EquipoDeComputo_AsignacionesRepository equipoDeComputoAsignacionesRepository;
+    private final EquipoDeComputo_AsignacionRepository equipoDeComputoAsignacionesRepository;
 
     private final CorreoCorporativoService correoService;
 
@@ -41,7 +41,7 @@ public class EquipoDeComputo_BackupService {
             Long correoCodigo) {
 
         Backup_Informacion backupInfo = backupInformacionService.obtenerPorCodigo(backupInformacionCodigo);
-        EquipoDeComputo_Asignaciones asignacion = equipoDeComputoAsignacionesRepository.findById(asignacionConsecutivo)
+        EquipoDeComputo_Asignacion asignacion = equipoDeComputoAsignacionesRepository.findById(asignacionConsecutivo)
                 .orElseThrow(() ->
                         new RuntimeException("Asignacion no encontrada"));
         CorreosCorporativos correo = (correoCodigo != null) ? correoService.obtenerPorCodigo(correoCodigo) : null;

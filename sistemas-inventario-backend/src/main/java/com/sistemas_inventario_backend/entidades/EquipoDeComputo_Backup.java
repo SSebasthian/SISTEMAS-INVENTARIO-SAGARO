@@ -37,7 +37,7 @@ public class EquipoDeComputo_Backup {
 
     @ManyToOne
     @JoinColumn(name = "asignacion_consecutivo", nullable = false)
-    private EquipoDeComputo_Asignaciones asignacion;
+    private EquipoDeComputo_Asignacion asignacion;
 
     @ManyToOne
     @JoinColumn(name = "correo_codigo")   // nullable = true por defecto

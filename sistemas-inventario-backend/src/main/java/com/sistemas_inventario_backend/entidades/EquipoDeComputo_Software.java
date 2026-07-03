@@ -5,43 +5,35 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Entity
-@Table(name = "equipodecomputo_detalle", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"ip"})
-})@Getter
+@Table(name = "equipodecomputo_software")
+@Getter
 @Setter
 @NoArgsConstructor
-public class EquipoDeComputo_Detalle {
+public class EquipoDeComputo_Software {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long numero;
 
+    // Relacion con el equipo
     @ManyToOne
     @JoinColumn(name = "serial", referencedColumnName = "serial", nullable = false)
     private EquipoDeComputo equipo;
 
-    // CREDENCIALES
+    @ManyToOne
+    @JoinColumn(name = "software_codigo", nullable = false)
+    private Software software;
 
-    private String nombreEquipo;
+    @ManyToOne
+    @JoinColumn(name = "politica_codigo", referencedColumnName = "codigo")
+    private Antivirus_Politica politica;
 
-    private String nombreUsuario;
-    private String claveUsuario;
-
-    private String nombreUsuarioAdministrador;
-    private String claveUsuarioAdministrador;
-
-    private String nombreUsuarioAdicional;
-    private String claveUsuarioAdicional;
-
-    @Column(nullable = false)
-    private Integer ip;
-
-
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "asignacion_consecutivo", referencedColumnName = "consecutivo")
     private EquipoDeComputo_Asignacion asignacion;
 
     private Boolean activo = true;
+
+
 }

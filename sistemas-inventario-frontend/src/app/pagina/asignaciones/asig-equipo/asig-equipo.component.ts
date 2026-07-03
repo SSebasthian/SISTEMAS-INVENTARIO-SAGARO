@@ -757,6 +757,58 @@ export class AsigEquipoComponent {
       }
     }
 
+
+    // ============================================================
+    // LISTA DE SOFTWARE
+    // ============================================================
+
+    const softwares: any[] = [];
+
+    // 1. Antivirus (si esta seleccionado)
+    if (this.softwareSeleccionado.antivirus) {
+      softwares.push({
+        softwareCodigo: this.softwareSeleccionado.antivirus.antivirusCodigo,
+        politicaCodigo: this.softwareSeleccionado.antivirus.politicaCodigo,
+      });
+    }
+
+    // 2. Office (si esta seleccionado)
+    if (this.softwareSeleccionadoOffice) {
+      softwares.push({
+        softwareCodigo: this.softwareSeleccionadoOffice.codigo,
+        politicaCodigo: 0
+      });
+    }
+
+    // 3. Software opcional (multiple)
+    if (this.softwareSeleccionadoOpcional) {
+      // Recorrer cada tipo (clave) de software opcional
+      for (const tipoCodigo in this.softwareSeleccionadoOpcional) {
+        if (this.softwareSeleccionadoOpcional.hasOwnProperty(tipoCodigo)) {
+          const lista = this.softwareSeleccionadoOpcional[tipoCodigo];
+          if (Array.isArray(lista) && lista.length > 0) {
+            // Si es un array, recorrer cada elemento
+            for (const sw of lista) {
+              if (sw && sw.codigo) {
+                softwares.push({
+                  softwareCodigo: sw.codigo,
+                  politicaCodigo: 0
+                });
+              }
+            }
+          } else if (lista && lista.codigo) {
+            // Si es un objeto unico (por si tu implementacion anterior lo dejo asi)
+            softwares.push({
+              softwareCodigo: lista.codigo,
+              politicaCodigo: 0
+            });
+          }
+        }
+      }
+    }
+
+
+
     // ============================================================
     // PAYLOAD COMPLETO
     // ============================================================
@@ -771,7 +823,10 @@ export class AsigEquipoComponent {
       detalle: detalleData,
       backups: backups,
       correosConBackup: correosConBackup,
+      softwares: softwares,
     };
+
+    
 
 
     // ============================================================

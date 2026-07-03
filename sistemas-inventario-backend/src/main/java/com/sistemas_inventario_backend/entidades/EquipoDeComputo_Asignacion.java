@@ -5,9 +5,9 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "equipodecomputo_asignaciones")
+@Table(name = "equipodecomputo_asignacion")
 @Data
-public class EquipoDeComputo_Asignaciones {
+public class EquipoDeComputo_Asignacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
