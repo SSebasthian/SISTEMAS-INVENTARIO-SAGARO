@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -17,5 +17,32 @@ export class ConsultarBackupInformacionService {
 
   listarActivos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/activos`);
+  }
+
+  buscarPorCriterios(
+    nombre: string,
+    frecuencia: string,
+    ubicacion: string | null,
+    ubicacionExcluida: string | null,
+    dia: number | null,
+    hora: string | null,
+    backupCodigo: number,
+    tipo: string                    // tipo ("EQUIPO" o "CORREO")
+  ): Observable<any> {
+    const params = new HttpParams()
+      .set('nombre', nombre)
+      .set('frecuencia', frecuencia)
+      .set('ubicacion', ubicacion || '')
+      .set('ubicacionExcluida', ubicacionExcluida || '')
+      .set('dia', dia !== null && dia !== undefined ? dia.toString() : '')
+      .set('hora', hora || '')
+      .set('backupCodigo', backupCodigo.toString())
+      .set('tipo', tipo);
+
+    return this.http.get<any>(`${this.apiUrl}/buscar`, { params });
+  }
+
+  listarPorBackupYTipo(backupCodigo: number, tipo: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/por-backup/${backupCodigo}/tipo/${tipo}`);
   }
 }

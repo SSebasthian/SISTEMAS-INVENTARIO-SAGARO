@@ -33,6 +33,7 @@ public class EquipoDeComputo_AsignacionController {
     }
 
 
+
     // ========== DEVOLVER ==========
     @PutMapping("/{id}/devolver")
     public ResponseEntity<?> devolver(@PathVariable Long id, @RequestBody Map<String, String> body) {

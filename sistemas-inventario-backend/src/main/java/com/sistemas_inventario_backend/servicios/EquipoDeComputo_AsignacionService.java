@@ -106,26 +106,52 @@ public class EquipoDeComputo_AsignacionService {
         // Crear backup_informacion y luego guardar en equipodecomputo_backup
         if (solicitud.getCorreosConBackup() != null && !solicitud.getCorreosConBackup().isEmpty()) {
             for (AsignacionesSolicitud.CorreoConBackup cb : solicitud.getCorreosConBackup()) {
-                // Obtener el programa de backup
-                Backup backupPrograma = backupService.obtenerPorCodigo(cb.getBackupData().getBackupCodigo());
+                AsignacionesSolicitud.BackupData bd = cb.getBackupData();
 
-                // Crear backup_informacion
-                Backup_Informacion backupInfo = new Backup_Informacion();
-                backupInfo.setNombre(cb.getBackupData().getNombre());
-                backupInfo.setFrecuencia(cb.getBackupData().getFrecuencia());
-                backupInfo.setUbicacion(String.join(";", cb.getBackupData().getUbicaciones()));
-                backupInfo.setUbicacionExcluida(String.join(";", cb.getBackupData().getUbicacionesExcluidas()));
-                backupInfo.setDia(cb.getBackupData().getDia());
-                backupInfo.setBackup(backupPrograma);
-                backupInfo.setActivo(true);
+                // 1. Verificar si ya existe una configuración igual
+                Backup_Informacion existente = null;
+                try {
+                    existente = backupInformacionService.buscarPorCriterios(
+                            bd.getNombre(),
+                            bd.getFrecuencia(),
+                            String.join(";", bd.getUbicaciones()),
+                            String.join(";", bd.getUbicacionesExcluidas()),
+                            bd.getDia(),
+                            bd.getHora() != null ? java.time.LocalTime.parse(bd.getHora()) : null,
+                            bd.getBackupCodigo(),
+                            bd.getTipo()  // "CORREO"
+                    );
+                } catch (Exception e) {
+                    // Si falla la búsqueda, no importa, se creará uno nuevo
+                }
 
-                // Guardar backup_informacion
-                Backup_Informacion nueva = backupInformacionService.guardar(backupInfo);
+                Long backupInfoCodigo;
+                if (existente != null) {
+                    // REUTILIZAR el existente
+                    backupInfoCodigo = existente.getCodigo();
+                } else {
+                    // CREAR NUEVO
+                    Backup backupPrograma = backupService.obtenerPorCodigo(bd.getBackupCodigo());
+                    Backup_Informacion backupInfo = new Backup_Informacion();
+                    backupInfo.setNombre(bd.getNombre());
+                    backupInfo.setFrecuencia(bd.getFrecuencia());
+                    backupInfo.setUbicacion(String.join(";", bd.getUbicaciones()));
+                    backupInfo.setUbicacionExcluida(String.join(";", bd.getUbicacionesExcluidas()));
+                    backupInfo.setDia(bd.getDia());
+                    backupInfo.setBackup(backupPrograma);
+                    backupInfo.setActivo(true);
+                    backupInfo.setTipo(bd.getTipo());
+                    if (bd.getHora() != null && !bd.getHora().isEmpty()) {
+                        backupInfo.setHora(java.time.LocalTime.parse(bd.getHora()));
+                    }
+                    Backup_Informacion nueva = backupInformacionService.guardar(backupInfo);
+                    backupInfoCodigo = nueva.getCodigo();
+                }
 
-                // Guardar relacion en equipodecomputo_backup
+                // Guardar relación en equipodecomputo_backup (reutiliza el código)
                 equipoDeComputoBackupService.guardarBackup(
                         guardada.getSerialActivo(),
-                        nueva.getCodigo(),
+                        backupInfoCodigo,
                         guardada.getConsecutivo(),
                         cb.getCorreoCodigo()
                 );

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -25,13 +26,18 @@ public class Backup_InformacionService {
         return repository.findByBackupCodigoAndActivoTrue(backupCodigo);
     }
 
+    //  NUEVO: listar por backup y tipo
+    public List<Backup_Informacion> listarPorBackupYTipo(Long backupCodigo, String tipo) {
+        return repository.findByBackupCodigoAndTipoAndActivoTrue(backupCodigo, tipo);
+    }
+
     public List<Backup_Informacion> listarTodos() {
         return repository.findAll();
     }
 
     public Backup_Informacion obtenerPorCodigo(Long codigo) {
         return repository.findById(codigo)
-                .orElseThrow(() -> new RuntimeException("Información de backup no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Informacion de backup no encontrada"));
     }
 
     @Transactional
@@ -39,19 +45,15 @@ public class Backup_InformacionService {
         if (info.getBackup() == null || info.getBackup().getCodigo() == null) {
             throw new RuntimeException("Debe asignar un backup");
         }
+        //  Validar que el tipo esté presente
+        if (info.getTipo() == null || info.getTipo().trim().isEmpty()) {
+            throw new RuntimeException("Debe especificar el tipo (EQUIPO o CORREO)");
+        }
+
         Backup backup = backupRepository.findById(info.getBackup().getCodigo())
                 .orElseThrow(() -> new RuntimeException("Backup no encontrado"));
         info.setBackup(backup);
         info.setActivo(true);
-        // Validar dia según frecuencia
-        if (info.getFrecuencia() != null && info.getDia() != null) {
-            if ("SEMANAL".equalsIgnoreCase(info.getFrecuencia()) && (info.getDia() < 1 || info.getDia() > 7)) {
-                throw new RuntimeException("Para frecuencia SEMANAL, el dia debe ser 1-7");
-            }
-            if ("MENSUAL".equalsIgnoreCase(info.getFrecuencia()) && (info.getDia() < 1 || info.getDia() > 31)) {
-                throw new RuntimeException("Para frecuencia MENSUAL, el dia debe ser 1-31");
-            }
-        }
         this.validarDiaSegunFrecuencia(info);
         return repository.save(info);
     }
@@ -59,22 +61,20 @@ public class Backup_InformacionService {
     @Transactional
     public Backup_Informacion actualizar(Long codigo, Backup_Informacion datos) {
         Backup_Informacion existente = obtenerPorCodigo(codigo);
-
-        // Actualizar campos simples
         existente.setNombre(datos.getNombre());
         existente.setFrecuencia(datos.getFrecuencia());
         existente.setUbicacion(datos.getUbicacion());
-        existente.setUbicacionExcluida(datos.getUbicacionExcluida()); // si existe
+        existente.setUbicacionExcluida(datos.getUbicacionExcluida());
         existente.setDia(datos.getDia());
+        existente.setHora(datos.getHora());  //  actualizar hora
         existente.setActivo(datos.getActivo());
+        existente.setTipo(datos.getTipo());  //  actualizar tipo
 
-        // Actualizar la relacion con el programa (backup)
         if (datos.getBackup() != null && datos.getBackup().getCodigo() != null) {
             Backup backup = backupRepository.findById(datos.getBackup().getCodigo())
                     .orElseThrow(() -> new RuntimeException("Backup no encontrado"));
             existente.setBackup(backup);
         }
-
         return repository.save(existente);
     }
 
@@ -85,13 +85,11 @@ public class Backup_InformacionService {
         repository.save(existente);
     }
 
-
     private void validarDiaSegunFrecuencia(Backup_Informacion info) {
         String frecuencia = info.getFrecuencia();
         Integer dia = info.getDia();
         if (frecuencia != null && dia != null) {
             if ("DIARIO".equalsIgnoreCase(frecuencia)) {
-                // Si es DIARIO, el dia debe ser null (no aplica)
                 info.setDia(null);
             } else if ("SEMANAL".equalsIgnoreCase(frecuencia)) {
                 if (dia < 1 || dia > 7) {
@@ -107,4 +105,18 @@ public class Backup_InformacionService {
         }
     }
 
+    // BUSQUEDA POR CRITERIOS (con tipo y hora)
+    public Backup_Informacion buscarPorCriterios(
+            String nombre,
+            String frecuencia,
+            String ubicacion,
+            String ubicacionExcluida,
+            Integer dia,
+            LocalTime hora,
+            Long backupCodigo,
+            String tipo) {
+        return repository.buscarPorCriterios(
+                nombre, frecuencia, ubicacion, ubicacionExcluida, dia, hora, backupCodigo, tipo
+        ).orElse(null);
+    }
 }

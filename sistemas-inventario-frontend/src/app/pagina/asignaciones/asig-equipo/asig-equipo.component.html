@@ -224,29 +224,50 @@
 
                                     <div class="detalle-grid">
 
-                                        <!-- Nombre Equipo -->
+                                        <!-- Nombre Equipo (obligatorio) -->
                                         <div class="campo-detalle">
-                                            <label>NOMBRE EQUIPO</label>
+                                            <label
+                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.nombreEquipo?.trim()">
+                                                NOMBRE EQUIPO
+                                                <span
+                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.nombreEquipo?.trim()">*</span>
+                                            </label>
                                             <input [(ngModel)]="detalle.nombreEquipo"
                                                 (input)="detalle.nombreEquipo = detalle.nombreEquipo.toUpperCase()" />
                                         </div>
 
-                                        <!-- IP (1-255) -->
+                                        <!-- IP (obligatorio) -->
                                         <div class="campo-detalle">
-                                            <label>IP (1-255)</label>
+                                            <label
+                                                [class.label-error]="intentadoAvanzarPaso2 && (detalle.ip === null || detalle.ip === undefined || detalle.ip < 1 || detalle.ip > 255)">
+                                                IP (1-255)
+                                                <span
+                                                    *ngIf="intentadoAvanzarPaso2 && (detalle.ip === null || detalle.ip === undefined || detalle.ip < 1 || detalle.ip > 255)">*</span>
+                                            </label>
                                             <input type="number" min="1" max="255" [(ngModel)]="detalle.ip" />
                                         </div>
 
-                                        <!-- Credenciales -->
-
+                                        <!-- Usuario Admin (obligatorio) -->
                                         <div class="campo-detalle">
-                                            <label>USUARIO ADMIN</label>
+                                            <label
+                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.nombreUsuarioAdministrador?.trim()">
+                                                USUARIO ADMIN
+                                                <span
+                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.nombreUsuarioAdministrador?.trim()">*
+                                                </span>
+                                            </label>
                                             <input [(ngModel)]="detalle.nombreUsuarioAdministrador"
                                                 (input)="detalle.nombreUsuarioAdministrador = detalle.nombreUsuarioAdministrador.toUpperCase()" />
                                         </div>
 
+                                        <!-- Clave Admin (obligatorio) -->
                                         <div class="campo-detalle">
-                                            <label>CLAVE ADMIN</label>
+                                            <label
+                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.claveUsuarioAdministrador?.trim()">
+                                                CLAVE ADMIN
+                                                <span
+                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.claveUsuarioAdministrador?.trim()">*</span>
+                                            </label>
                                             <div class="input-con-toggle">
                                                 <input [type]="mostrarClaveAdmin ? 'text' : 'password'"
                                                     [(ngModel)]="detalle.claveUsuarioAdministrador" />
@@ -256,14 +277,26 @@
                                             </div>
                                         </div>
 
+                                        <!-- Usuario (obligatorio) -->
                                         <div class="campo-detalle">
-                                            <label>USUARIO</label>
+                                            <label
+                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.nombreUsuario?.trim()">
+                                                USUARIO
+                                                <span
+                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.nombreUsuario?.trim()">*</span>
+                                            </label>
                                             <input [(ngModel)]="detalle.nombreUsuario"
                                                 (input)="detalle.nombreUsuario = detalle.nombreUsuario.toUpperCase()" />
                                         </div>
 
+                                        <!-- Clave Usuario (obligatorio) -->
                                         <div class="campo-detalle">
-                                            <label>CLAVE USUARIO</label>
+                                            <label
+                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.claveUsuario?.trim()">
+                                                CLAVE USUARIO
+                                                <span
+                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.claveUsuario?.trim()">*</span>
+                                            </label>
                                             <div class="input-con-toggle">
                                                 <input [type]="mostrarClaveUsuario ? 'text' : 'password'"
                                                     [(ngModel)]="detalle.claveUsuario" />
@@ -273,15 +306,21 @@
                                             </div>
                                         </div>
 
-
+                                        <!-- Usuario Adicional (opcional) -->
                                         <div class="campo-detalle">
-                                            <label>USUARIO ADICIONAL</label>
+                                            <label [class.label-error]="errorAdicional">
+                                                USUARIO ADICIONAL
+                                            </label>
                                             <input [(ngModel)]="detalle.nombreUsuarioAdicional"
                                                 (input)="detalle.nombreUsuarioAdicional = detalle.nombreUsuarioAdicional.toUpperCase()" />
                                         </div>
 
+                                        <!-- Clave Adicional (opcional) -->
                                         <div class="campo-detalle">
-                                            <label>CLAVE ADICIONAL</label>
+                                            <label [class.label-error]="errorAdicional">
+                                                CLAVE ADICIONAL
+                                                <span *ngIf="errorAdicional">*</span>
+                                            </label>
                                             <div class="input-con-toggle">
                                                 <input [type]="mostrarClaveAdicional ? 'text' : 'password'"
                                                     [(ngModel)]="detalle.claveUsuarioAdicional" />
@@ -290,6 +329,7 @@
                                                 </mat-icon>
                                             </div>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -307,10 +347,11 @@
                                 <div class="detalle-grid-aplicacion obligatorio">
 
                                     <!-- Antivirus -->
-                                    <div class="software-card" [class.seleccionado]="softwareSeleccionado.antivirus">
+                                    <div class="software-card" [class.seleccionado]="softwareSeleccionado.antivirus"
+                                        [class.label-error]="errorAntivirus">
                                         <div class="software-card-header" (click)="abrirPanel('antivirus')">
                                             <div class="software-icon">
-                                                <mat-icon>security</mat-icon>
+                                                <mat-icon [class.label-error]="errorAntivirus">security</mat-icon>
                                             </div>
                                             <div class="software-info">
                                                 <div class="software-nombre">
@@ -318,16 +359,19 @@
                                                     softwareSeleccionado.antivirus?.nombre
                                                     ? (softwareSeleccionado.antivirus.nombre.toLowerCase() | titlecase)
                                                     : 'Antivirus'
-                                                    }} </div>
+                                                    }}
+                                                    <span *ngIf="errorAntivirus">*</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Backup -->
-                                    <div class="software-card" [class.seleccionado]="softwareSeleccionado.backup">
+                                    <div class="software-card" [class.seleccionado]="softwareSeleccionado.backup"
+                                        [class.label-error]="errorBackup">
                                         <div class="software-header" (click)="abrirPanel('backup')">
                                             <div class="software-icon">
-                                                <mat-icon>backup</mat-icon>
+                                                <mat-icon [class.label-error]="errorBackup">backup</mat-icon>
                                             </div>
                                             <div class="software-info">
                                                 <div class="software-nombre">
@@ -337,7 +381,9 @@
                                                     +
                                                     softwareSeleccionado.backupGeneral.nombre.slice(1).toLowerCase())
                                                     : 'Backup'
-                                                    }} </div>
+                                                    }}
+                                                    <span *ngIf="errorBackup">*</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -345,10 +391,11 @@
 
                                     <!-- Correo -->
                                     <div class="software-card"
-                                        [class.seleccionado]="softwareSeleccionado.correos?.length > 0">
+                                        [class.seleccionado]="softwareSeleccionado.correos?.length > 0"
+                                        [class.label-error]="errorCorreo">
                                         <div class="software-card-header" (click)="abrirPanel('correo')">
                                             <div class="software-icon">
-                                                <mat-icon>mail_outline</mat-icon>
+                                                <mat-icon [class.label-error]="errorCorreo">mail_outline</mat-icon>
                                             </div>
                                             <div class="software-info">
                                                 <div class="software-nombre">
@@ -365,7 +412,9 @@
                                                             +{{ softwareSeleccionado.correos.length - 1 }} mas
                                                         </span>
                                                     </ng-container>
-                                                    <ng-template #sinCorreo>Correo</ng-template>
+                                                    <ng-template #sinCorreo>Correo
+                                                        <span *ngIf="errorCorreo">*</span>
+                                                    </ng-template>
                                                 </div>
                                                 <!-- Badge con cantidad de correos -->
                                                 <div class="software-estado"
@@ -381,14 +430,16 @@
                                     <!-- OFFICE -->
 
                                     <div *ngIf="softwareTipoOffice" class="software-card" (click)="abrirPanel('office')"
-                                        [class.seleccionado]="softwareSeleccionadoOffice">
+                                        [class.seleccionado]="softwareSeleccionadoOffice"
+                                        [class.label-error]="errorOffice">
                                         <div class="software-card-header">
                                             <div class="software-icon">
-                                                <mat-icon>description</mat-icon>
+                                                <mat-icon [class.label-error]="errorOffice">description</mat-icon>
                                             </div>
                                             <div class="software-info">
                                                 <div class="software-nombre">
                                                     {{ (softwareSeleccionadoOffice?.nombre | titlecase) || 'Office' }}
+                                                    <span *ngIf="errorOffice">*</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -491,13 +542,22 @@
 
                                     <div class="campo-panel">
                                         <label>NOMBRE BACKUP</label>
-                                        <input [(ngModel)]="backupFormData.nombre" [disabled]="backupDisabled" />
+                                        <select [(ngModel)]="configuracionSeleccionada"
+                                            (ngModelChange)="seleccionarConfiguracionBackup($event)"
+                                            [disabled]="backupDisabled">
+                                            <option [ngValue]="null"></option>
+                                            <option *ngFor="let c of configuracionesBackup" [ngValue]="c">
+                                                {{ c.nombre }}
+                                            </option>
+                                            <option [value]="-1" [disabled]="true">───────────────</option>
+                                            <option [ngValue]="null">CREAR NUEVO</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <br>
 
-                                <div class="fila-doble">
-                                    <div class="campo-panel">
+                                <div class="fila-triple">
+                                    <div class="campo-panel campo-frecuencia">
                                         <label>FRECUENCIA</label>
                                         <select [(ngModel)]="backupFormData.frecuencia" [disabled]="backupDisabled"
                                             (change)="validarDia()">
@@ -507,10 +567,15 @@
                                             <option value="MENSUAL">MENSUAL</option>
                                         </select>
                                     </div>
-                                    <div class="campo-panel">
+                                    <div class="campo-panel campo-dia">
                                         <label>DIA</label>
-                                        <input type="number" [(ngModel)]="backupFormData.dia"
+                                        <input type="number" min="1" max="30" [(ngModel)]="backupFormData.dia"
                                             [disabled]="backupDisabled || backupFormData.frecuencia === 'DIARIO'" />
+                                    </div>
+                                    <div class="campo-panel campo-hora">
+                                        <label>HORA</label>
+                                        <input type="time" min="00:00" max="23:59" step="3600"
+                                            [(ngModel)]="backupFormData.hora" [disabled]="backupDisabled" />
                                     </div>
                                 </div>
                                 <br>
@@ -576,6 +641,7 @@
                                             <mat-icon>library_add</mat-icon> Excluir Ubicacion
                                         </button>
                                     </div>
+
                                 </div>
 
                             </ng-container>
@@ -601,8 +667,7 @@
                                         </div>
                                     </div>
                                     <!-- AGREGAR (change) -->
-                                    <select [(ngModel)]="panelCorreo.correoCodigo" (change)="onCorreoSeleccionado()"
-                                        [disabled]="bloquearCorreo">
+                                    <select [(ngModel)]="panelCorreo.correoCodigo" [disabled]="bloquearCorreo">
                                         <option [value]="null" disabled selected></option>
                                         <option *ngFor="let c of correosFiltrados" [value]="c.codigo">{{ c.direccion }}
                                         </option>
@@ -625,12 +690,22 @@
                                         </div>
                                         <div class="campo-panel">
                                             <label>NOMBRE BACKUP</label>
-                                            <input [(ngModel)]="backupFormData.nombre" [disabled]="backupDisabled" />
+                                            <select [(ngModel)]="configuracionSeleccionada"
+                                                (ngModelChange)="seleccionarConfiguracionBackup($event)"
+                                                [disabled]="backupDisabled">
+                                                <option [ngValue]="null"></option>
+                                                <option *ngFor="let c of configuracionesBackup" [ngValue]="c">
+                                                    {{ c.nombre }}
+                                                </option>
+                                                <option [value]="-1" [disabled]="true">───────────────</option>
+                                                <option [ngValue]="null">CREAR NUEVO</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <br>
-                                    <div class="fila-doble">
-                                        <div class="campo-panel">
+
+                                    <div class="fila-triple">
+                                        <div class="campo-panel campo-frecuencia">
                                             <label>FRECUENCIA</label>
                                             <select [(ngModel)]="backupFormData.frecuencia" (change)="validarDia()"
                                                 [disabled]="backupDisabled">
@@ -639,10 +714,17 @@
                                                 <option value="MENSUAL">MENSUAL</option>
                                             </select>
                                         </div>
-                                        <div class="campo-panel">
+
+                                        <div class="campo-panel campo-dia">
                                             <label>DIA</label>
-                                            <input type="number" [(ngModel)]="backupFormData.dia"
+                                            <input type="number" min="1" max="30" [(ngModel)]="backupFormData.dia"
                                                 [disabled]="backupDisabled" />
+                                        </div>
+
+                                        <div class="campo-panel campo-hora">
+                                            <label>HORA</label>
+                                            <input type="time" min="00:00" max="23:59" step="3600"
+                                                [(ngModel)]="backupFormData.hora" [disabled]="backupDisabled" />
                                         </div>
                                     </div>
                                     <br>
@@ -860,7 +942,7 @@
 
                     <!-- Boton paso 3 -->
                     <button class="btn-asignar" (click)="irAlPaso3()">
-                        Siguiente<mat-icon>keyboard_arrow_right</mat-icon>
+                        Siguiente <mat-icon>keyboard_arrow_right</mat-icon>
                     </button>
                 </ng-container>
 
@@ -869,8 +951,7 @@
                     <button class="btn-devolver" (click)="paso = 2">
                         <mat-icon>keyboard_arrow_left</mat-icon> Volver
                     </button>
-                    <button class="btn-asignar" [disabled]="!puedeAsignar()" (click)="asignar()">
-
+                    <button class="btn-asignar" (click)="asignar()">
                         <mat-icon>done_all</mat-icon> Asignar Equipo
                     </button>
                 </ng-container>
@@ -883,6 +964,56 @@
         <div *ngIf="fechaDevolucion && !isFechaDevolucionValida()" class="error-mensaje">
             <mat-icon>warning</mat-icon>
             La fecha de devolucion no puede ser anterior a {{ equipo.fechaAsignacion | date:'dd/MM/yyyy' }}
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modalcrearbackup" [class.show]="mostrarModalBackup" *ngIf="mostrarModalBackup">
+    <div class="modal-contenido">
+        <div class="modal-cabezera">
+            <div class="titulo">
+                <mat-icon>backup</mat-icon>
+                <h2>Crear Nuevo Backup</h2>
+            </div>
+        </div>
+
+        <div class="crear" *ngIf="mostrarModalBackup">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nombre del Backup</mat-label>
+                <input matInput [(ngModel)]="nuevoBackupNombre" [matAutocomplete]="autoBackup"
+                    (input)="nuevoBackupNombre = nuevoBackupNombre.toUpperCase(); filtrarNombresBackup()"
+                    placeholder="Ejemplo: BACKUP-FD" autocomplete="off" />
+
+                <mat-autocomplete #autoBackup="matAutocomplete"
+                    (optionSelected)="seleccionarNombreBackupExistente($event)">
+                    <mat-option *ngFor="let config of backupNombresFiltrados" [value]="config.nombre">
+                        <div class="sugerencia-option">
+                            <mat-icon>assignment_turned_in</mat-icon>
+                            <span>{{ config.nombre }}</span>
+                            <small class="ya-existe"> - Ya existe</small>
+                        </div>
+                    </mat-option>
+
+                </mat-autocomplete>
+            </mat-form-field>
+
+            <!-- Mensaje si ya existe (cuando el usuario escribe y no selecciona) -->
+            <div *ngIf="nombreBackupYaExiste && nuevoBackupNombre" class="error-mensaje">
+                <mat-icon>warning</mat-icon>
+                <span>Ya existe una configuración con este nombre. Elija otro nombre o seleccione de la lista.</span>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button mat-raised-button type="button" class="btn-guardar" color="primary" (click)="crearNuevoBackup()">
+                <mat-icon>done_all</mat-icon> Crear
+            </button>
+            <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalBackup()">
+                <mat-icon>cancel</mat-icon> Cancelar
+            </button>
         </div>
     </div>
 </div>

@@ -40,6 +40,8 @@ public class AsignacionesSolicitud {
         private List<String> ubicaciones;
         private List<String> ubicacionesExcluidas;
         private Integer dia;
+        private String hora;
+        private String tipo;
     }
 
     @Data

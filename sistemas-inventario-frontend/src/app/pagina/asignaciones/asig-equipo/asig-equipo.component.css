@@ -558,6 +558,12 @@
     gap: 2px;
 }
 
+
+.label-error {
+    color: #dc3545 !important;
+}
+
+
 .campo-detalle label {
     color: #495057;
     font-size: 12.5px;
@@ -588,6 +594,7 @@
     transition: color 0.2s;
     user-select: none;
 }
+
 
 
 /* VISTA DE ICONO SOFTWARE */
@@ -974,6 +981,40 @@
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
+
+
+.fila-triple {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: end;
+}
+
+.campo-frecuencia{
+    width: 135px;
+}
+.campo-dia {
+    width: 70px;
+}
+
+.campo-hora {
+    width: 130px;
+}
+
+.campo-dia input {
+    width: 100%;
+}
+
+.campo-hora input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}
+
+.campo-hora input[type="time"] {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
 
 
 .campo-panel input {
@@ -1457,4 +1498,150 @@
     font-size: 16px;
     width: 16px;
     height: 16px;
+}
+
+
+
+
+
+
+/* MODAL */
+
+.modalcrearbackup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.425);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+
+.modalcrearbackup.show {
+    display: block;
+}
+
+
+.modalcrearbackup .modal-contenido {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 15px;
+    width: 370px;
+    max-width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.418);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+
+
+
+.modalcrearbackup .modalcrearbackup .modal-cabezera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+    padding: 0px 10px;
+    border-bottom: 1px solid #c4b9b9;
+}
+
+.modalcrearbackup .modal-cabezera .titulo {
+    display: flex;
+    align-items: center;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 10px;
+}
+
+.modalcrearbackup .modal-cabezera .titulo h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #595959;
+    padding-left: 10px;
+    text-align: center;
+}
+
+.modalcrearbackup .modal-cabezera .titulo h2 strong {
+    font-size: 20px;
+}
+
+
+.modalcrearbackup .modal-cabezera .titulo mat-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 30px;
+    color: #595959;
+}
+
+.modalcrearbackup .modal-cabezera .titulo .cargoicon {
+    position: relative;
+    margin-bottom: -5px;
+}
+
+
+
+.modalcrearbackup .crear,
+.modalcrearbackup .buscar-contenido {
+    padding: 30px 0px 0 0;
+    width: 98%;
+}
+
+.modalcrearbackup .full-width {
+    width: 100%;
+}
+
+.modalcrearbackup .modal-footer {
+    display: flex;
+    justify-content: center;
+}
+
+.modalcrearbackup .modal-footer button {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #fff;
+    background-color: #393e7f;
+    margin: 20px 15px 0 15px;
+}
+
+
+.sugerencia-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sugerencia-option mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+}
+
+.sugerencia-option .ya-existe {
+  color: #94a3b8;
+  font-size: 11px;
+  margin-left: auto;
 }

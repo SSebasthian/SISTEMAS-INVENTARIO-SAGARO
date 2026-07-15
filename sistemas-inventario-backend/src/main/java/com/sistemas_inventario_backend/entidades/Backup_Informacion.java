@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalTime;
+
 @Entity
 @Table(name = "backup_informacion")
 @Getter
@@ -25,6 +27,11 @@ public class Backup_Informacion {
 
     private Boolean activo = true;
 
+    @Column(name = "hora", columnDefinition = "TIME")
+    private LocalTime hora;
+
+    @Column(nullable = false)
+    private String tipo; // "EQUIPO" o "CORREO"
 
     @ManyToOne
     @JoinColumn(name = "backup_codigo", nullable = false)
