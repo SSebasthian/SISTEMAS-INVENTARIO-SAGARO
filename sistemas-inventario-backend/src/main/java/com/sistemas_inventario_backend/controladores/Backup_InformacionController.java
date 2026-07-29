@@ -1,5 +1,6 @@
 package com.sistemas_inventario_backend.controladores;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.Backup_InformacionRespuesta;
 import com.sistemas_inventario_backend.entidades.Backup_Informacion;
 import com.sistemas_inventario_backend.servicios.Backup_InformacionService;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +35,13 @@ public class Backup_InformacionController {
 
     // NUEVO ENDPOINT: listar por backup y tipo
     @GetMapping("/por-backup/{backupCodigo}/tipo/{tipo}")
-    public List<Backup_Informacion> listarPorBackupYTipo(
+    public List<Backup_InformacionRespuesta> listarPorBackupYTipo(
             @PathVariable Long backupCodigo,
             @PathVariable String tipo) {
         return service.listarPorBackupYTipo(backupCodigo, tipo);
     }
+
+
 
     @GetMapping("/{codigo}")
     public ResponseEntity<?> obtener(@PathVariable Long codigo) {
@@ -107,4 +110,6 @@ public class Backup_InformacionController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+
 }

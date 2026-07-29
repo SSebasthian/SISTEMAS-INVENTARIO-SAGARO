@@ -102,6 +102,7 @@ export class AsigEquipoComponent {
   politicasList: any[] = [];
   backupList: any[] = [];
   backupInformacionList: any[] = [];
+  mostrarFormularioBackup: boolean = true;
   correosList: any[] = [];
   configuracionesBackup: any[] = [];
   configuracionSeleccionada: any = null;
@@ -140,8 +141,10 @@ export class AsigEquipoComponent {
   // Datos del panel para backup (incluye multiples ubicaciones)
   backupNombresList: any[] = [];
   backupNombresFiltrados: any[] = [];
+  backupsSeleccionados: any[] = [];
   modoUbicacion: string = 'normales';
   errorDia: string = '';
+  editandoBackupIndex: number | null = null;
   backupFormData: any = {
     backupCodigo: null,
     nombre: '',
@@ -334,6 +337,7 @@ export class AsigEquipoComponent {
   }
 
 
+
   // ==================== FILTROS Y SELECCION ====================
 
   filtrarEmpleados(): void {
@@ -487,7 +491,7 @@ export class AsigEquipoComponent {
   }
 
   get errorBackup(): boolean {
-    return this.intentadoAsignar && !this.softwareSeleccionado.backupGeneral;
+    return this.intentadoAsignar && (!this.softwareSeleccionado.backups || this.softwareSeleccionado.backups.length === 0);
   }
 
   get errorCorreo(): boolean {
@@ -525,6 +529,21 @@ export class AsigEquipoComponent {
       }
       return true;
     });
+  }
+
+  get backupsDisponibles(): any[] {
+    // 1. Filtrar los que NO estan en uso
+    const disponibles = this.configuracionesBackup.filter(c => !c.enUso);
+    // 2. Agrupar por nombre, quedandonos con el de menor codigo
+    const mapa = new Map<string, any>();
+    disponibles.forEach(c => {
+      // Si no existe en el mapa, o el codigo es menor, lo guardamos
+      if (!mapa.has(c.nombre) || c.codigo < mapa.get(c.nombre).codigo) {
+        mapa.set(c.nombre, c);
+      }
+    });
+    // 3. Devolver los valores (objetos unicos por nombre)
+    return Array.from(mapa.values());
   }
 
   agregarCorreo(): void {
@@ -574,6 +593,110 @@ export class AsigEquipoComponent {
       dia: null,
       ubicaciones: ['']
     };
+  }
+
+
+  mostrarFormularioParaAgregarOtro(): void {
+    this.mostrarFormularioBackup = true;
+    this.limpiarCamposBackup();
+    this.configuracionSeleccionada = null;
+    this.editandoBackupIndex = null;
+    this.backupFormData.backupCodigo = null;
+  }
+
+  get ubicacionValida(): boolean {
+    // Devuelve true si al menos una ubicacion tiene texto no vacio
+    return this.backupFormData.ubicaciones.some((u: string) => u.trim() !== '');
+  }
+
+  agregarBackupALista(): void {
+    // Validaciones iniciales
+    if (!this.backupFormData.backupCodigo || !this.backupFormData.nombre) {
+      this.notificacionSnackbarService.warning('Datos incompletos', 'Seleccione programa y nombre del backup');
+      return;
+    }
+    if (!this.backupFormData.frecuencia) {
+      this.notificacionSnackbarService.warning('Frecuencia requerida', 'Seleccione una frecuencia');
+      return;
+    }
+
+    if (!this.ubicacionValida) {
+      this.notificacionSnackbarService.warning('Ubicacion requerida', 'Debe ingresar al menos una ubicacion');
+      return;
+    }
+
+    // Validar dia segun frecuencia
+    const frecuencia = this.backupFormData.frecuencia;
+    const dia = this.backupFormData.dia;
+    if (frecuencia !== 'DIARIO') {
+      if (!dia || dia < 1 || (frecuencia === 'SEMANAL' && dia > 7) || (frecuencia !== 'SEMANAL' && dia > 30)) {
+        this.notificacionSnackbarService.warning('Dia invalido', 'Ingrese un dia valido para la frecuencia seleccionada');
+        return;
+      }
+    }
+
+    // Obtener nombre del programa
+    const programaSeleccionado = this.backupList.find(b => b.codigo === Number(this.backupFormData.backupCodigo));
+    const nombrePrograma = programaSeleccionado?.nombre || 'Sin programa';
+
+    // Construir objeto backup
+    const nuevoBackup = {
+      backupCodigo: this.backupFormData.backupCodigo,
+      programa: nombrePrograma,
+      nombre: this.backupFormData.nombre,
+      frecuencia: this.backupFormData.frecuencia,
+      dia: this.backupFormData.dia,
+      hora: this.backupFormData.hora,
+      ubicaciones: [...this.backupFormData.ubicaciones].filter(u => u.trim() !== ''),
+      ubicacionesExcluidas: [...this.backupFormData.ubicacionesExcluidas].filter(u => u.trim() !== ''),
+      backupInformacionCodigo: this.configuracionSeleccionada?.codigo
+        || this.configuracionSeleccionada?.backupInformacionCodigo
+        || null
+    };
+
+    // Si estamos editando, reemplazar en la posicion guardada
+    if (this.editandoBackupIndex !== null) {
+      // Reemplazar el backup en la misma posicion
+      this.backupsSeleccionados[this.editandoBackupIndex] = nuevoBackup;
+      this.editandoBackupIndex = null; // Limpiar estado de edicion
+    } else {
+      // Nuevo backup: verificar duplicados
+      const duplicado = this.backupsSeleccionados.some(
+        b => b.nombre === nuevoBackup.nombre && b.backupCodigo === nuevoBackup.backupCodigo
+      );
+      if (duplicado) {
+        this.notificacionSnackbarService.warning('Duplicado', 'Este backup ya esta en la lista');
+        return;
+      }
+      this.backupsSeleccionados.push(nuevoBackup);
+    }
+
+    // Limpiar formulario
+    this.limpiarCamposBackup();
+    this.configuracionSeleccionada = null;
+    this.backupFormData.backupCodigo = null;
+
+    // Ocultar formulario y mostrar resumen
+    this.mostrarFormularioBackup = false;
+
+    this.cdr.detectChanges();
+
+    this.notificacionSnackbarService.success(
+      this.editandoBackupIndex === null ? 'Backup agregado' : 'Backup actualizado',
+      `Se ${this.editandoBackupIndex === null ? 'agrego' : 'actualizo'} "${nuevoBackup.nombre}"`
+    );
+  }
+
+
+  eliminarBackupDeLista(index: number): void {
+    const removido = this.backupsSeleccionados[index];
+    this.backupsSeleccionados.splice(index, 1);
+    this.notificacionSnackbarService.info('Backup eliminado', `Se elimino "${removido.nombre}" de la lista`);
+
+    // Si no quedan backups, mostrar el formulario
+    if (this.backupsSeleccionados.length === 0) {
+      this.mostrarFormularioBackup = true;
+    }
   }
 
 
@@ -654,6 +777,7 @@ export class AsigEquipoComponent {
       direccion: correo.direccion,
       realizarBackup: true,
       backup: {
+        backupInformacionCodigo: this.backupFormData.backupInformacionCodigo || null,
         backupCodigo: Number(this.backupFormData.backupCodigo),
         programa: programa?.nombre || '',
         nombre: this.backupFormData.nombre,
@@ -700,25 +824,48 @@ export class AsigEquipoComponent {
 
 
   editarBackupCorreo(item: any, index: number): void {
+    // Verificar que el item tenga backup
+    if (!item.backup) {
+      this.notificacionSnackbarService.warning('Error', 'El correo no tiene informacion de backup');
+      return;
+    }
+
+    // Activar modo edicion
     this.editandoCorreo = true;
     this.bloquearCorreo = true;
     this.indiceCorreoEditando = index;
 
+    // Cargar datos del correo en el panel
     this.panelCorreo = {
       correoCodigo: item.correoCodigo,
       realizarBackup: true
     };
 
+    // Cargar datos del backup en el formulario
     this.backupFormData = {
-      backupCodigo: item.backup.backupCodigo,
-      nombre: item.backup.nombre,
-      frecuencia: item.backup.frecuencia,
-      dia: item.backup.dia,
+      backupCodigo: item.backup.backupCodigo || null,
+      backupInformacionCodigo: item.backup.backupInformacionCodigo || null,
+      nombre: item.backup.nombre || '',
+      programa: item.backup.programa || '',
+      frecuencia: item.backup.frecuencia || '',
+      dia: item.backup.dia || null,
       hora: item.backup.hora || null,
-      ubicaciones: [...item.backup.ubicaciones],
-      ubicacionesExcluidas: [...(item.backup.ubicacionesExcluidas || [])]
+      ubicaciones: item.backup.ubicaciones?.length ? [...item.backup.ubicaciones] : [''],
+      ubicacionesExcluidas: item.backup.ubicacionesExcluidas?.length ? [...item.backup.ubicacionesExcluidas] : ['']
     };
 
+    // Buscar la configuraciLon seleccionada (para el select de NOMBRE BACKUP)
+    if (item.backup.backupInformacionCodigo) {
+      const config = this.configuracionesBackup.find(c => c.codigo === item.backup.backupInformacionCodigo);
+      this.configuracionSeleccionada = config || null;
+    } else {
+      this.configuracionSeleccionada = null;
+    }
+
+    // Forzar actualizacion de la vista
+    this.cdr.detectChanges();
+
+    this.notificacionSnackbarService.info('Editando correo', `Editando "${item.direccion}"`);
   }
 
 
@@ -740,6 +887,7 @@ export class AsigEquipoComponent {
   private resetBackupFormData(): any {
     return {
       backupCodigo: null,
+      backupInformacionCodigo: null,
       nombre: '',
       programa: '',
       frecuencia: '',
@@ -749,6 +897,48 @@ export class AsigEquipoComponent {
       hora: null
     };
   }
+
+
+
+
+
+  // ==================== BACKUP GENERAL EQUIPO ==================
+
+  editarBackup(index: number): void {
+    const backup = this.backupsSeleccionados[index];
+    if (!backup) return;
+
+    // Guardar el indice que estamos editando
+    this.editandoBackupIndex = index;
+
+    // Cargar los datos del backup en el formulario
+    this.backupFormData.backupCodigo = backup.backupCodigo;
+    this.backupFormData.nombre = backup.nombre;
+    this.backupFormData.frecuencia = backup.frecuencia;
+    this.backupFormData.dia = backup.dia;
+    this.backupFormData.hora = backup.hora;
+    this.backupFormData.ubicaciones = backup.ubicaciones.length ? backup.ubicaciones : [''];
+    this.backupFormData.ubicacionesExcluidas = backup.ubicacionesExcluidas.length ? backup.ubicacionesExcluidas : [''];
+
+    // Buscar la configuracion seleccionada para cargar el nombre
+    if (backup.backupInformacionCodigo) {
+      const config = this.configuracionesBackup.find(c => c.codigo === backup.backupInformacionCodigo);
+      if (config) {
+        this.configuracionSeleccionada = config;
+      }
+    } else {
+      this.configuracionSeleccionada = null;
+    }
+
+    // Mostrar formulario
+    this.mostrarFormularioBackup = true;
+
+    // Notificar
+    this.notificacionSnackbarService.info('Editando backup', `Editando "${backup.nombre}"`);
+    this.cdr.detectChanges();
+  }
+
+
 
 
   // ==================== ACCIONES PRINCIPALES ====================
@@ -814,63 +1004,64 @@ export class AsigEquipoComponent {
     const backups: any[] = [];
 
     // Backup general (si existe y no es "NO APLICA")
-    if (this.softwareSeleccionado.backupGeneral && !this.softwareSeleccionado.backupGeneral.esNoAplica) {
-      const bg = this.softwareSeleccionado.backupGeneral;
-
-      // Si ya tiene ID (edicion) → usarlo directamente
-      if (bg.backupInformacionCodigo) {
-        backups.push({
-          backupInformacionCodigo: bg.backupInformacionCodigo,
-          correoCodigo: 0
-        });
-      } else {
-        // Buscar configuracion existente incluyendo hora y tipo
-        const existente = await firstValueFrom(
-          this.consultarBackupInformacionService.buscarPorCriterios(
-            bg.nombreBackup,
-            bg.frecuencia,
-            bg.ubicacion || null,
-            bg.ubicacionExcluida || null,
-            bg.dia || null,
-            bg.hora || null,          // ← hora
-            bg.backupCodigo,
-            'EQUIPO'                   // ← tipo
-          )
-        );
-
-        if (existente) {
-          // Reutilizar el existente
+    if (this.softwareSeleccionado.backups && this.softwareSeleccionado.backups.length > 0) {
+      for (const bk of this.softwareSeleccionado.backups) {
+        // Si el backup ya tiene ID (existente), usarlo directamente
+        if (bk.backupInformacionCodigo) {
           backups.push({
-            backupInformacionCodigo: existente.codigo,
-            correoCodigo: 0
+            backupInformacionCodigo: bk.backupInformacionCodigo,
+            correoCodigo: 0  // backup general (no asociado a correo)
           });
-          bg.backupInformacionCodigo = existente.codigo; // actualizar para futuras ediciones
         } else {
-          // Crear nuevo backup_informacion con hora y tipo
-          const infoPayload = {
-            nombre: bg.nombreBackup,
-            frecuencia: bg.frecuencia,
-            ubicacion: bg.ubicacion || null,
-            ubicacionExcluida: bg.ubicacionExcluida || null,
-            dia: bg.dia || null,
-            hora: bg.hora || null,          // ← hora
-            backup: { codigo: bg.backupCodigo },
-            activo: true,
-            tipo: 'EQUIPO'                   // ← tipo
-          };
-
-
-          const nueva = await firstValueFrom(
-            this.registroBackupInformacionService.guardar(infoPayload)
+          // Es un backup nuevo → buscar si ya existe en BD (para evitar duplicados)
+          const existente = await firstValueFrom(
+            this.consultarBackupInformacionService.buscarPorCriterios(
+              bk.nombre,
+              bk.frecuencia,
+              bk.ubicaciones?.length ? bk.ubicaciones.join(';') : null,
+              bk.ubicacionesExcluidas?.length ? bk.ubicacionesExcluidas.join(';') : null,
+              bk.dia || null,
+              bk.hora || null,
+              bk.backupCodigo,
+              'EQUIPO'
+            )
           );
-          backups.push({
-            backupInformacionCodigo: nueva.codigo,
-            correoCodigo: 0
-          });
-          bg.backupInformacionCodigo = nueva.codigo;
+
+          if (existente) {
+            // Reutilizar el existente
+            backups.push({
+              backupInformacionCodigo: existente.codigo,
+              correoCodigo: 0
+            });
+            bk.backupInformacionCodigo = existente.codigo; // actualizar para futuras referencias
+          } else {
+            // Crear nuevo backup_informacion
+            const infoPayload = {
+              nombre: bk.nombre,
+              frecuencia: bk.frecuencia,
+              ubicacion: bk.ubicaciones?.length ? bk.ubicaciones.join(';') : null,
+              ubicacionExcluida: bk.ubicacionesExcluidas?.length ? bk.ubicacionesExcluidas.join(';') : null,
+              dia: bk.dia || null,
+              hora: bk.hora || null,
+              backup: { codigo: bk.backupCodigo },
+              activo: true,
+              tipo: 'EQUIPO'
+            };
+
+            const nueva = await firstValueFrom(
+              this.registroBackupInformacionService.guardar(infoPayload)
+            );
+            backups.push({
+              backupInformacionCodigo: nueva.codigo,
+              correoCodigo: 0
+            });
+            bk.backupInformacionCodigo = nueva.codigo;
+          }
         }
       }
     }
+
+
 
 
     // VALIDAR SOFTWARE OBLIGATORIOS
@@ -905,22 +1096,32 @@ export class AsigEquipoComponent {
     if (this.softwareSeleccionado.correos && this.softwareSeleccionado.correos.length > 0) {
       for (const item of this.softwareSeleccionado.correos) {
         if (item.realizarBackup && item.backup) {
-          correosConBackup.push({
-            correoCodigo: Number(item.correoCodigo),
-            backupData: {
-              backupCodigo: item.backup.backupCodigo,
-              nombre: item.backup.nombre,
-              frecuencia: item.backup.frecuencia,
-              ubicaciones: item.backup.ubicaciones || [],
-              ubicacionesExcluidas: item.backup.ubicacionesExcluidas || [],
-              dia: item.backup.dia,
-              hora: item.backup.hora || null,
-              tipo: "CORREO"
-            }
-          });
+          // Si el backup ya tiene ID, reutilizarlo (enviar a 'backups')
+          if (item.backup.backupInformacionCodigo) {
+            backups.push({
+              backupInformacionCodigo: item.backup.backupInformacionCodigo,
+              correoCodigo: Number(item.correoCodigo)
+            });
+          } else {
+            // Si es nuevo, enviar a 'correosConBackup' para crearlo
+            correosConBackup.push({
+              correoCodigo: Number(item.correoCodigo),
+              backupData: {
+                backupCodigo: item.backup.backupCodigo,
+                nombre: item.backup.nombre,
+                frecuencia: item.backup.frecuencia,
+                ubicaciones: item.backup.ubicaciones || [],
+                ubicacionesExcluidas: item.backup.ubicacionesExcluidas || [],
+                dia: item.backup.dia,
+                hora: item.backup.hora || null,
+                tipo: "CORREO"
+              }
+            });
+          }
         }
       }
     }
+
 
 
 
@@ -1316,21 +1517,19 @@ export class AsigEquipoComponent {
           console.log('Datos recibidos del backend:', data); // ← LOG
           this.configuracionesBackup = data.filter(c => c.activo === true);
           this.backupNombresList = [...this.configuracionesBackup];
-          console.log('configuracionesBackup:', this.configuracionesBackup); // ← LOG
-          console.log('backupNombresList:', this.backupNombresList); // ← LOG
 
-          // Si el usuario ya tenía seleccionada una configuración, verificar si aún existe
+          // Si el usuario ya tenia seleccionada una configuracion, verificar si aun existe
           if (this.configuracionSeleccionada) {
             const existe = this.configuracionesBackup.some(
               c => c.backupInformacionCodigo === this.configuracionSeleccionada.backupInformacionCodigo
             );
-            if (!existe) {
+            if (!existe || this.configuracionSeleccionada.enUso) {
               this.configuracionSeleccionada = null;
               this.limpiarCamposBackup();
             }
           }
 
-          // Si el modal está abierto, actualizar el filtro (opcional)
+          // Si el modal esta abierto, actualizar el filtro (opcional)
           if (this.mostrarModalBackup) {
             this.filtrarNombresBackup();
           }
@@ -1352,16 +1551,6 @@ export class AsigEquipoComponent {
 
   }
 
-  // private generarNombrePorDefecto(codigo: number): void {
-  //   if (this.panelTipo === 'correo') {
-  //     const correo = this.correosList.find(c => c.codigo === Number(this.panelCorreo.correoCodigo));
-  //     this.backupFormData.nombre = correo ? this.generarNombreBackup(correo.direccion) : 'Z-CORREO';
-  //   } else {
-  //     const nombreEquipo = this.detalle?.nombreEquipo || '';
-  //     this.backupFormData.nombre = (codigo === 1 && nombreEquipo) ? `${nombreEquipo}-FD` : (nombreEquipo || 'BACKUP-GENERAL');
-  //   }
-  // }
-
 
   seleccionarConfiguracionBackup(config: any): void {
     if (config === null) {
@@ -1376,6 +1565,7 @@ export class AsigEquipoComponent {
       }, 0);
       return;
     }
+    this.backupFormData.backupInformacionCodigo = config.codigo || null;
     // Selecciono una configuracion existente
     this.seleccionPrevia = undefined;
     this.configuracionSeleccionada = config;
@@ -1504,8 +1694,8 @@ export class AsigEquipoComponent {
       this.mostrarModalBackup = false;
       this.seleccionarConfiguracionBackup(config);
       this.notificacionSnackbarService.success(
-        'Configuración seleccionada',
-        `Se cargó "${config.nombre}" (ya existente)`
+        'Configuracion seleccionada',
+        `Se cargo "${config.nombre}" (ya existente)`
       );
       this.nuevoBackupNombre = '';
       this.nombreBackupYaExiste = false;
@@ -1517,7 +1707,7 @@ export class AsigEquipoComponent {
     this.mostrarModalBackup = false;
     this.nuevoBackupNombre = '';
     this.nombreBackupYaExiste = false;
-    // Restaurar la selección previa si existe
+    // Restaurar la seleccion previa si existe
     if (this.seleccionPrevia !== undefined) {
       this.configuracionSeleccionada = this.seleccionPrevia;
       this.seleccionPrevia = undefined;
@@ -1537,7 +1727,7 @@ export class AsigEquipoComponent {
       this.nombreBackupYaExiste = true;
       this.notificacionSnackbarService.warning(
         'Nombre duplicado',
-        'Ya existe una configuración con este nombre. Selecciónela de la lista o use otro nombre.'
+        'Ya existe una configuracion con este nombre. Seleccionela de la lista o use otro nombre.'
       );
       return;
     }
@@ -1566,7 +1756,7 @@ export class AsigEquipoComponent {
     // Agregar a ambas listas
     this.configuracionesBackup.push(nuevoBackupTemporal);
     this.backupNombresList.push(nuevoBackupTemporal);
-    // No actualizar backupNombresFiltrados (el modal se cerrará)
+    // No actualizar backupNombresFiltrados (el modal se cerrara)
 
     this.seleccionarConfiguracionBackup(nuevoBackupTemporal);
 
@@ -1575,7 +1765,7 @@ export class AsigEquipoComponent {
     this.nombreBackupYaExiste = false;
     this.seleccionPrevia = undefined;
 
-    this.notificacionSnackbarService.success('Backup creado', `Configuración "${nombre}" creada correctamente`);
+    this.notificacionSnackbarService.success('Backup creado', `Configuracion "${nombre}" creada correctamente`);
     this.cdr.detectChanges();
   }
 
@@ -1613,38 +1803,19 @@ export class AsigEquipoComponent {
         this.cargarBackups();
       }
 
-      if (this.softwareSeleccionado.backupGeneral) {
-        const backup = this.softwareSeleccionado.backupGeneral;
-        if (backup.esNoAplica) {
-          this.backupFormData.backupCodigo = 0;
-          this.backupFormData.nombre = '';
-          this.backupFormData.programa = '';
-          this.backupFormData.frecuencia = '';
-          this.backupFormData.dia = null;
-          this.backupFormData.hora = backup.hora || null;
-          this.backupFormData.ubicaciones = [''];
-          this.backupFormData.ubicacionesExcluidas = [''];
-          this.backupInformacionList = [];
-          this.panelTitulo = 'Editar Backup (No Aplica)';
-        } else {
-          // Cargar datos del backup temporal (sin ID)
-          this.backupFormData.backupCodigo = backup.backupCodigo || null;
-          this.backupFormData.nombre = backup.nombreBackup || '';
-          this.backupFormData.programa = backup.programa || '';
-          this.backupFormData.frecuencia = backup.frecuencia || '';
-          this.backupFormData.dia = backup.dia || null;
-          this.backupFormData.hora = backup.hora || null;
-          this.backupFormData.ubicaciones = backup.ubicacion ? backup.ubicacion.split(';') : [''];
-          this.backupFormData.ubicacionesExcluidas = backup.ubicacionExcluida ? backup.ubicacionExcluida.split(';') : [''];
-          this.panelTitulo = 'Editar Backup';
-        }
+      // Cargar backups existentes si los hay
+      if (this.softwareSeleccionado.backups && this.softwareSeleccionado.backups.length > 0) {
+        this.backupsSeleccionados = [...this.softwareSeleccionado.backups];
+        this.mostrarFormularioBackup = false;
       } else {
-        // Nuevo backup
-        this.backupFormData = this.resetBackupFormData();
-        this.backupInformacionList = [];
-        this.panelTitulo = 'Agregar Backup';
+        this.backupsSeleccionados = [];
+        this.mostrarFormularioBackup = true;
       }
 
+      // Limpiar formulario
+      this.backupFormData = this.resetBackupFormData();
+      this.backupInformacionList = [];
+      this.panelTitulo = 'Agregar Backup';
 
 
     } else if (tipo === 'correo') {
@@ -1729,21 +1900,6 @@ export class AsigEquipoComponent {
   }
 
 
-
-  // generarNombreBackup(direccion: string): string {
-  //   if (!direccion) return '';
-  //   let nombreBase = direccion;
-  //   nombreBase = nombreBase.replace('@', '-');
-  //   const partes = nombreBase.split('.');
-  //   if (partes.length > 1) {
-  //     partes.pop();
-  //     nombreBase = partes.join('.');
-  //   }
-  //   nombreBase = nombreBase.replace(/\./g, '-');
-  //   return `Z-${nombreBase}`;
-  // }
-
-
   cerrarPanel(): void {
     this.panelActivo = false;
     this.panelTipo = '';
@@ -1790,97 +1946,17 @@ export class AsigEquipoComponent {
 
       this.cerrarPanel();
     } else if (this.panelTipo === 'backup') {
-      const codigo = this.backupFormData.backupCodigo !== null && this.backupFormData.backupCodigo !== undefined
-        ? Number(this.backupFormData.backupCodigo)
-        : null;
-
-      // Sin seleccion → limpiar
-      if (codigo === null) {
-        this.softwareSeleccionado.backupGeneral = null;
-        this.softwareSeleccionado.backup = null;
-        this.cdr.detectChanges();
-        this.cerrarPanel();
-        return;
-      }
-
-      // NO APLICA → objeto especial (sin ID)
-      if (codigo === 0) {
-        this.softwareSeleccionado.backupGeneral = {
-          esNoAplica: true,
-          nombre: 'NO APLICA',
-          nombreBackup: '',
-          frecuencia: '',
-          dia: null,
-          ubicacion: '',
-          ubicacionExcluida: '',
-          backupInformacionCodigo: null  // ← sin ID
-        };
-        this.softwareSeleccionado.backup = true;
-        this.cdr.detectChanges();
-        this.cerrarPanel();
-        return;
-      }
-
-      // Validar campos obligatorios
-      if (!this.backupFormData.nombre || !this.backupFormData.frecuencia) {
-        this.notificacionSnackbarService.warning('Campos incompletos', 'Complete: Nombre y Frecuencia');
-        return;
-      }
-
-      const frecuencia = this.backupFormData.frecuencia;
-      const dia = this.backupFormData.dia;
-
-      if (frecuencia !== 'DIARIO') {
-        if (dia === null || dia === undefined) {
-          this.notificacionSnackbarService.warning('Dia requerido', 'Debe ingresar un dia para la frecuencia seleccionada');
-          return;
-        }
-        if (frecuencia === 'SEMANAL' && (dia < 1 || dia > 7)) {
-          this.notificacionSnackbarService.warning('Dia invalido', 'Para frecuencia SEMANAL, el dia debe ser entre 1 y 7');
-          return;
-        }
-        if ((frecuencia === 'MENSUAL' || frecuencia === 'MANUAL') && (dia < 1 || dia > 31)) {
-          this.notificacionSnackbarService.warning('Dia invalido', 'Para frecuencia MENSUAL o MANUAL, el dia debe ser entre 1 y 31');
-          return;
-        }
+      if (this.backupsSeleccionados.length === 0) {
+        this.softwareSeleccionado.backups = [];
+        this.softwareSeleccionado.backup = false;
       } else {
-        this.backupFormData.dia = null;
+        // Guarda los backups en softwareSeleccionado
+        this.softwareSeleccionado.backups = [...this.backupsSeleccionados];
+        this.softwareSeleccionado.backup = true;
       }
-
-      // Limpiar ubicaciones vacias
-      const ubicacionesFiltradas = this.backupFormData.ubicaciones.filter((u: string) => u.trim() !== '');
-      const excluidasFiltradas = this.backupFormData.ubicacionesExcluidas.filter((u: string) => u.trim() !== '');
-
-      // Obtener nombre del programa seleccionado
-      const programaSeleccionado = this.backupList.find(b => b.codigo === codigo);
-      const nombrePrograma = programaSeleccionado?.nombre || 'Sin programa';
-
-      // Guardar SOLO en memoria (sin backupInformacionCodigo)
-
-      this.softwareSeleccionado.backupGeneral = {
-        esNoAplica: false,
-        nombre: nombrePrograma,
-        nombreBackup: this.backupFormData.nombre,
-        frecuencia: this.backupFormData.frecuencia,
-        dia: this.backupFormData.dia,
-        hora: this.backupFormData.hora || null,
-        ubicacion: ubicacionesFiltradas.join(';') || null,
-        ubicacionExcluida: excluidasFiltradas.join(';') || null,
-        backupCodigo: codigo,
-        programa: nombrePrograma,
-        backupInformacionCodigo: this.configuracionSeleccionada?.backupInformacionCodigo
-          || this.configuracionSeleccionada?.codigo
-          || null
-      };
-
-      this.softwareSeleccionado.backup = true;
       this.cdr.detectChanges();
-
-      this.notificacionSnackbarService.success('Exito', 'Backup guardado temporalmente');
       this.cerrarPanel();
-
-
-
+      this.notificacionSnackbarService.success('Exito', `${this.backupsSeleccionados.length} backup(s) guardado(s)`);
 
     } else if (this.panelTipo === 'correo') {
 
@@ -2000,5 +2076,5 @@ export class AsigEquipoComponent {
   }
 
 
-  
+
 }

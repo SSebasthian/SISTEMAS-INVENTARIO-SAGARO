@@ -528,122 +528,190 @@
 
                             <!-- BACKUP -->
                             <ng-container *ngSwitchCase="'backup'">
+                                <div *ngIf="backupsSeleccionados.length === 0 || mostrarFormularioBackup"
+                                    class="formulario-backup">
 
-                                <div class="fila-doble">
-                                    <div class="campo-panel">
-                                        <label>PROGRAMA BACKUP</label>
-                                        <select [(ngModel)]="backupFormData.backupCodigo"
-                                            (change)="actualizarNombreBackup()">
-                                            <option [value]="null" disabled selected></option>
-                                            <option *ngFor="let b of backupList" [value]="b.codigo">{{ b.nombre }}
-                                            </option>
-                                        </select>
-                                    </div>
-
-                                    <div class="campo-panel">
-                                        <label>NOMBRE BACKUP</label>
-                                        <select [(ngModel)]="configuracionSeleccionada"
-                                            (ngModelChange)="seleccionarConfiguracionBackup($event)"
-                                            [disabled]="backupDisabled">
-                                            <option [ngValue]="null"></option>
-                                            <option *ngFor="let c of configuracionesBackup" [ngValue]="c">
-                                                {{ c.nombre }}
-                                            </option>
-                                            <option [value]="-1" [disabled]="true">───────────────</option>
-                                            <option [ngValue]="null">CREAR NUEVO</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <br>
-
-                                <div class="fila-triple">
-                                    <div class="campo-panel campo-frecuencia">
-                                        <label>FRECUENCIA</label>
-                                        <select [(ngModel)]="backupFormData.frecuencia" [disabled]="backupDisabled"
-                                            (change)="validarDia()">
-                                            <option value="" disabled selected></option>
-                                            <option value="DIARIO">DIARIO</option>
-                                            <option value="SEMANAL">SEMANAL</option>
-                                            <option value="MENSUAL">MENSUAL</option>
-                                        </select>
-                                    </div>
-                                    <div class="campo-panel campo-dia">
-                                        <label>DIA</label>
-                                        <input type="number" min="1" max="30" [(ngModel)]="backupFormData.dia"
-                                            [disabled]="backupDisabled || backupFormData.frecuencia === 'DIARIO'" />
-                                    </div>
-                                    <div class="campo-panel campo-hora">
-                                        <label>HORA</label>
-                                        <input type="time" min="00:00" max="23:59" step="3600"
-                                            [(ngModel)]="backupFormData.hora" [disabled]="backupDisabled" />
-                                    </div>
-                                </div>
-                                <br>
-
-                                <div class="campo-panel">
                                     <div class="fila-doble">
-                                        <span class="tab-label" [class.active]="modoUbicacion === 'normales'"
-                                            (click)="cambiarModoUbicacion('normales')">
-                                            AGREGAR UBICACION
-                                        </span>
-                                        <span class="tab-label" [class.active]="modoUbicacion === 'excluidas'"
-                                            (click)="cambiarModoUbicacion('excluidas')">
-                                            EXCLUIR UBICACION
-                                        </span>
-                                    </div>
 
+                                        <div class="campo-panel">
+                                            <label>PROGRAMA BACKUP</label>
+                                            <select [(ngModel)]="backupFormData.backupCodigo"
+                                                (change)="actualizarNombreBackup()">
+                                                <option [value]="null" disabled selected></option>
+                                                <option *ngFor="let b of backupList" [value]="b.codigo">{{ b.nombre }}
+                                                </option>
+                                            </select>
+                                        </div>
 
-                                    <div *ngIf="modoUbicacion === 'normales'" class="ubicaciones-list agregarubicacion">
-                                        <div *ngFor="let ubic of backupFormData.ubicaciones; let i = index; trackBy: trackByIndex"
-                                            class="ubicacion-item">
-                                            <div class="ubicacion-input-group">
-                                                <input [(ngModel)]="backupFormData.ubicaciones[i]"
-                                                    [disabled]="backupDisabled" class="agregar" />
-                                                <button type="button" class="btn-eliminar-ubicacion"
-                                                    (click)="eliminarUbicacion(i)"
-                                                    [disabled]="backupFormData.ubicaciones.length === 1">
-                                                    <mat-icon>delete_sweep</mat-icon>
-                                                </button>
-                                            </div>
+                                        <div class="campo-panel">
+                                            <label>NOMBRE BACKUP</label>
+                                            <select [(ngModel)]="configuracionSeleccionada"
+                                                (ngModelChange)="seleccionarConfiguracionBackup($event)"
+                                                [disabled]="backupDisabled">
+                                                <option [ngValue]="null"></option>
+                                                <option *ngFor="let c of backupsDisponibles" [ngValue]="c">
+                                                    {{ c.nombre }}
+                                                </option>
+                                                <option [value]="-1" [disabled]="true">───────────────</option>
+                                                <option [ngValue]="null">CREAR NUEVO</option>
+                                            </select>
                                         </div>
                                     </div>
+                                    <br>
 
-                                    <!-- Lista de ubicaciones excluidas (visible solo si modo === 'excluidas') -->
-                                    <div *ngIf="modoUbicacion === 'excluidas'" class="campo-panel excluirubicacion">
-                                        <div class="ubicaciones-list">
-                                            <div *ngFor="let excl of backupFormData.ubicacionesExcluidas; let i = index; trackBy: trackByIndex"
+                                    <div class="fila-triple">
+                                        <div class="campo-panel campo-frecuencia">
+                                            <label>FRECUENCIA</label>
+                                            <select [(ngModel)]="backupFormData.frecuencia" [disabled]="backupDisabled"
+                                                (change)="validarDia()">
+                                                <option value="" disabled selected></option>
+                                                <option value="DIARIO">DIARIO</option>
+                                                <option value="SEMANAL">SEMANAL</option>
+                                                <option value="MENSUAL">MENSUAL</option>
+                                            </select>
+                                        </div>
+                                        <div class="campo-panel campo-dia">
+                                            <label>DIA</label>
+                                            <input type="number" min="1" max="30" [(ngModel)]="backupFormData.dia"
+                                                [disabled]="backupDisabled || backupFormData.frecuencia === 'DIARIO'" />
+                                        </div>
+                                        <div class="campo-panel campo-hora">
+                                            <label>HORA</label>
+                                            <input type="time" min="00:00" max="23:59" step="3600"
+                                                [(ngModel)]="backupFormData.hora" [disabled]="backupDisabled" />
+                                        </div>
+                                    </div>
+                                    <br>
+
+                                    <div class="campo-panel">
+                                        <div class="fila-doble">
+                                            <span class="tab-label" [class.active]="modoUbicacion === 'normales'"
+                                                (click)="cambiarModoUbicacion('normales')">
+                                                AGREGAR UBICACION
+                                            </span>
+                                            <span class="tab-label" [class.active]="modoUbicacion === 'excluidas'"
+                                                (click)="cambiarModoUbicacion('excluidas')">
+                                                EXCLUIR UBICACION
+                                            </span>
+                                        </div>
+
+
+                                        <div *ngIf="modoUbicacion === 'normales'"
+                                            class="ubicaciones-list agregarubicacion">
+                                            <div *ngFor="let ubic of backupFormData.ubicaciones; let i = index; trackBy: trackByIndex"
                                                 class="ubicacion-item">
                                                 <div class="ubicacion-input-group">
-                                                    <input [(ngModel)]="backupFormData.ubicacionesExcluidas[i]"
-                                                        [disabled]="backupDisabled" class="excluida" />
+                                                    <input [(ngModel)]="backupFormData.ubicaciones[i]"
+                                                        [disabled]="backupDisabled" class="agregar" required />
                                                     <button type="button" class="btn-eliminar-ubicacion"
-                                                        (click)="eliminarUbicacionExcluida(i)"
-                                                        [disabled]="backupFormData.ubicacionesExcluidas.length === 1">
+                                                        (click)="eliminarUbicacion(i)"
+                                                        [disabled]="backupFormData.ubicaciones.length === 1">
                                                         <mat-icon>delete_sweep</mat-icon>
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+
+                                        <!-- Lista de ubicaciones excluidas (visible solo si modo === 'excluidas') -->
+                                        <div *ngIf="modoUbicacion === 'excluidas'" class="campo-panel excluirubicacion">
+                                            <div class="ubicaciones-list">
+                                                <div *ngFor="let excl of backupFormData.ubicacionesExcluidas; let i = index; trackBy: trackByIndex"
+                                                    class="ubicacion-item">
+                                                    <div class="ubicacion-input-group">
+                                                        <input [(ngModel)]="backupFormData.ubicacionesExcluidas[i]"
+                                                            [disabled]="backupDisabled" class="excluida" />
+                                                        <button type="button" class="btn-eliminar-ubicacion"
+                                                            (click)="eliminarUbicacionExcluida(i)"
+                                                            [disabled]="backupFormData.ubicacionesExcluidas.length === 1">
+                                                            <mat-icon>delete_sweep</mat-icon>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
 
-                                    <div class="botones-ubicaciones" *ngIf="modoUbicacion === 'normales'">
-                                        <button type="button" class="btn-agregar-ubicacion" (click)="agregarUbicacion()"
-                                            [disabled]="backupDisabled">
-                                            <mat-icon>library_add</mat-icon> Agregar ubicacion
-                                        </button>
-                                    </div>
+                                        <div class="botones-ubicaciones" *ngIf="modoUbicacion === 'normales'">
+                                            <button type="button" class="btn-agregar-ubicacion"
+                                                (click)="agregarUbicacion()" [disabled]="backupDisabled">
+                                                <mat-icon>library_add</mat-icon> Agregar ubicacion
+                                            </button>
+                                        </div>
 
 
-                                    <div class="botones-ubicaciones" *ngIf="modoUbicacion === 'excluidas'">
-                                        <button type="button" class="btn-excluir-ubicacion"
-                                            (click)="agregarUbicacionExcluida()" [disabled]="backupDisabled">
-                                            <mat-icon>library_add</mat-icon> Excluir Ubicacion
-                                        </button>
+                                        <div class="botones-ubicaciones" *ngIf="modoUbicacion === 'excluidas'">
+                                            <button type="button" class="btn-excluir-ubicacion"
+                                                (click)="agregarUbicacionExcluida()" [disabled]="backupDisabled">
+                                                <mat-icon>library_add</mat-icon> Excluir Ubicacion
+                                            </button>
+                                        </div>
                                     </div>
 
                                 </div>
+                                <!-- ============================================= -->
+                                <!-- LISTA DE BACKUPS SELECCIONADOS                -->
+                                <!-- ============================================= -->
+                                <div *ngIf="!mostrarFormularioBackup && backupsSeleccionados.length > 0"
+                                    class="contenedor-backups">
 
+                                    <div class="agregar-otro-backup">
+                                        <a class="btn-agregar-backup-texto"
+                                            (click)="mostrarFormularioParaAgregarOtro()">
+                                            <mat-icon>add</mat-icon> Agregar otro backup
+                                        </a>
+                                    </div>
+
+                                    <hr>
+
+                                    <h4>Backups configurados ({{ backupsSeleccionados.length }})</h4>
+
+
+                                    <div class="backup-agregado-card"
+                                        *ngFor="let bk of backupsSeleccionados; let i = index">
+
+
+                                        <div class="backup-agregado-header">
+                                            <mat-icon>backup</mat-icon>
+
+                                            <div class="backup-agregado-info">
+                                                <strong>{{ bk.nombre }}</strong>
+
+                                                <div class="backup-agregado-backup">
+                                                    <div class="backup-info">
+                                                        <span class="backup-chip">
+                                                            <mat-icon>storage</mat-icon>
+                                                            {{ bk.programa.charAt(0).toUpperCase() +
+                                                            bk.programa.slice(1).toLowerCase() }}
+                                                        </span>
+
+                                                        <span class="backup-chip" *ngIf="bk.frecuencia">
+                                                            <mat-icon>schedule</mat-icon>
+                                                            {{ bk.frecuencia.charAt(0).toUpperCase() +
+                                                            bk.frecuencia.slice(1).toLowerCase()}}
+                                                        </span>
+
+                                                        <span class="backup-chip" *ngIf="bk.frecuencia">
+                                                            <mat-icon>calendar_today</mat-icon>
+                                                            Dia {{ bk.dia }}
+                                                        </span>
+
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <a class="mat-icon-editar" (click)="editarBackup(i)" title="Editar backup">
+                                                <mat-icon>edit</mat-icon>
+                                            </a>
+
+                                            <a class="mat-icon-eliminar" (click)="eliminarBackupDeLista(i)"
+                                                title="Eliminar backup">
+                                                <mat-icon>delete</mat-icon>
+                                            </a>
+                                        </div>
+
+
+                                    </div>
+                                </div>
                             </ng-container>
 
 
@@ -694,9 +762,11 @@
                                                 (ngModelChange)="seleccionarConfiguracionBackup($event)"
                                                 [disabled]="backupDisabled">
                                                 <option [ngValue]="null"></option>
-                                                <option *ngFor="let c of configuracionesBackup" [ngValue]="c">
-                                                    {{ c.nombre }}
-                                                </option>
+                                                <ng-container *ngFor="let c of configuracionesBackup">
+                                                    <option *ngIf="!c.enUso" [ngValue]="c">
+                                                        {{ c.nombre }}
+                                                    </option>
+                                                </ng-container>
                                                 <option [value]="-1" [disabled]="true">───────────────</option>
                                                 <option [ngValue]="null">CREAR NUEVO</option>
                                             </select>
@@ -769,17 +839,17 @@
                                     <h4>Correos agregados</h4>
 
                                     <div class="contenedor-correos">
-                                        <div class="correo-card" *ngFor="let item of correosFormulario; let i = index">
+                                        <div class="backup-agregado-card" *ngFor="let item of correosFormulario; let i = index">
 
-                                            <div class="correo-header">
+                                            <div class="backup-agregado-header">
                                                 <mat-icon>mail</mat-icon>
 
-                                                <div class="correo-info">
+                                                <div class="backup-agregado-info">
 
                                                     <strong>{{ item.direccion }}</strong>
 
                                                     <ng-container *ngIf="item.realizarBackup; else sinBackup">
-                                                        <div class="correo-backup">
+                                                        <div class="backup-agregado-backup">
                                                             <div class="backup-info">
                                                                 <span class="backup-chip">
                                                                     <mat-icon>storage</mat-icon>
@@ -818,7 +888,6 @@
 
                                         </div>
                                     </div>
-
 
                                 </div>
                             </ng-container>
@@ -881,8 +950,32 @@
 
                 <div class="panel-footer"
                     *ngIf="!(panelTipo === 'correo' && panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
+
                     <button class="btn-panel-cancelar" (click)="cerrarPanel()">Cancelar</button>
-                    <button class="btn-panel-guardar" (click)="guardarPanel()">Guardar</button>
+
+                    <!-- Caso especial: panel de backup -->
+                    <ng-container *ngIf="panelTipo === 'backup'; else normalGuardar">
+
+                        <!-- Modo formulario (agregando un nuevo backup) -->
+                        <button *ngIf="mostrarFormularioBackup || backupsSeleccionados.length === 0"
+                            class="btn-panel-guardar" (click)="agregarBackupALista()"
+                            [disabled]="!backupFormData.backupCodigo || !backupFormData.nombre">
+                            Guardar Backup
+                        </button>
+
+                        <!-- Modo resumen (ya hay backups guardados) -->
+                        <button *ngIf="!mostrarFormularioBackup && backupsSeleccionados.length > 0"
+                            class="btn-panel-guardar" (click)="guardarPanel()">
+                            Guardar
+                        </button>
+
+                    </ng-container>
+
+                    <!-- Caso normal (antivirus, correo, office, etc.) -->
+                    <ng-template #normalGuardar>
+                        <button class="btn-panel-guardar" (click)="guardarPanel()">Guardar</button>
+                    </ng-template>
+
                 </div>
 
             </div>
@@ -1003,7 +1096,7 @@
             <!-- Mensaje si ya existe (cuando el usuario escribe y no selecciona) -->
             <div *ngIf="nombreBackupYaExiste && nuevoBackupNombre" class="error-mensaje">
                 <mat-icon>warning</mat-icon>
-                <span>Ya existe una configuración con este nombre. Elija otro nombre o seleccione de la lista.</span>
+                <span>Ya existe una configuracion con este nombre. Elija otro nombre o seleccione de la lista.</span>
             </div>
         </div>
 

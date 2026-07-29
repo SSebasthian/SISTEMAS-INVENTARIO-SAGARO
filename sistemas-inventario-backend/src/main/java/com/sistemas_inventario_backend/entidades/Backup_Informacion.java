@@ -17,6 +17,7 @@ public class Backup_Informacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codigo;
 
+    @Column(unique = true)
     private String nombre;
     private String frecuencia;
     private String ubicacion;

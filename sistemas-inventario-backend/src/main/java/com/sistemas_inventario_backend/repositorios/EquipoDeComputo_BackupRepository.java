@@ -16,4 +16,7 @@ public interface  EquipoDeComputo_BackupRepository extends JpaRepository<EquipoD
 
     List<EquipoDeComputo_Backup> findByAsignacionConsecutivoAndActivoTrue(Long asignacionConsecutivo);
 
+    boolean existsByBackupInformacionCodigoAndActivoTrue(Long backupInformacionCodigo);
+
+
 }
