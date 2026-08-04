@@ -21,6 +21,8 @@ import { ConsultarSoftwareService } from '../../../arquitectura/servicio/consult
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
+import { forkJoin, Observable } from 'rxjs';
+
 
 
 
@@ -1201,16 +1203,42 @@ export class AsigEquipoComponent {
     // ============================================================
     this.registrarAsignacionesService.asignar(asignacionPayload).subscribe({
       next: (resp) => {
+        // Equipo asignado exitosamente
         this.notificacionSnackbarService.success('Exito', 'Equipo asignado con detalle');
+
+        // Ahora asignar los correos como recursos
+        if (this.correosFormulario && this.correosFormulario.length > 0) {
+          // Obtener el recursoTipoId para CORREO (asumimos que es 1, ajustar segun BD)
+          const recursoTipoIdCorreo = 1; // TODO: obtener de configuracion o servicio
+
+          const asignacionesRecursos: Observable<any>[] = [];
+          for (const item of this.correosFormulario) {
+            const payload = {
+              empleadoCedula: this.empleadoSeleccionado?.cedula,
+              tipo: 'CORREO',
+              recursoTipoId: recursoTipoIdCorreo,
+              recursoId: Number(item.correoCodigo),
+              fechaAsignacion: this.fechaAsignacion,
+              observaciones: `ASIGNACION DE CORREO`
+            };
+            asignacionesRecursos.push(
+              this.registrarAsignacionesService.asignarRecurso(payload)
+            );
+          }
+          // Ejecutar todas las asignaciones en paralelo
+          forkJoin(asignacionesRecursos).subscribe({
+            next: () => {
+              this.notificacionSnackbarService.success('Exito', 'Correos asignados como recursos');
+            },
+            error: (err) => {
+              console.error('Error al asignar recursos:', err);
+              // No mostramos error general porque ya se asigno el equipo
+            }
+          });
+        }
         this.dialogRef.close({ success: true, data: resp });
-      },
-      error: (err) => {
-        const mensaje = err.error?.error || err.error?.message || 'Error al asignar';
-        // No cerrar el modal para que el usuario pueda corregir
-        this.notificacionSnackbarService.error('Error', mensaje);
       }
     });
-
   }
 
 
@@ -1260,9 +1288,36 @@ export class AsigEquipoComponent {
       fechaDevolucion: this.fechaDevolucion
     };
 
+    // Primero devolver el equipo
     this.registrarAsignacionesService.devolver(this.equipo.asignacionId, data).subscribe({
       next: () => {
-        // SOLO CERRAR EL MODAL, no ir a asignacion
+        this.notificacionSnackbarService.success('Exito', 'Devolucion de equipo registrada');
+
+        // Ahora devolver los recursos activos del empleado
+        if (this.empleadoSeleccionado) {
+          this.registrarAsignacionesService.listarRecursosPorEmpleado(this.empleadoSeleccionado.cedula).subscribe({
+            next: (recursos) => {
+              const recursosCorreo = recursos.filter(r => r.recurso.nombre === 'CORREO' && r.activo === true);
+              const devoluciones = recursosCorreo.map(r => {
+                const payload = {
+                  fechaDevolucion: this.fechaDevolucion,
+                  observaciones: `Devuelto por devolucion de equipo ${this.equipo.serial}`
+                };
+                return this.registrarAsignacionesService.devolverRecurso(r.numero, payload);
+              });
+              if (devoluciones.length > 0) {
+                forkJoin(devoluciones).subscribe({
+                  next: () => {
+                    this.notificacionSnackbarService.success('Exito', 'Correos devueltos correctamente');
+                  },
+                  error: (err) => console.error('Error devolviendo recursos:', err)
+                });
+              }
+            },
+            error: (err) => console.error('Error listando recursos:', err)
+          });
+        }
+
         this.dialogRef.close({ success: true, devuelta: true });
       },
       error: (err) => {
@@ -2074,6 +2129,10 @@ export class AsigEquipoComponent {
     if (!texto) return '';
     return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
   }
+
+
+
+
 
 
 

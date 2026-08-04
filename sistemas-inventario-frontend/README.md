@@ -106,4 +106,3 @@
 `ng generate component pagina/asignaciones/asig-equipo` (Opciones de Asignacion - EQUIPO DE COMPUTO)<br>
 
 
-
