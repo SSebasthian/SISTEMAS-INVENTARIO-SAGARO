@@ -1002,10 +1002,7 @@ export class AsigEquipoComponent {
       nombreUsuarioAdministrador: this.detalle?.nombreUsuarioAdministrador || '',
       claveUsuarioAdministrador: this.detalle?.claveUsuarioAdministrador || '',
       nombreUsuarioAdicional: this.detalle?.nombreUsuarioAdicional || '',
-      claveUsuarioAdicional: this.detalle?.claveUsuarioAdicional || '',
-      ip: this.detalle?.ip !== null && this.detalle?.ip !== undefined
-        ? { ip: Number(this.detalle.ip) }
-        : null
+      claveUsuarioAdicional: this.detalle?.claveUsuarioAdicional || ''
     };
 
 
@@ -1201,6 +1198,7 @@ export class AsigEquipoComponent {
       fechaAsignacion: this.fechaAsignacion,
       observaciones: observacionesFormateadas,
       detalle: detalleData,
+      ip: this.detalle?.ip || null,
       backups: backups,
       correosConBackup: correosConBackup,
       softwares: softwares,

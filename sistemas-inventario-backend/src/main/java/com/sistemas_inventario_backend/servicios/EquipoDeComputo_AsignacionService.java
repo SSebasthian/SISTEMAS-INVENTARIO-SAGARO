@@ -28,6 +28,9 @@ public class EquipoDeComputo_AsignacionService {
     private final EquipoDeComputo_DetalleRepository detalleRepository;
     private final BackupService backupService;
     private final Backup_InformacionService backupInformacionService;
+    private final EquipoDeComputo_DetalleService detalleService;
+    private final IPRepository ipRepository;
+
 
     // Inyectar servicio de backup
     private final EquipoDeComputo_BackupService equipoDeComputoBackupService;
@@ -88,8 +91,14 @@ public class EquipoDeComputo_AsignacionService {
             detalle.setAsignacion(guardada);
             detalle.setEquipo(equipoDeComputoRepository.findById(guardada.getSerialActivo()).orElse(null));
             detalle.setActivo(true);
-            detalleRepository.save(detalle);
+
+            // Pasar la IP y el tipoCodigo
+            Integer ipNumero = solicitud.getIp();
+            Long tipoCodigo = solicitud.getTipoCodigo();
+
+            detalleService.guardar(guardada.getSerialActivo(), detalle, ipNumero, tipoCodigo);
         }
+
 
         // Guardar backups si vienen en la solicitud
         if (solicitud.getBackups() != null && !solicitud.getBackups().isEmpty()) {
@@ -108,7 +117,7 @@ public class EquipoDeComputo_AsignacionService {
             for (AsignacionesSolicitud.CorreoConBackup cb : solicitud.getCorreosConBackup()) {
                 AsignacionesSolicitud.BackupData bd = cb.getBackupData();
 
-                // 1. Verificar si ya existe una configuración igual
+                // 1. Verificar si ya existe una configuracion igual
                 Backup_Informacion existente = null;
                 try {
                     existente = backupInformacionService.buscarPorCriterios(
@@ -122,7 +131,7 @@ public class EquipoDeComputo_AsignacionService {
                             bd.getTipo()  // "CORREO"
                     );
                 } catch (Exception e) {
-                    // Si falla la búsqueda, no importa, se creará uno nuevo
+                    // Si falla la busqueda, no importa, se creará uno nuevo
                 }
 
                 Long backupInfoCodigo;
@@ -148,7 +157,7 @@ public class EquipoDeComputo_AsignacionService {
                     backupInfoCodigo = nueva.getCodigo();
                 }
 
-                // Guardar relación en equipodecomputo_backup (reutiliza el código)
+                // Guardar relacion en equipodecomputo_backup (reutiliza el codigo)
                 equipoDeComputoBackupService.guardarBackup(
                         guardada.getSerialActivo(),
                         backupInfoCodigo,
@@ -186,10 +195,17 @@ public class EquipoDeComputo_AsignacionService {
             asignacion.setObservaciones(observacionesDevolucion);
         }
 
-        // Desactivar detalle
-        EquipoDeComputo_Detalle detalle = detalleRepository.findByAsignacionConsecutivo(asignacionId)
-                .orElse(null);
+        // Desactivar detalle y liberar IP
+        EquipoDeComputo_Detalle detalle = detalleRepository.findByAsignacionConsecutivo(asignacionId).orElse(null);
         if (detalle != null) {
+            // Liberar la IP
+            if (detalle.getIp() != null) {
+                IP ip = detalle.getIp();
+                ip.setActivo(false);
+                ip.setCatalogoCodigo(1L);
+                ip.setDispositivoTipoCodigo(null);
+                ipRepository.save(ip);
+            }
             detalle.setActivo(false);
             detalleRepository.save(detalle);
         }
@@ -297,7 +313,7 @@ public class EquipoDeComputo_AsignacionService {
                 dto.setTipoDescripcion(a.getTipo().getDescripcion());
             }
 
-            // Obtener marca y modelo según el catalogo
+            // Obtener marca y modelo segun el catalogo
             if (a.getCatalogo().getCodigo() == 1L) { // Equipo
                 equipoDeComputoRepository.findById(a.getSerialActivo()).ifPresent(eq -> {
                     if (eq.getMarca() != null) dto.setMarca(eq.getMarca().getDescripcion());

@@ -16,6 +16,7 @@ public class AsignacionesSolicitud {
     private LocalDate fechaAsignacion;  // si es null se asigna now()
     private String observaciones;
     private EquipoDeComputo_Detalle detalle;
+    private Integer ip;
     private List<BackupAsignacion> backups;
     private List<CorreoConBackup> correosConBackup;
     private List<SoftwareAsignacion> softwares;

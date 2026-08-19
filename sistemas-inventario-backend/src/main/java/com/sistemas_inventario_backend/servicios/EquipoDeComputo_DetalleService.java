@@ -37,7 +37,7 @@ public class EquipoDeComputo_DetalleService {
     }
 
     @Transactional
-    public EquipoDeComputo_Detalle guardar(String serial, EquipoDeComputo_Detalle detalle, Integer ipNumero) {
+    public EquipoDeComputo_Detalle guardar(String serial, EquipoDeComputo_Detalle detalle, Integer ipNumero, Long tipoCodigo) {
         // Buscar equipo
         EquipoDeComputo equipo = equipoRepository.findById(serial)
                 .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
@@ -76,17 +76,23 @@ public class EquipoDeComputo_DetalleService {
 
         // Marcar la IP como ocupada (activo = true) en la tabla maestra
         ip.setActivo(true);
+        ip.setCatalogoCodigo(1L); // 1 = Equipo de computo
+        ip.setDispositivoTipoCodigo(tipoCodigo); // Usar el tipoCodigo recibido
         ipRepository.save(ip);
 
         return repository.save(detalle);
     }
+
 
     @Transactional
     public void eliminar(String serial) {
         EquipoDeComputo_Detalle detalle = obtenerPorSerial(serial);
         if (detalle != null && detalle.getIp() != null) {
             IP ip = detalle.getIp();
-            ip.setActivo(false); // Liberar IP
+            // Liberar IP (activo = false) y limpiar tipo
+            ip.setActivo(false);
+            ip.setCatalogoCodigo(1L);
+            ip.setDispositivoTipoCodigo(null);
             ipRepository.save(ip);
         }
         repository.delete(detalle);
