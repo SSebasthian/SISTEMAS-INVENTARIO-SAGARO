@@ -42,9 +42,9 @@ public class EquipoDeComputo_DetalleController {
     }
 
     @PostMapping("/{serial}")
-    public ResponseEntity<?> guardar(@PathVariable String serial, @RequestBody EquipoDeComputo_Detalle detalle) {
+    public ResponseEntity<?> guardar(@PathVariable String serial, @RequestBody EquipoDeComputo_Detalle detalle, @RequestParam Integer ip) {
         try {
-            EquipoDeComputo_Detalle guardado = service.guardar(serial, detalle);
+            EquipoDeComputo_Detalle guardado = service.guardar(serial, detalle, ip);
             return ResponseEntity.ok(guardado);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

@@ -35,8 +35,9 @@ public class EquipoDeComputo_Detalle {
     private String nombreUsuarioAdicional;
     private String claveUsuarioAdicional;
 
-    @Column(nullable = false)
-    private Integer ip;
+    @ManyToOne
+    @JoinColumn(name = "ip", referencedColumnName = "ip")
+    private IP ip;
 
 
     @OneToOne

@@ -182,6 +182,15 @@ export class AsigEquipoComponent {
   softwareSeleccionadoOffice: any = null;
 
 
+
+
+  mostrarModalIP: boolean = false;
+  ipsDisponibles: any[] = []; // Lista completa de IPs con estado
+  ipSeleccionadaTemporal: number | null = null; // IP seleccionada en el modal
+
+
+
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<AsigEquipoComponent>,
@@ -994,7 +1003,9 @@ export class AsigEquipoComponent {
       claveUsuarioAdministrador: this.detalle?.claveUsuarioAdministrador || '',
       nombreUsuarioAdicional: this.detalle?.nombreUsuarioAdicional || '',
       claveUsuarioAdicional: this.detalle?.claveUsuarioAdicional || '',
-      ip: this.detalle?.ip || null
+      ip: this.detalle?.ip !== null && this.detalle?.ip !== undefined
+        ? { ip: Number(this.detalle.ip) }
+        : null
     };
 
 
@@ -2134,6 +2145,82 @@ export class AsigEquipoComponent {
 
 
 
+  // ================================================================
+  // METODOS PARA IP
+  // ================================================================
 
+  abrirModalIP(): void {
+    this.mostrarModalIP = true;
+    this.ipSeleccionadaTemporal = this.detalle.ip || null;
+    this.cargarIpsParaModal();
+  }
+
+
+  cargarIpsParaModal(): void {
+    this.registrarAsignacionesService.obtenerTodasLasIps().subscribe({
+      next: (ips) => {
+        console.log('Todas las IPs:', ips);
+        this.ipsDisponibles = ips;
+      },
+      error: (err) => {
+        console.error('Error al cargar IPs:', err);
+        this.ipsDisponibles = [];
+        this.notificacionSnackbarService.error('Error', 'No se pudieron cargar las IPs');
+      }
+    });
+  }
+
+
+  seleccionarIpTemporal(ip: any): void {
+    // Convertir a numero para comparar correctamente
+    const activo = Number(ip.activo);
+    const catalogo = Number(ip.catalogoCodigo);
+
+    // Caso 1: IP ocupada (activo === 1)
+    if (activo === 1 && catalogo === 1) {
+      this.notificacionSnackbarService.warning(
+        'IP ocupada',
+        `La IP ${ip.ip} ya esta asignada a otro EQUIPO`
+      );
+      return;
+    }
+
+    // Caso 2: IP no apta para equipo (catalogo !== 1)
+    if (catalogo !== 1) {
+      this.notificacionSnackbarService.warning(
+        'IP no apta',
+        `La IP ${ip.ip} NO esta configurada para equipos de computo`
+      );
+      return;
+    }
+
+    // Caso 3: IP disponible (activo === 0 y catalogo === 1)
+    if (activo === 0 && catalogo === 1) {
+      this.ipSeleccionadaTemporal = ip.ip;
+      return;
+    }
+
+    // Caso 4: cualquier otra situacion (por si acaso)
+    this.notificacionSnackbarService.warning(
+      'No disponible',
+      `La IP ${ip.ip} NO ESTA DISPONIBLE para asignacion`
+    );
+  }
+
+
+  confirmarSeleccionIP(): void {
+    if (this.ipSeleccionadaTemporal !== null) {
+      this.detalle.ip = this.ipSeleccionadaTemporal;
+      this.mostrarModalIP = false;
+      this.cdr.detectChanges();
+      this.notificacionSnackbarService.success('IP seleccionada', `Se  seleccionado la IP ${this.ipSeleccionadaTemporal}`);
+    }
+  }
+
+
+  cerrarModalIP(): void {
+    this.mostrarModalIP = false;
+    this.ipSeleccionadaTemporal = null;
+  }
 
 }

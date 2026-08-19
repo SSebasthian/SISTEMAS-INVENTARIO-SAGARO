@@ -244,7 +244,12 @@
                                                 <span
                                                     *ngIf="intentadoAvanzarPaso2 && (detalle.ip === null || detalle.ip === undefined || detalle.ip < 1 || detalle.ip > 255)">*</span>
                                             </label>
-                                            <input type="number" min="1" max="255" [(ngModel)]="detalle.ip" />
+
+                                            <div class="selector-ip-container" (click)="abrirModalIP()">
+                                                <input type="text" class="ip-input"
+                                                    [value]="detalle.ip !== null && detalle.ip !== undefined ? detalle.ip : ''"
+                                                    readonly (click)="abrirModalIP()" />
+                                            </div>
                                         </div>
 
                                         <!-- Usuario Admin (obligatorio) -->
@@ -839,7 +844,8 @@
                                     <h4>Correos agregados</h4>
 
                                     <div class="contenedor-correos">
-                                        <div class="backup-agregado-card" *ngFor="let item of correosFormulario; let i = index">
+                                        <div class="backup-agregado-card"
+                                            *ngFor="let item of correosFormulario; let i = index">
 
                                             <div class="backup-agregado-header">
                                                 <mat-icon>mail</mat-icon>
@@ -1106,6 +1112,62 @@
             </button>
             <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalBackup()">
                 <mat-icon>cancel</mat-icon> Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<!-- Modal para seleccionar IP -->
+<div class="modal-ip" [class.show]="mostrarModalIP" *ngIf="mostrarModalIP">
+    <div class="modal-contenido">
+        <div class="modal-cabezera">
+            <div class="titulo">
+                <mat-icon>settings_ethernet</mat-icon>
+                <h2>Seleccionar IP</h2>
+            </div>
+        </div>
+
+        <div class="ip-body">
+            <!-- Leyenda -->
+            <div class="leyenda-ip">
+                <span class="leyenda-item">
+                    <span class="color-disponible"></span> Disponible
+                </span>
+                <span class="leyenda-item">
+                    <span class="color-ocupada"></span> Ocupada
+                </span>
+                <span class="leyenda-item">
+                    <span class="color-seleccionada"></span> Seleccionada
+                </span>
+            </div>
+
+            <!-- Grid de IPs -->
+            <div class="ip-grid">
+                <div *ngFor="let ip of ipsDisponibles" class="ip-item"
+                    [class.disponible]="ip.catalogoCodigo === 1 && ip.activo === false"
+                    [class.ocupada]="!(ip.catalogoCodigo === 1 && ip.activo === false)"
+                    [class.seleccionada]="ip.ip === ipSeleccionadaTemporal" (click)="seleccionarIpTemporal(ip)">
+                    {{ ip.ip }}
+                </div>
+            </div>
+
+            <div *ngIf="ipsDisponibles.length === 0" class="sin-ips">
+                <mat-icon>warning</mat-icon>
+                <span>No se pudieron cargar las IPs</span>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button mat-raised-button type="button" class="btn-cancelar" (click)="cerrarModalIP()">
+                <mat-icon>cancel</mat-icon> Cancelar
+            </button>
+            <button mat-raised-button type="button" class="btn-guardar" (click)="confirmarSeleccionIP()"
+                [disabled]="ipSeleccionadaTemporal === null">
+                <mat-icon>done_all</mat-icon> Seleccionar
             </button>
         </div>
     </div>
