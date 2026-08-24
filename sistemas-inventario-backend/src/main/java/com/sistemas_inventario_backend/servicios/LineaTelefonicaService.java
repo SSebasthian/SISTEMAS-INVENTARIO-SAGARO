@@ -30,7 +30,7 @@ public class LineaTelefonicaService {
 
     @Transactional
     public LineaTelefonica registrar(LineaTelefonicaSolicitud dto) {
-        // Validar que el número no exista
+        // Validar que el numero no exista
         if (repository.findByNumero(dto.getNumero()).isPresent()) {
             throw new RuntimeException("Ya existe un telefono con el numero: " + dto.getNumero());
         }
@@ -52,12 +52,12 @@ public class LineaTelefonicaService {
     @Transactional
     public LineaTelefonica editar(Long codigo, LineaTelefonicaSolicitud dto) {
         LineaTelefonica telefono = repository.findById(codigo)
-                .orElseThrow(() -> new RuntimeException("Teléfono no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Telefono no encontrado"));
 
         // Validar que el nuevo numero no exista en otro registro
         if (!telefono.getNumero().equals(dto.getNumero()) &&
                 repository.findByNumero(dto.getNumero()).isPresent()) {
-            throw new RuntimeException("Ya existe un teléfono con el número: " + dto.getNumero());
+            throw new RuntimeException("Ya existe un telefono con el numero: " + dto.getNumero());
         }
 
         telefono.setNumero(dto.getNumero());

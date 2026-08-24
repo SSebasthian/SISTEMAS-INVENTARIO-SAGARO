@@ -86,7 +86,7 @@
                         <!-- Fechas y descripcion -->
                         <div class="seleccionado-fecha">
                             <div class="campo-fecha asignac">
-                                <div class="fecha-campo">
+                                <div class="fecha-campo asignado">
                                     <mat-icon>event</mat-icon>
                                     <label>ASIGNACION</label>
                                 </div>
@@ -98,7 +98,7 @@
                             </div>
 
                             <div class="campo-fecha devoluc" *ngIf="mostrarDevolucion">
-                                <div class="fecha-campo">
+                                <div class="fecha-campo asignado">
                                     <mat-icon>event</mat-icon>
                                     <label>DEVOLUCION</label>
                                 </div>
@@ -187,35 +187,9 @@
                         <!-- Contenido segun paso (solo si hay empleado seleccionado) -->
                         <ng-container *ngIf="empleadoSeleccionado">
 
-                            <!-- PASO 1: Fechas y descripcion -->
-                            <div *ngIf="paso === 1">
-                                <div class="seleccionado-fecha">
-                                    <div class="campo-fecha asignac">
-                                        <div class="fecha-campo sin-asignacion">
-                                            <mat-icon>event</mat-icon>
-                                            <label>FECHA DE ASIGNACION</label>
-                                        </div>
-                                        <div class="fecha">
-                                            <input type="date" [(ngModel)]="fechaAsignacion" class="fecha-input">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="seleccionado-observaciones">
-                                    <div class="obser-campo">
-                                        <span>
-                                            <mat-icon>description</mat-icon>
-                                            <label>DESCRIPCION</label>
-                                        </span>
-                                        <textarea [(ngModel)]="observaciones" rows="2"
-                                            placeholder="Ingrese detalles de la asignacion..."
-                                            (input)="observaciones = observaciones.toUpperCase()"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- PASO 2: Detalle del equipo -->
-                            <div *ngIf="paso === 2" class="seccion-detalle">
+                            
+                            <!-- PASO 1: Detalle del equipo -->
+                            <div *ngIf="paso === 1" class="seccion-detalle">
                                 <div class="seleccion-detalle">
                                     <div class="detalle-campo">
                                         <mat-icon>queue_play_next</mat-icon>
@@ -339,9 +313,10 @@
                                 </div>
                             </div>
 
-                            <!-- PASO 3: SOFTWARE INSTALADO -->
 
-                            <div *ngIf="paso === 3" class="seccion-detalle">
+
+                            <!-- PASO 2: SOFTWARE INSTALADO -->
+                            <div *ngIf="paso === 2" class="seccion-detalle">
                                 <div class="seleccion-detalle">
                                     <div class="detalle-campo">
                                         <mat-icon>layers</mat-icon>
@@ -476,7 +451,34 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
+
+                            <!-- PASO 3: Fechas y descripcion -->
+                            <div *ngIf="paso === 3">
+                                <div class="seleccionado-fecha">
+                                    <div class="campo-fecha asignac">
+                                        <div class="fecha-campo sin-asignacion">
+                                            <mat-icon>event</mat-icon>
+                                            <label>FECHA DE ASIGNACION</label>
+                                        </div>
+                                        <div class="fecha">
+                                            <input type="date" [(ngModel)]="fechaAsignacion" class="fecha-input">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="seleccionado-observaciones">
+                                    <div class="obser-campo">
+                                        <span>
+                                            <mat-icon>description</mat-icon>
+                                            <label>DESCRIPCION</label>
+                                        </span>
+                                        <textarea [(ngModel)]="observaciones" rows="2"
+                                            placeholder="Ingrese detalles de la asignacion..."
+                                            (input)="observaciones = observaciones.toUpperCase()"></textarea>
+                                    </div>
+                                </div>
                             </div>
 
                         </ng-container>
@@ -965,7 +967,7 @@
                         <!-- Modo formulario (agregando un nuevo backup) -->
                         <button *ngIf="mostrarFormularioBackup || backupsSeleccionados.length === 0"
                             class="btn-panel-guardar" (click)="agregarBackupALista()"
-                            [disabled]="!backupFormData.backupCodigo || !backupFormData.nombre">
+                            [disabled]="!backupFormData.backupCodigo">
                             Guardar Backup
                         </button>
 
@@ -1019,6 +1021,7 @@
                     <mat-icon>close</mat-icon> Cancelar
                 </button>
 
+
                 <!-- PASO 1: Seleccion de empleado -->
                 <ng-container *ngIf="paso === 1 && tieneSeleccion()">
                     <!-- Boton Volver Atras (solo visible cuando HAY seleccion) -->
@@ -1027,15 +1030,16 @@
                     </button>
 
                     <!-- Boton Siguiente (ir a detalle) -->
-                    <button class="btn-asignar" [disabled]="!empleadoSeleccionado" (click)="irAlDetalle()">
+                    <button class="btn-asignar" [disabled]="!empleadoSeleccionado" (click)="irAlPaso2()">  
                         Siguiente <mat-icon>keyboard_arrow_right</mat-icon>
                     </button>
                 </ng-container>
 
+
                 <!-- PASO 2: Detalle del equipo -->
-                <ng-container *ngIf="paso === 2">
+                <ng-container *ngIf="paso === 2 && tieneSeleccion()">
                     <!-- Boton Volver (a paso 1) -->
-                    <button class="btn-devolver" (click)="paso = 1">
+                    <button class="btn-devolver" (click)="irAlPaso1()">
                         <mat-icon>keyboard_arrow_left</mat-icon> Volver
                     </button>
 
@@ -1046,8 +1050,8 @@
                 </ng-container>
 
                 <!-- PASO 3: Software instalado -->
-                <ng-container *ngIf="paso === 3">
-                    <button class="btn-devolver" (click)="paso = 2">
+                <ng-container *ngIf="paso === 3 && tieneSeleccion()">
+                    <button class="btn-devolver" (click)="irAlPaso2DesdePaso3()">
                         <mat-icon>keyboard_arrow_left</mat-icon> Volver
                     </button>
                     <button class="btn-asignar" (click)="asignar()">

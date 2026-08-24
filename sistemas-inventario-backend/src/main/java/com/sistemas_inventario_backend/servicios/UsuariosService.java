@@ -38,7 +38,7 @@ public class UsuariosService {
         return usuariosRepository.save(usuario);
     }
 
-    // Buscar usuario por su nombre de usuario (para login después)
+    // Buscar usuario por su nombre de usuario (para login despues)
     public Usuarios buscarPorUsuario(String usuario) {
         return usuariosRepository.findByUsuario(usuario);
     }
@@ -73,7 +73,7 @@ public class UsuariosService {
             return new InicioSesionRespuesta("Contraseña Incorrecta", null, null, null);
         }
 
-        // Verificar que el usuario esté activo
+        // Verificar que el usuario este activo
         if (!user.getActivo()) {
             return new InicioSesionRespuesta("Usuario Inactivo", null, null, null);
         }
@@ -93,7 +93,7 @@ public class UsuariosService {
 
 
     ////////////////////////////////////////////////////////////////////////////////////////
-    // Actualiza el perfil del usuario (solo datos básicos)- No modifica rol ni contraseña
+    // Actualiza el perfil del usuario (solo datos basicos)- No modifica rol ni contraseña
 
     /// /////////////////////////////////////////////////////////////////////////////////////
     public Usuarios actualizarPerfil(String usuario, Usuarios datos) {
@@ -197,7 +197,7 @@ public class UsuariosService {
                 .orElse(null);
 
         if (rol == null) {
-            return new RegistroRespuesta("Rol no válido", null, null, null);
+            return new RegistroRespuesta("Rol no valido", null, null, null);
         }
 
         Usuarios nuevo = new Usuarios();

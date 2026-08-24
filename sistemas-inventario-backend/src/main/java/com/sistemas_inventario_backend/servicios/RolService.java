@@ -19,7 +19,7 @@ public class RolService {
     private final UsuariosRepository usuariosRepository;
     private final PermisosRepository permisosRepository;
 
-    // Inyección del repositorio mediante el constructor
+    // Inyeccion del repositorio mediante el constructor
     public RolService(
             RolRepository rolRepository,
             UsuariosRepository usuariosRepository,
@@ -74,7 +74,7 @@ public class RolService {
     /// ////////////////////////////////////////
 
 
-    /*** Obtiene todos los permisos con indicación de si están asignados al rol  */
+    /*** Obtiene todos los permisos con indicacion de si están asignados al rol  */
     public List<Map<String, Object>> obtenerPermisosConEstado(Long rolId) {
         Rol rol = rolRepository.findById(rolId).orElse(null);
         if (rol == null) {

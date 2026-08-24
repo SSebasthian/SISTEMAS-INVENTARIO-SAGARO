@@ -72,9 +72,9 @@ public class CatalogoService {
     public sistemaoperativo_version crearVersionSO(String descripcion, Long soCodigo) {
         // Buscar el USANDO EL REPOSITORIO (soRepository), no la entidad
         SistemaOperativo so = soRepository.findById(soCodigo)
-                .orElseThrow(() -> new RuntimeException("SO no encontrado con código: " + soCodigo));
+                .orElseThrow(() -> new RuntimeException("SO no encontrado con codigo: " + soCodigo));
 
-        // Crear nueva versión
+        // Crear nueva version
         sistemaoperativo_version nuevaVersion = new sistemaoperativo_version();
         nuevaVersion.setDescripcion(descripcion);
         nuevaVersion.setActivo(true);

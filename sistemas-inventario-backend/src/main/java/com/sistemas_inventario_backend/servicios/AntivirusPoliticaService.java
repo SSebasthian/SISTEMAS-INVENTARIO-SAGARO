@@ -33,7 +33,7 @@ public class AntivirusPoliticaService {
 
     public Antivirus_Politica obtenerPorCodigo(Long codigo) {
         return repository.findById(codigo)
-                .orElseThrow(() -> new RuntimeException("Política no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Politica no encontrada"));
     }
 
     @Transactional

@@ -49,7 +49,7 @@ public class LineaTelefonicaController {
     public ResponseEntity<?> desactivar(@PathVariable Long codigo) {
         try {
             service.desactivar(codigo);
-            return ResponseEntity.ok(Map.of("mensaje", "Teléfono desactivado correctamente"));
+            return ResponseEntity.ok(Map.of("mensaje", "Telefono desactivado correctamente"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

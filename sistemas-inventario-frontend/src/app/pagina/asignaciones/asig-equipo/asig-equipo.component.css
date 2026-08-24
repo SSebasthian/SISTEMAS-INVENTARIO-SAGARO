@@ -443,6 +443,10 @@
     margin-left: -90px;
 }
 
+.seleccionado-fecha .fecha-campo.asignado{
+    margin-left: -160px;
+}
+
 .seleccionado-fecha .fecha input {
     padding: 6px 8px;
     border: 1px solid #ddd;

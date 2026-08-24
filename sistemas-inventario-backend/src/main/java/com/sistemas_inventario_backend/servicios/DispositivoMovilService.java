@@ -60,7 +60,7 @@ public class DispositivoMovilService {
 
         if (dispositivo.getVersionSO() != null && dispositivo.getVersionSO().getCodigo() != null) {
             sistemaoperativo_version version = versionRepository.findById(dispositivo.getVersionSO().getCodigo())
-                    .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
+                    .orElseThrow(() -> new RuntimeException("Version de SO no encontrada"));
             dispositivo.setVersionSO(version);
         }
 
@@ -104,7 +104,7 @@ public class DispositivoMovilService {
 
         if (dispositivoActualizado.getVersionSO() != null && dispositivoActualizado.getVersionSO().getCodigo() != null) {
             sistemaoperativo_version version = versionRepository.findById(dispositivoActualizado.getVersionSO().getCodigo())
-                    .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
+                    .orElseThrow(() -> new RuntimeException("Version de SO no encontrada"));
             dispositivoExistente.setVersionSO(version);
         }
 
@@ -128,7 +128,7 @@ public class DispositivoMovilService {
     // ========== OBTENER POR SERIAL ==========
     public DispositivoMovil obtenerPorSerial(String serial) {
         return dispositivoMovilRepository.findById(serial)
-                .orElseThrow(() -> new RuntimeException("No se encontró un dispositivo con el serial: " + serial));
+                .orElseThrow(() -> new RuntimeException("No se encontro un dispositivo con el serial: " + serial));
     }
 
     // ========== LISTAR TODOS ==========

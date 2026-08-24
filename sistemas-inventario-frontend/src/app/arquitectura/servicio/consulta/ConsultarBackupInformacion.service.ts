@@ -45,4 +45,8 @@ export class ConsultarBackupInformacionService {
   listarPorBackupYTipo(backupCodigo: number, tipo: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/por-backup/${backupCodigo}/tipo/${tipo}`);
   }
+
+  obtenerPorCodigo(codigo: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/backup-informacion/${codigo}`);
+  }
 }

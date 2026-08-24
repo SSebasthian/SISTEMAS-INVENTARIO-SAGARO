@@ -26,7 +26,7 @@ public class EmpleadoService {
 
     @Transactional
     public Empleado registrarEmpleado(EmpleadoSolicitud solicitud) {
-        // 1. Verificar si ya existe empleado con esa cédula
+        // 1. Verificar si ya existe empleado con esa cedula
         if (empleadoRepository.existsById(solicitud.getCedula())) {
             throw new RuntimeException("Ya existe la cedula: " + solicitud.getCedula());
         }
@@ -39,7 +39,7 @@ public class EmpleadoService {
         Cargo cargo = cargoRepository.findById(solicitud.getCargoCodigo())
                 .orElseThrow(() -> new RuntimeException("Cargo no encontrado con codigo: " + solicitud.getCargoCodigo()));
 
-        // 4. Validación central: el cargo debe estar asociado al área (ManyToMany)
+        // 4. Validacion central: el cargo debe estar asociado al área (ManyToMany)
         if (!area.getCargos().contains(cargo)) {
             throw new RuntimeException(
                     String.format("El cargo '%s' no pertenece al area '%s'",
@@ -70,7 +70,7 @@ public class EmpleadoService {
 
         // Buscar el empleado existente
         Empleado empleadoExistente = empleadoRepository.findById(cedula)
-                .orElseThrow(() -> new RuntimeException("No se encontró un empleado con la cédula: " + cedula));
+                .orElseThrow(() -> new RuntimeException("No se encontro un empleado con la cedula: " + cedula));
 
         // Obtener el área
         Area area = areaRepository.findById(solicitud.getAreaCodigo())
@@ -80,7 +80,7 @@ public class EmpleadoService {
         Cargo cargo = cargoRepository.findById(solicitud.getCargoCodigo())
                 .orElseThrow(() -> new RuntimeException("Cargo no encontrado con codigo: " + solicitud.getCargoCodigo()));
 
-        // Validación: el cargo debe estar asociado al área
+        // Validacion: el cargo debe estar asociado al área
         if (!area.getCargos().contains(cargo)) {
             throw new RuntimeException(
                     String.format("El cargo '%s' no pertenece al area '%s'",
@@ -108,7 +108,7 @@ public class EmpleadoService {
 
     public Empleado obtenerPorCedula(String cedula) {
         return empleadoRepository.findById(cedula)
-                .orElseThrow(() -> new RuntimeException("No se encontró un empleado con la cédula: " + cedula));
+                .orElseThrow(() -> new RuntimeException("No se encontro un empleado con la cedula: " + cedula));
     }
 
     // ========== METODO PARA LISTAR TODOS ==========

@@ -62,7 +62,7 @@ public class PermisosController {
         return permisosService.obtenerRolesPorPermiso(permisoId);
     }
 
-    // Obtener todos los módulos únicos
+    // Obtener todos los módulos unicos
     @GetMapping("/admin/modulos")
     public List<String> listarModulos() {
         return permisosService.listarModulosUnicos();

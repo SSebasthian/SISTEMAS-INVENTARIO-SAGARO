@@ -84,7 +84,7 @@ public class PermisosService {
     }
 
 
-    // NUEVO MÉTODO: Obtener todos los permisos con los roles asignados
+    // NUEVO METODO: Obtener todos los permisos con los roles asignados
     public List<Map<String, Object>> obtenerPermisosConRoles() {
         List<Permisos> permisos = permisosRepository.findAll();
         List<Map<String, Object>> resultado = new ArrayList<>();

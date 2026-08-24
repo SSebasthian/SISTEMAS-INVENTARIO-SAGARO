@@ -111,7 +111,7 @@ public class ImpresoraService {
     // ========== OBTENER POR SERIAL ==========
     public Impresora obtenerPorSerial(String serial) {
         return impresoraRepository.findById(serial)
-                .orElseThrow(() -> new RuntimeException("No se encontró una impresora con el serial: " + serial));
+                .orElseThrow(() -> new RuntimeException("No se encontro una impresora con el serial: " + serial));
     }
 
     // ========== LISTAR TODOS ==========

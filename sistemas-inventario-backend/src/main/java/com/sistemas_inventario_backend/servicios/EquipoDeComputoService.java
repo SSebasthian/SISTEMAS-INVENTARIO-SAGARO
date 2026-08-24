@@ -57,7 +57,7 @@ public class EquipoDeComputoService {
 
         if (equipo.getVersionSO() != null && equipo.getVersionSO().getCodigo() != null) {
             sistemaoperativo_version version = versionRepository.findById(equipo.getVersionSO().getCodigo())
-                    .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
+                    .orElseThrow(() -> new RuntimeException("Version de SO no encontrada"));
             equipo.setVersionSO(version);
         }
 
@@ -73,7 +73,7 @@ public class EquipoDeComputoService {
     public EquipoDeComputo editar(String serial, EquipoDeComputo equipoActualizado) {
         // Buscar el equipo existente
         EquipoDeComputo equipoExistente = equipoRepository.findById(serial)
-                .orElseThrow(() -> new RuntimeException("No se encontró un equipo con el serial: " + serial));
+                .orElseThrow(() -> new RuntimeException("No se encontro un equipo con el serial: " + serial));
 
         // Validar y cargar Tipo
         if (equipoActualizado.getTipo() != null && equipoActualizado.getTipo().getCodigo() != null) {
@@ -103,10 +103,10 @@ public class EquipoDeComputoService {
             equipoExistente.setSistemaOperativo(so);
         }
 
-        // Validar y cargar Versión SO
+        // Validar y cargar Version SO
         if (equipoActualizado.getVersionSO() != null && equipoActualizado.getVersionSO().getCodigo() != null) {
             sistemaoperativo_version version = versionRepository.findById(equipoActualizado.getVersionSO().getCodigo())
-                    .orElseThrow(() -> new RuntimeException("Versión de SO no encontrada"));
+                    .orElseThrow(() -> new RuntimeException("Version de SO no encontrada"));
             equipoExistente.setVersionSO(version);
         }
 
@@ -130,7 +130,7 @@ public class EquipoDeComputoService {
     // ========== OBTENER POR SERIAL ==========
     public EquipoDeComputo obtenerPorSerial(String serial) {
         return equipoRepository.findById(serial)
-                .orElseThrow(() -> new RuntimeException("No se encontró un equipo con el serial: " + serial));
+                .orElseThrow(() -> new RuntimeException("No se encontro un equipo con el serial: " + serial));
     }
 
     // ========== LISTAR TODOS ==========

@@ -30,13 +30,13 @@ public class CatalogoController {
     // =====================================================
 
 
-    // Obtener todas las categorías activas
+    // Obtener todas las categorias activas
     @GetMapping("/catalogos")
     public List<Catalogo> getCatalogos() {
         return catalogoRepo.findByActivoTrue();
     }
 
-    // Tipos por categoría (COMPUTADOR - PORTATIL - SERVIDOR - CELULAR - TABLET)
+    // Tipos por categoria (COMPUTADOR - PORTATIL - SERVIDOR - CELULAR - TABLET)
     @GetMapping("/tipos/catalogo/{catalogoCodigo}")
     public List<DispositivoTecnologico_Tipo> getTiposPorCatalogo(@PathVariable Long catalogoCodigo) {
         return tipoRepo.findByCatalogoCodigoAndActivoTrue(catalogoCodigo);
@@ -76,7 +76,7 @@ public class CatalogoController {
     }
 
 
-    // Sistemas Operativos por categoría  (usando el ID de la categoría)
+    // Sistemas Operativos por categoria  (usando el ID de la categoria)
     @GetMapping("/sistemas-operativos/catalogo/{catalogoCodigo}")
     public List<SistemaOperativo> getSoPorCatalogo(@PathVariable Long catalogoCodigo) {
         return soRepo.findByCatalogoCodigoAndActivoTrue(catalogoCodigo);
@@ -104,7 +104,7 @@ public class CatalogoController {
 
             if (descripcion == null || descripcion.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("message", "La descripción de la marca es requerida"));
+                        .body(Map.of("message", "La descripcion de la marca es requerida"));
             }
 
             DispositivoTecnologico_Marca nuevaMarca = catalogoService.crearMarca(descripcion.trim(), tipoCodigo);
@@ -124,7 +124,7 @@ public class CatalogoController {
         try {
             if (modelo.getDescripcion() == null || modelo.getDescripcion().trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("message", "La descripción del modelo es requerida"));
+                        .body(Map.of("message", "La descripcion del modelo es requerida"));
             }
 
             if (modelo.getTipo() == null || modelo.getTipo().getCodigo() == null) {
@@ -158,7 +158,7 @@ public class CatalogoController {
 
             if (descripcion == null || descripcion.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("message", "La descripción de la versión es requerida"));
+                        .body(Map.of("message", "La descripcion de la version es requerida"));
             }
 
             sistemaoperativo_version nuevaVersion = catalogoService.crearVersionSO(descripcion.trim(), soCodigo);
@@ -166,7 +166,7 @@ public class CatalogoController {
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                    .body(Map.of("message", "Error al crear la versión: " + e.getMessage()));
+                    .body(Map.of("message", "Error al crear la version: " + e.getMessage()));
         }
     }
 
@@ -178,22 +178,22 @@ public class CatalogoController {
 /// //////////////////////////////////////////////////////////////////////////////
 
 /*
-Obtiene todas las categorías activas
+Obtiene todas las categorias activas
 GET: http://localhost:8080/catalogo/catalogos
 
-Obtiene los tipos según la categoría
+Obtiene los tipos según la categoria
 GET: http://localhost:8080/catalogo/tipos/catalogo/{catalogoCodigo}
 
 Obtiene todas las marcas
 GET: http://localhost:8080/catalogo/marcas
 
-Obtiene las marcas según la categoría
+Obtiene las marcas según la categoria
 GET: http://localhost:8080/catalogo/marcas/catalogo/{catalogoCodigo}
 
 Obtiene los modelos según la marca
 GET: http://localhost:8080/catalogo/modelos/marca/{marcaCodigo}
 
-Obtiene los sistemas operativos según la categoría
+Obtiene los sistemas operativos según la categoria
 GET: http://localhost:8080/catalogo/sistemas-operativos/catalogo/{catalogoCodigo}
 
 Obtiene las versiones según el sistema operativo

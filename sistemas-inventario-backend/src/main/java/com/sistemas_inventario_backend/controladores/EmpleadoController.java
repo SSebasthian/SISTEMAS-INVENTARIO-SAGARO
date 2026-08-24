@@ -28,7 +28,7 @@ public class EmpleadoController {
     private final EmpleadoRepository empleadoRepository;
 
     //============================================================
-    // Endpoint 1: Listar todas las áreas (para el primer combo)
+    // Endpoint 1: Listar todas las areas (para el primer combo)
     //============================================================
 
     @GetMapping("/areas")
@@ -38,14 +38,14 @@ public class EmpleadoController {
 
 
     //======================================================================================
-    // Endpoint 2: Obtener los cargos asociados a un área específica (para el segundo combo)
+    // Endpoint 2: Obtener los cargos asociados a un area específica (para el segundo combo)
     //======================================================================================
 
     @GetMapping("/areas/{areaCodigo}/cargos")
     public Set<Cargo> listarCargosPorArea(@PathVariable Long areaCodigo) {
         // Usamos el método personalizado con JOIN FETCH para evitar LazyInitializationException
         Area area = areaRepository.findByIdWithCargos(areaCodigo)
-                .orElseThrow(() -> new RuntimeException("Área no encontrada con código: " + areaCodigo));
+                .orElseThrow(() -> new RuntimeException("Area no encontrada con codigo: " + areaCodigo));
         return area.getCargos();
     }
 
@@ -65,11 +65,11 @@ public class EmpleadoController {
         }
     }
 
-    // ========== ENDPOINTS PARA CREAR ÁREA Y CARGO ==========
+    // ========== ENDPOINTS PARA CREAR AREA Y CARGO ==========
 
 
     //=================================
-    // Endpoint 4: Crear una nueva área
+    // Endpoint 4: Crear una nueva area
     //=================================
 
     @PostMapping("/areas/crear")
@@ -83,10 +83,10 @@ public class EmpleadoController {
 
         if (existe) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("message", "Ya existe un área con esa descripción"));
+                    .body(Map.of("message", "Ya existe un area con esa descripcion"));
         }
 
-        // Crear nueva área
+        // Crear nueva area
         Area nuevaArea = new Area();
         nuevaArea.setDescripcion(descripcion);
         nuevaArea.setActivo(true);
@@ -106,7 +106,7 @@ public class EmpleadoController {
     }
 
     //=======================================================
-    // Endpoint 6: Crear un nuevo cargo y asociarlo a un área
+    // Endpoint 6: Crear un nuevo cargo y asociarlo a un area
     //=======================================================
 
     @PostMapping("/cargos/crear")
@@ -115,21 +115,21 @@ public class EmpleadoController {
             String descripcion = (String) request.get("descripcion");
             Long areaCodigo = Long.valueOf(request.get("areaCodigo").toString());
 
-            System.out.println("📝 Procesando cargo: " + descripcion + " para área: " + areaCodigo);
+            System.out.println("Procesando cargo: " + descripcion + " para area: " + areaCodigo);
 
             if (descripcion == null || descripcion.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("message", "La descripción del cargo es requerida"));
+                        .body(Map.of("message", "La descripcion del cargo es requerida"));
             }
 
-            // Limpiar la descripción
+            // Limpiar la descripcion
             String descripcionLimpia = descripcion.trim().toLowerCase();
 
-            // Obtener el área
+            // Obtener el area
             Area area = areaRepository.findById(areaCodigo)
-                    .orElseThrow(() -> new RuntimeException("Área no encontrada"));
+                    .orElseThrow(() -> new RuntimeException("Area no encontrada"));
 
-            // 1. Buscar si el cargo ya existe GLOBALMENTE (en cualquier área)
+            // 1. Buscar si el cargo ya existe GLOBALMENTE (en cualquier area)
             Optional<Cargo> cargoExistente = cargoRepository.findByDescripcionIgnoreCase(descripcionLimpia);
 
             Cargo cargo;
@@ -147,25 +147,25 @@ public class EmpleadoController {
                 System.out.println("Nuevo cargo creado: " + cargo.getDescripcion());
             }
 
-            // 2. Verificar si el cargo ya está asociado a esta área
-            // Solución: Usar el ID del cargo (que es final)
+            // 2. Verificar si el cargo ya esta asociado a esta area
+            // Solucion: Usar el ID del cargo (que es final)
             final Long cargoId = cargo.getCodigo();
             boolean yaAsociado = area.getCargos().stream()
                     .anyMatch(c -> c.getCodigo().equals(cargoId));
 
             if (yaAsociado) {
-                // Ya está asociado, solo informar
+                // Ya esta asociado, solo informar
                 return ResponseEntity.ok(Map.of(
                         "codigo", cargo.getCodigo(),
                         "descripcion", cargo.getDescripcion(),
-                        "mensaje", "El cargo ya estaba asociado a esta área"
+                        "mensaje", "El cargo ya estaba asociado a esta area"
                 ));
             }
 
-            // 3. Asociar el cargo al área
+            // 3. Asociar el cargo al area
             area.getCargos().add(cargo);
             areaRepository.save(area);
-            System.out.println("🔗 Cargo asociado al área: " + area.getDescripcion());
+            System.out.println("🔗 Cargo asociado al area: " + area.getDescripcion());
 
             return ResponseEntity.ok(Map.of(
                     "codigo", cargo.getCodigo(),
@@ -237,7 +237,7 @@ public class EmpleadoController {
 /// //////////////////////////////////////////////////////////////////////////////
 
 /*
-Listar todas las áreas
+Listar todas las areas
 Metodo: GET
 URL: http://localhost:8080/registrar/empleado/areas
 
@@ -249,7 +249,7 @@ URL: http://localhost:8080/registrar/empleado/areas/1/cargos
 
 
 
-Registrar un empleado (con relaciones válidas)
+Registrar un empleado (con relaciones validas)
 Metodo: POST
 URL: http://localhost:8080/registrar/empleado/agrega
 {

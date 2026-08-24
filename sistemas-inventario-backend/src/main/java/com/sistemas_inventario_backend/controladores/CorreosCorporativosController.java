@@ -25,6 +25,9 @@ public class CorreosCorporativosController {
     @GetMapping("/todos")
     public List<CorreosCorporativos> listarTodos() { return service.listarTodos(); }
 
+
+
+
     @PostMapping
     public ResponseEntity<?> registrar(@RequestBody CorreoCorporativoSolicitud correo) {
         try {

@@ -357,7 +357,7 @@ export class EquiposComponent implements OnInit {
     // Evaluar cada regla
     const resultados = filtro.reglas.map((regla: any) => {
       if (!regla.valor) return true;
-      // Si la condición es de texto (buscar en factura)
+      // Si la condicion es de texto (buscar en factura)
       if (!regla.condicion.includes('fecha')) {
         const textoFactura = equipo.facturaCompra?.toLowerCase() || '';
         const filtroValor = regla.valor.toString().toLowerCase();
@@ -369,7 +369,7 @@ export class EquiposComponent implements OnInit {
           default: return true;
         }
       }
-      // Si es condición de fecha
+      // Si es condicion de fecha
       const valorFecha = equipo.fechaCompra;
       if (!valorFecha) return false;
       const fechaValor = new Date(valorFecha);
@@ -384,7 +384,7 @@ export class EquiposComponent implements OnInit {
         default: return true;
       }
     });
-    // Aplicar operador (AND/OR) - Corregido: agregar tipo boolean a los parámetros
+    // Aplicar operador (AND/OR) - Corregido: agregar tipo boolean a los parametros
     if (filtro.operador === 'AND') {
       return resultados.every((r: boolean) => r === true);
     } else {
@@ -583,7 +583,7 @@ export class EquiposComponent implements OnInit {
   dividirModelo(texto: string): string[] {
     if (!texto) return ['', ''];
     const palabras = texto.split(' ');
-    // Si tiene exactamente 2 palabras, poner cada una en una línea
+    // Si tiene exactamente 2 palabras, poner cada una en una linea
     if (palabras.length === 2) {
       return [palabras[0], palabras[1]];
     }
@@ -595,14 +595,14 @@ export class EquiposComponent implements OnInit {
         // Cortar ANTES de esa palabra
         const primeraLinea = palabras.slice(0, i).join(' ');
         const segundaLinea = palabras.slice(i).join(' ');
-        // Si la primera línea está vacía, poner la palabra con número en la primera línea
+        // Si la primera linea esta vacia, poner la palabra con número en la primera linea
         if (primeraLinea === '') {
           return [palabra, palabras.slice(i + 1).join(' ')];
         }
         return [primeraLinea, segundaLinea];
       }
     }
-    // Si no hay palabra con número y tiene más de 2 palabras, dividir por la mitad
+    // Si no hay palabra con número y tiene mas de 2 palabras, dividir por la mitad
     const mitad = Math.ceil(palabras.length / 2);
     const primeraLinea = palabras.slice(0, mitad).join(' ');
     const segundaLinea = palabras.slice(mitad).join(' ');
@@ -787,12 +787,12 @@ export class EquiposComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result?.success) {
-        // El modal ya realizó la asignación y devolvió los datos
+        // El modal ya realizo la asignacion y devolvio los datos
         if (result.devuelta) {
-          this.notificacionSnackbarService.success('Devolución Realizada', 'Equipo devuelto correctamente');
+          this.notificacionSnackbarService.success('Devolucion Realizada', 'Equipo devuelto correctamente');
         } else {
-          // Solo mostrar mensaje de éxito, la asignación ya la hizo el modal
-          this.notificacionSnackbarService.success('Asignación Realizada', 'Equipo asignado correctamente');
+          // Solo mostrar mensaje de éxito, la asignacion ya la hizo el modal
+          this.notificacionSnackbarService.success('Asignacion Realizada', 'Equipo asignado correctamente');
         }
         this.cargarEquipos(); // Recargar lista para actualizar estado
       }

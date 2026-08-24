@@ -32,15 +32,15 @@ public class PlataformaService {
     @Transactional
     public Plataforma registrar(Plataforma plataforma) {
         if (repository.findByDescripcion(plataforma.getDescripcion()).isPresent()) {
-            throw new RuntimeException("Ya existe una plataforma con esa descripción");
+            throw new RuntimeException("Ya existe una plataforma con esa descripcion");
         }
 
-        // Asignar el recurso PLATAFORMAS (código 3)
+        // Asignar el recurso PLATAFORMAS (codigo 3)
         Recurso recurso = recursoRepository.findById(3L)
                 .orElseThrow(() -> new RuntimeException("Recurso PLATAFORMAS no encontrado"));
 
-        // Asignar el recursoTipo (por ejemplo, PROPIO = código 6)
-        // Puedes cambiarlo según la lógica de negocio
+        // Asignar el recursoTipo (por ejemplo, PROPIO = codigo 6)
+        // Puedes cambiarlo según la logica de negocio
         Recurso_Tipo recursoTipo = tipoRepository.findById(6L)
                 .orElseThrow(() -> new RuntimeException("RecursoTipo PROPIO no encontrado"));
 
