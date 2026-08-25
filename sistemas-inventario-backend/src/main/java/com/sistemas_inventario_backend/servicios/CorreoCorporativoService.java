@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,7 +28,10 @@ public class CorreoCorporativoService {
     public List<CorreosCorporativos> listarActivos() {
         return repository.findByActivoTrue();
     }
-    public List<CorreosCorporativos> listarTodos() { return repository.findAll(); }
+
+    public List<CorreosCorporativos> listarTodos() {
+        return repository.findAll();
+    }
 
 
     @Transactional
@@ -92,4 +96,40 @@ public class CorreoCorporativoService {
         return repository.findById(codigo)
                 .orElseThrow(() -> new RuntimeException("Correo no encontrado con codigo: " + codigo));
     }
+
+    public List<CorreosCorporativos> listarCorreosDisponibles() {
+        // Obtener los correos disponibles (sin NO APLICA)
+        List<CorreosCorporativos> disponibles = repository.findCorreosDisponibles();
+
+        // Crear el objeto NO APLICA
+        CorreosCorporativos noAplica = new CorreosCorporativos();
+        noAplica.setCodigo(0L);
+        noAplica.setDireccion("NO APLICA");
+        noAplica.setActivo(true);
+        noAplica.setClave("NO APLICA");
+
+        // Crear lista con NO APLICA al inicio
+        List<CorreosCorporativos> resultado = new ArrayList<>();
+        resultado.add(noAplica);
+        resultado.addAll(disponibles);
+
+        return resultado;
+    }
+
+    public List<CorreosCorporativos> listarCorreosDisponiblesPorRecurso(Long recursoCodigo) {
+        List<CorreosCorporativos> disponibles = repository.findCorreosDisponiblesByRecurso(recursoCodigo);
+
+        CorreosCorporativos noAplica = new CorreosCorporativos();
+        noAplica.setCodigo(0L);
+        noAplica.setDireccion("NO APLICA");
+        noAplica.setActivo(true);
+        noAplica.setClave("NO APLICA");
+
+        List<CorreosCorporativos> resultado = new ArrayList<>();
+        resultado.add(noAplica);
+        resultado.addAll(disponibles);
+
+        return resultado;
+    }
+
 }

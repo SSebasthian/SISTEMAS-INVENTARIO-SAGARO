@@ -187,7 +187,7 @@
                         <!-- Contenido segun paso (solo si hay empleado seleccionado) -->
                         <ng-container *ngIf="empleadoSeleccionado">
 
-                            
+
                             <!-- PASO 1: Detalle del equipo -->
                             <div *ngIf="paso === 1" class="seccion-detalle">
                                 <div class="seleccion-detalle">
@@ -835,11 +835,14 @@
                                 <div class="agregar-otro-correo"
                                     *ngIf="!(panelTipo === 'correo' && panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
                                     <a class="btn-agregar-correo-texto" [class.disabled]="!panelCorreo.correoCodigo"
+                                        [class.resaltar]="mostrarAyudaCorreo"
                                         (click)="panelCorreo.correoCodigo && agregarCorreo()">
                                         <mat-icon>add</mat-icon>
                                         Agregar Correo Sin Backup
                                     </a>
                                 </div>
+
+
                                 <div *ngIf="correosFormulario.length > 0 && !(panelTipo === 'correo' &&
                                 panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
                                     <hr>
@@ -981,7 +984,15 @@
 
                     <!-- Caso normal (antivirus, correo, office, etc.) -->
                     <ng-template #normalGuardar>
-                        <button class="btn-panel-guardar" (click)="guardarPanel()">Guardar</button>
+                        <!-- CONDICION ESPECIAL PARA CORREO -->
+                        <button *ngIf="panelTipo !== 'correo'" class="btn-panel-guardar" (click)="guardarPanel()">
+                            Guardar
+                        </button>
+
+                        <!-- Boton Guardar para CORREO - SIEMPRE HABILITADO, la validacion esta en el metodo -->
+                        <button *ngIf="panelTipo === 'correo'" class="btn-panel-guardar" (click)="guardarPanel()">
+                            Guardar
+                        </button>
                     </ng-template>
 
                 </div>
@@ -1030,7 +1041,7 @@
                     </button>
 
                     <!-- Boton Siguiente (ir a detalle) -->
-                    <button class="btn-asignar" [disabled]="!empleadoSeleccionado" (click)="irAlPaso2()">  
+                    <button class="btn-asignar" [disabled]="!empleadoSeleccionado" (click)="irAlPaso2()">
                         Siguiente <mat-icon>keyboard_arrow_right</mat-icon>
                     </button>
                 </ng-container>

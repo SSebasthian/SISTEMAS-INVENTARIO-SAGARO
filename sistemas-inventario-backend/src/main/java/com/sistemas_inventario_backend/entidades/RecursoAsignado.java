@@ -18,16 +18,15 @@ public class RecursoAsignado {
     private Empleado empleado;
 
     @ManyToOne
-    @JoinColumn(name = "recurso_codigo")
+    @JoinColumn(name = "recurso_codigo", referencedColumnName = "codigo")
     private Recurso recurso;
 
     @ManyToOne
-    @JoinColumn(name = "recurso_tipo_codigo")  // FK a la tabla recurso_tipo
-    private Recurso_Tipo  Recurso_Tipo;
+    @JoinColumn(name = "recurso_tipo_codigo", referencedColumnName = "codigo")
+    private Recurso_Tipo recursoTipo;
+
 
     private String recursoCodigoAsignado;
-
-
     private LocalDate fechaAsignacion;
     private LocalDate fechaDevolucion;
     private String observaciones;

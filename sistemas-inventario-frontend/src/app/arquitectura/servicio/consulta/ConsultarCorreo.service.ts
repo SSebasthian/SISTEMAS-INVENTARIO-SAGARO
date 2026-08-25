@@ -21,6 +21,16 @@ export class ConsultarCorreoService {
     return this.http.get<any[]>(`${this.apiUrl}/activos`);
   }
 
+  // Listar solo correos disponibles (no asignados activamente)
+  listarDisponibles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/disponibles`);
+  }
+
+  // Listar correos disponibles por recurso
+  listarDisponiblesPorRecurso(recursoCodigo: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/disponibles/recurso/${recursoCodigo}`);
+  }
+
   // Buscar correos por término en la dirección
   buscar(termino: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/buscar`, { params: { termino } });
@@ -30,4 +40,6 @@ export class ConsultarCorreoService {
   obtenerPorId(codigo: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${codigo}`);
   }
+
+
 }

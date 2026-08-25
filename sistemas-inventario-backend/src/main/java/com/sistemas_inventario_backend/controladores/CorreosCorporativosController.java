@@ -23,9 +23,29 @@ public class CorreosCorporativosController {
     }
 
     @GetMapping("/todos")
-    public List<CorreosCorporativos> listarTodos() { return service.listarTodos(); }
+    public List<CorreosCorporativos> listarTodos() {
+        return service.listarTodos();
+    }
 
+    @GetMapping("/disponibles")
+    public ResponseEntity<?> listarCorreosDisponibles() {
+        try {
+            List<CorreosCorporativos> disponibles = service.listarCorreosDisponibles();
+            return ResponseEntity.ok(disponibles);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 
+    @GetMapping("/disponibles/recurso/{recursoCodigo}")
+    public ResponseEntity<?> listarDisponiblesPorRecurso(@PathVariable Long recursoCodigo) {
+        try {
+            List<CorreosCorporativos> disponibles = service.listarCorreosDisponiblesPorRecurso(recursoCodigo);
+            return ResponseEntity.ok(disponibles);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 
 
     @PostMapping

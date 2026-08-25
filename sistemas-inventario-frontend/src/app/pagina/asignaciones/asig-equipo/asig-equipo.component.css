@@ -1896,3 +1896,26 @@
     background: #c0392b;
     transform: translateY(-2px);
 }
+
+
+/* Estilo para el boton Agregar Correo cuando esta deshabilitado */
+.btn-agregar-correo-texto.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-agregar-correo-texto.resaltar {
+    animation: resaltarBoton 0.7s ease 4;
+    color: #ff9800 !important;
+    font-weight: bold;
+}
+
+@keyframes resaltarBoton {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}

@@ -170,7 +170,7 @@ export class AsigEquipoComponent {
   indiceCorreoEditando: number | null = null;
   bloquearCorreo = false;
   editandoBackupExistente: boolean = false;
-
+  mostrarAyudaCorreo: boolean = false;
 
 
   // Software Opcional
@@ -317,9 +317,10 @@ export class AsigEquipoComponent {
 
 
   cargarCorreos(): void {
-    this.consultarCorreoService.listarActivos().subscribe({
+    this.consultarCorreoService.listarDisponibles().subscribe({
       next: (data) => {
         this.correosList = data;
+        console.log('Correos disponibles:', data);
       },
       error: (err) => {
         console.error('Error al cargar correos:', err);
@@ -536,25 +537,29 @@ export class AsigEquipoComponent {
   }
 
   get correosFiltrados(): any[] {
-    // Primero, obtener los codigos de correos ya seleccionados en el formulario
+    // Primero, obtener los códigos de correos ya seleccionados en el formulario
     const codigosSeleccionados = this.correosFormulario.map(c => c.correoCodigo);
 
-    // Luego, filtrar la lista completa:
-    // - Excluir codigo 0 (correo ficticio)
-    // - Excluir los que ya estan en el formulario
-    // - Excluir los que ya estan asignados en la asignacion actual (si existe)
-    return this.correosList.filter(c => {
-      if (c.codigo === 0) return false;
-      if (codigosSeleccionados.includes(c.codigo)) return false;
+    // Siempre incluir NO APLICA (código 0) al inicio
+    const noAplica = this.correosList.find(c => c.codigo === 0);
 
-      // Si ya existe una asignacion (equipo.asignado), excluir correos que ya estan en esa asignacion
-      // (esto requiere que el equipo tenga la lista de correos asignados)
-      if (this.yaAsignada && this.equipo.correosAsignados) {
-        return !this.equipo.correosAsignados.some((ca: any) => ca.codigo === c.codigo);
-      }
+    // Filtrar el resto de correos
+    const otrosCorreos = this.correosList.filter(c => {
+      if (c.codigo === 0) return false; // Ya lo agregamos aparte
+      if (codigosSeleccionados.includes(c.codigo)) return false;
       return true;
     });
+
+    // Combinar: NO APLICA primero, luego los demás
+    const resultado = [];
+    if (noAplica) {
+      resultado.push(noAplica);
+    }
+    resultado.push(...otrosCorreos);
+
+    return resultado;
   }
+
 
   get backupsDisponibles(): any[] {
     // 1. Filtrar los que NO estan en uso
@@ -1540,6 +1545,11 @@ export class AsigEquipoComponent {
 
           const asignacionesRecursos: Observable<any>[] = [];
           for (const item of this.correosFormulario) {
+
+            // FILTRAR: Si el correo es 0 (NO APLICA), NO lo enviamos a la BD
+            if (Number(item.correoCodigo) === 0) {
+              continue; // Saltar este correo
+            }
             const payload = {
               empleadoCedula: this.empleadoSeleccionado?.cedula,
               tipo: 'CORREO',
@@ -2309,6 +2319,32 @@ export class AsigEquipoComponent {
 
 
   guardarPanel(): void {
+
+    // Validación especial para el panel de correo
+    if (this.panelTipo === 'correo') {
+      if (this.correosFormulario.length === 0) {
+        // Mostrar mensaje de advertencia
+        this.notificacionSnackbarService.warning(
+          'Agregue en lista',
+          'Agregar Correo Sin Backup para poder guardar la configuracion'
+        );
+
+        // Mostrar ayuda visual
+        this.mostrarAyudaCorreo = true;
+
+        // Ocultar ayuda despues de 3 segundos
+        setTimeout(() => {
+          this.mostrarAyudaCorreo = false;
+        }, 3500);
+
+        return; // No guardar
+      }
+    }
+
+    // Ocultar ayuda si hay correos
+    this.mostrarAyudaCorreo = false;
+
+
     if (this.panelTipo === 'antivirus') {
       // Validar que se haya seleccionado antivirus y politica
       if (!this.panelData.antivirusCodigo || !this.panelData.politicaCodigo) {

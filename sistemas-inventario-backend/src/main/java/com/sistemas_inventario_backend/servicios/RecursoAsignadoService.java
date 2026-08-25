@@ -62,7 +62,7 @@ public class RecursoAsignadoService {
         RecursoAsignado asignacion = new RecursoAsignado();
         asignacion.setEmpleado(empleado);
         asignacion.setRecurso(recurso);
-        asignacion.setRecurso_Tipo(recursoTipo);
+        asignacion.setRecursoTipo(recursoTipo);
         asignacion.setRecursoCodigoAsignado(recursoCodigoAsignadoStr);
         asignacion.setFechaAsignacion(fecha != null ? fecha : LocalDate.now());
         asignacion.setObservaciones(observaciones);
