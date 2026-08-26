@@ -5,15 +5,12 @@ import { AsignacionPorEmpleado } from '../../interface/LlamarDatos/AsignacionPor
 import { AreaLlamarDatos } from './../../interface/LlamarDatos/AreaRespuesta.interface';
 
 
-@Injectable({
-  providedIn: 'root'
-})
-
 @Injectable({ providedIn: 'root' })
 export class ConsultarAsignacionesService {
 
   private apiUrlConsultarAsignaciones = 'http://192.168.100.4:8080/asignaciones';
   private apiUrlEmpleado = 'http://192.168.100.4:8080/registrar/empleado';
+  private apiUrlBase = 'http://192.168.100.4:8080';
 
   constructor(private http: HttpClient) { }
 
@@ -24,10 +21,18 @@ export class ConsultarAsignacionesService {
   obtenerAsignacionesPorEmpleado(cedula: string): Observable<AsignacionPorEmpleado[]> {
     return this.http.get<AsignacionPorEmpleado[]>(`${this.apiUrlConsultarAsignaciones}/empleado/${cedula}/detalle`);
   }
-  
+
   listarAreas(): Observable<AreaLlamarDatos[]> {
     return this.http.get<AreaLlamarDatos[]>(`${this.apiUrlEmpleado}/areas`);
   }
 
+  // Metodo para obtener el detalle activo con DTO
+  obtenerDetalleActivoDTO(serial: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrlBase}/equipos-detalle/serial/${serial}/activo/dto`);
+  }
+
+  // Agrega este metodo
+  obtenerClavesEquipo(serial: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrlBase}/equipos-detalle/serial/${serial}/claves`);
+  }
 }
-  

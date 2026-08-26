@@ -1,5 +1,7 @@
 package com.sistemas_inventario_backend.servicios;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.EquipoDeComputo_ClavesRespuesta;
+import com.sistemas_inventario_backend.DTOs.Respuesta.EquipoDeComputo_DetalleRespuesta;
 import com.sistemas_inventario_backend.entidades.EquipoDeComputo;
 import com.sistemas_inventario_backend.entidades.EquipoDeComputo_Detalle;
 import com.sistemas_inventario_backend.entidades.IP;
@@ -7,7 +9,8 @@ import com.sistemas_inventario_backend.repositorios.EquipoDeComputo_DetalleRepos
 import com.sistemas_inventario_backend.repositorios.EquipoDeComputoRepository;
 import com.sistemas_inventario_backend.repositorios.IPRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.sistemas_inventario_backend.seguridad.SeguridadClave;
+//import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +22,7 @@ public class EquipoDeComputo_DetalleService {
 
     private final EquipoDeComputo_DetalleRepository repository;
     private final EquipoDeComputoRepository equipoRepository;
-    private final PasswordEncoder passwordEncoder;
+    //private final PasswordEncoder passwordEncoder;
     private final IPRepository ipRepository;
 
     public List<EquipoDeComputo_Detalle> listarTodos() {
@@ -59,14 +62,18 @@ public class EquipoDeComputo_DetalleService {
         }
 
         // Encriptar claves
-        if (detalle.getClaveUsuario() != null && !detalle.getClaveUsuario().trim().isEmpty()) {
-            detalle.setClaveUsuario(passwordEncoder.encode(detalle.getClaveUsuario()));
-        }
-        if (detalle.getClaveUsuarioAdministrador() != null && !detalle.getClaveUsuarioAdministrador().trim().isEmpty()) {
-            detalle.setClaveUsuarioAdministrador(passwordEncoder.encode(detalle.getClaveUsuarioAdministrador()));
-        }
-        if (detalle.getClaveUsuarioAdicional() != null && !detalle.getClaveUsuarioAdicional().trim().isEmpty()) {
-            detalle.setClaveUsuarioAdicional(passwordEncoder.encode(detalle.getClaveUsuarioAdicional()));
+        try {
+            if (detalle.getClaveUsuario() != null && !detalle.getClaveUsuario().trim().isEmpty()) {
+                detalle.setClaveUsuario(SeguridadClave.encrypt(detalle.getClaveUsuario()));
+            }
+            if (detalle.getClaveUsuarioAdministrador() != null && !detalle.getClaveUsuarioAdministrador().trim().isEmpty()) {
+                detalle.setClaveUsuarioAdministrador(SeguridadClave.encrypt(detalle.getClaveUsuarioAdministrador()));
+            }
+            if (detalle.getClaveUsuarioAdicional() != null && !detalle.getClaveUsuarioAdicional().trim().isEmpty()) {
+                detalle.setClaveUsuarioAdicional(SeguridadClave.encrypt(detalle.getClaveUsuarioAdicional()));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al cifrar las claves: " + e.getMessage());
         }
 
         // Asignar la IP y el equipo
@@ -83,6 +90,22 @@ public class EquipoDeComputo_DetalleService {
         return repository.save(detalle);
     }
 
+    // Metodo para obtener las claves descifradas
+    public EquipoDeComputo_ClavesRespuesta obtenerClavesDescifradas(String serial) {
+        EquipoDeComputo_Detalle detalle = repository.findByEquipoSerialAndActivoTrue(serial)
+                .orElseThrow(() -> new RuntimeException("No se encontro detalle activo para el equipo " + serial));
+
+        EquipoDeComputo_ClavesRespuesta dto = new EquipoDeComputo_ClavesRespuesta();
+        try {
+            dto.setClaveUsuario(SeguridadClave.decrypt(detalle.getClaveUsuario()));
+            dto.setClaveUsuarioAdministrador(SeguridadClave.decrypt(detalle.getClaveUsuarioAdministrador()));
+            dto.setClaveUsuarioAdicional(SeguridadClave.decrypt(detalle.getClaveUsuarioAdicional()));
+        } catch (Exception e) {
+            throw new RuntimeException("Error al descifrar las claves: " + e.getMessage());
+        }
+        return dto;
+    }
+
 
     @Transactional
     public void eliminar(String serial) {
@@ -96,5 +119,48 @@ public class EquipoDeComputo_DetalleService {
             ipRepository.save(ip);
         }
         repository.delete(detalle);
+    }
+
+
+    // Metodo para obtener el detalle activo por serial y convertirlo a DTO
+    public EquipoDeComputo_DetalleRespuesta obtenerDetalleActivoPorSerialDTO(String serial) {
+
+        EquipoDeComputo_Detalle detalle = repository.findByEquipoSerialAndActivoTrue(serial)
+                .orElseThrow(() -> new RuntimeException("No se encontro detalle activo para el equipo " + serial));
+
+        // Mapear entidad a DTO
+        return convertirADTO(detalle);
+    }
+
+
+    // Metodo privado para convertir de entidad a DTO
+    private EquipoDeComputo_DetalleRespuesta convertirADTO(EquipoDeComputo_Detalle detalle) {
+        EquipoDeComputo_DetalleRespuesta dto = new EquipoDeComputo_DetalleRespuesta();
+        dto.setNumero(detalle.getNumero());
+        dto.setActivo(detalle.getActivo());
+        dto.setNombreEquipo(detalle.getNombreEquipo());
+        dto.setNombreUsuario(detalle.getNombreUsuario());
+        dto.setClaveUsuario(detalle.getClaveUsuario());
+        dto.setNombreUsuarioAdministrador(detalle.getNombreUsuarioAdministrador());
+        dto.setClaveUsuarioAdministrador(detalle.getClaveUsuarioAdministrador());
+        dto.setNombreUsuarioAdicional(detalle.getNombreUsuarioAdicional());
+        dto.setClaveUsuarioAdicional(detalle.getClaveUsuarioAdicional());
+
+        // Obtener IP (puede ser null si no tiene asignada)
+        if (detalle.getIp() != null) {
+            dto.setIp(detalle.getIp().getIp());
+        }
+
+        // Obtener consecutivo de asignacion
+        if (detalle.getAsignacion() != null) {
+            dto.setAsignacionConsecutivo(detalle.getAsignacion().getConsecutivo());
+        }
+
+        // Obtener serial del equipo
+        if (detalle.getEquipo() != null) {
+            dto.setSerial(detalle.getEquipo().getSerial());
+        }
+
+        return dto;
     }
 }

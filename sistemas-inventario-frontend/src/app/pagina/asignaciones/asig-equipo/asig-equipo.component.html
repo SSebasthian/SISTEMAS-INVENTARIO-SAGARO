@@ -63,6 +63,7 @@
                         </label>
                     </div>
 
+
                     <!-- ================================================ -->
                     <!-- CASO 1: YA ESTA ASIGNADA -->
                     <!-- ================================================ -->
@@ -83,42 +84,133 @@
                             </div>
                         </div>
 
-                        <!-- Fechas y descripcion -->
-                        <div class="seleccionado-fecha">
-                            <div class="campo-fecha asignac">
-                                <div class="fecha-campo asignado">
-                                    <mat-icon>event</mat-icon>
-                                    <label>ASIGNACION</label>
-                                </div>
-                                <div class="fecha">
-                                    <input type="date"
-                                        [value]="yaAsignada ? (equipo.fechaAsignacion | date:'yyyy-MM-dd') : fechaAsignacion"
-                                        class="fecha-input" [disabled]="yaAsignada">
+                        <!-- ================================================ -->
+                        <!-- PASO 1: DETALLE DEL EQUIPO (SOLO LECTURA)       -->
+                        <!-- ================================================ -->
+                        <div *ngIf="paso === 1" class="seccion-detalle">
+                            <div class="seleccion-detalle">
+                                <div class="detalle-campo">
+                                    <mat-icon>queue_play_next</mat-icon>
+                                    <label>DETALLE EQUIPO</label>
                                 </div>
                             </div>
 
-                            <div class="campo-fecha devoluc" *ngIf="mostrarDevolucion">
-                                <div class="fecha-campo asignado">
-                                    <mat-icon>event</mat-icon>
-                                    <label>DEVOLUCION</label>
+                            <div class="detalle-grid">
+                                <!-- Nombre Equipo -->
+                                <div class="campo-detalle">
+                                    <label>NOMBRE EQUIPO</label>
+                                    <input [value]="detalleEquipo?.nombreEquipo || 'SIN NOMBRE'" readonly
+                                        class="input-readonly" />
                                 </div>
-                                <div class="fecha">
-                                    <input type="date" [(ngModel)]="fechaDevolucion" class="fecha-input"
-                                        (change)="validarFechaDevolucion()">
+
+                                <!-- IP -->
+                                <div class="campo-detalle">
+                                    <label>IP</label>
+                                    <input [value]="detalleEquipo?.ip || 'SIN IP'" disabled class="input-readonly" />
+                                </div>
+
+                                <!-- Usuario Admin -->
+                                <div class="campo-detalle">
+                                    <label>USUARIO ADMIN</label>
+                                    <input [value]="detalleEquipo?.nombreUsuarioAdministrador || 'SISTEMAS'" readonly
+                                        class="input-readonly" />
+                                </div>
+
+                                <!-- Clave Admin -->
+                                <div class="campo-detalle">
+                                    <label>CLAVE ADMIN</label>
+                                    <div class="input-con-toggle">
+                                        <input [type]="mostrarClaveAdminDetalle ? 'text' : 'password'"
+                                            [value]="detalleEquipo?.claveUsuarioAdministrador || '******'" disabled
+                                            class="input-readonly" />
+                                        <mat-icon class="toggle-icon" (click)="toggleClaveAdminDetalle()">
+                                            {{ mostrarClaveAdminDetalle ? 'visibility_off' : 'visibility' }}
+                                        </mat-icon>
+                                    </div>
+                                </div>
+
+                                <!-- Usuario -->
+                                <div class="campo-detalle">
+                                    <label>USUARIO</label>
+                                    <input [value]="detalleEquipo?.nombreUsuario || 'SIN USUARIO'" readonly
+                                        class="input-readonly" />
+                                </div>
+
+                                <!-- Clave Usuario -->
+                                <div class="campo-detalle">
+                                    <label>CLAVE USUARIO</label>
+                                    <div class="input-con-toggle">
+                                        <input [type]="mostrarClaveUsuarioDetalle ? 'text' : 'password'"
+                                            [value]="detalleEquipo?.claveUsuario || '******'" disabled
+                                            class="input-readonly" />
+                                        <mat-icon class="toggle-icon" (click)="toggleClaveUsuarioDetalle()">
+                                            {{ mostrarClaveUsuarioDetalle ? 'visibility_off' : 'visibility' }}
+                                        </mat-icon>
+                                    </div>
+                                </div>
+
+                                <!-- Usuario Adicional -->
+                                <div class="campo-detalle">
+                                    <label>USUARIO ADICIONAL</label>
+                                    <input [value]="detalleEquipo?.nombreUsuarioAdicional || ''" disabled
+                                        class="input-readonly" />
+                                </div>
+
+                                <!-- Clave Adicional -->
+                                <div class="campo-detalle">
+                                    <label>CLAVE ADICIONAL</label>
+                                    <div class="input-con-toggle">
+                                        <input [type]="mostrarClaveAdicionalDetalle ? 'text' : 'password'"
+                                            [value]="detalleEquipo?.claveUsuarioAdicional || ''" disabled
+                                            class="input-readonly" />
+                                        <mat-icon class="toggle-icon" (click)="toggleClaveAdicionalDetalle()">
+                                            {{ mostrarClaveAdicionalDetalle ? 'visibility_off' : 'visibility' }}
+                                        </mat-icon>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Descripcion original (solo lectura) -->
-                        <div class="seleccionado-observaciones" *ngIf="!mostrarDevolucion">
-                            <div class="obser-campo">
-                                <span>
-                                    <mat-icon>description</mat-icon>
-                                    <label>DESCRIPCION</label>
-                                </span>
-                                <textarea [value]="equipo.observacionesOriginal  || 'SIN OBSERVACIONES'" rows="2"
-                                    disabled></textarea>
+                        <!-- ================================================ -->
+                        <!-- PASO 2: SOFTWARE (SOLO LECTURA) - VACIO POR AHORA -->
+                        <!-- ================================================ -->
+                        <div *ngIf="paso === 2" class="seccion-detalle">
+                            <div class="seleccion-detalle">
+                                <div class="detalle-campo">
+                                    <mat-icon>layers</mat-icon>
+                                    <label>SOFTWARE INSTALADO</label>
+                                </div>
                             </div>
+                            <div class="sin-datos">
+                                <mat-icon>info</mat-icon>
+                                <span>Información de software en desarrollo</span>
+                            </div>
+                        </div>
+
+                        <!-- ================================================ -->
+                        <!-- PASO 3: FECHAS (SOLO LECTURA) - VACIO POR AHORA -->
+                        <!-- ================================================ -->
+                        <div *ngIf="paso === 3" class="seccion-detalle">
+                            <div class="seleccion-detalle">
+                                <div class="detalle-campo">
+                                    <mat-icon>event</mat-icon>
+                                    <label>FECHAS Y DESCRIPCION</label>
+                                </div>
+                            </div>
+                            <div class="sin-datos">
+                                <mat-icon>info</mat-icon>
+                                <span>Información de fechas en desarrollo</span>
+                            </div>
+                        </div>
+
+                        <!-- Fechas y descripcion original (solo lectura) -->
+                        <!-- Esta parte la moveremos al paso 3 después -->
+                        <div class="seleccionado-fecha" *ngIf="false">
+                            <!-- Oculto temporalmente -->
+                        </div>
+
+                        <div class="seleccionado-observaciones" *ngIf="!mostrarDevolucion && false">
+                            <!-- Oculto temporalmente -->
                         </div>
 
                         <!-- Detalle de devolucion (solo visible en modo devolucion) -->
@@ -134,6 +226,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     <!-- ================================================ -->
                     <!-- CASO 2: NUEVA ASIGNACION (NO ESTA ASIGNADA)      -->

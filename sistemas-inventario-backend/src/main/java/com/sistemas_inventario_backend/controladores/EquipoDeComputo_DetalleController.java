@@ -1,5 +1,7 @@
 package com.sistemas_inventario_backend.controladores;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.EquipoDeComputo_ClavesRespuesta;
+import com.sistemas_inventario_backend.DTOs.Respuesta.EquipoDeComputo_DetalleRespuesta;
 import com.sistemas_inventario_backend.entidades.EquipoDeComputo_Detalle;
 import com.sistemas_inventario_backend.servicios.EquipoDeComputo_DetalleService;
 import lombok.RequiredArgsConstructor;
@@ -51,11 +53,36 @@ public class EquipoDeComputo_DetalleController {
         }
     }
 
+
+    // Obtener detalle activo por serial (con DTO)
+    @GetMapping("/serial/{serial}/activo/dto")
+    public ResponseEntity<?> obtenerDetalleActivoDTO(@PathVariable String serial) {
+        try {
+            EquipoDeComputo_DetalleRespuesta detalle = service.obtenerDetalleActivoPorSerialDTO(serial);
+            return ResponseEntity.ok(detalle);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
     @DeleteMapping("/{serial}")
     public ResponseEntity<?> eliminar(@PathVariable String serial) {
         try {
             service.eliminar(serial);
             return ResponseEntity.ok(Map.of("mensaje", "Detalle eliminado"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+    // Obtener claves descifradas (solo para administradores)
+    @GetMapping("/serial/{serial}/claves")
+    public ResponseEntity<?> obtenerClavesDescifradas(@PathVariable String serial) {
+        try {
+            EquipoDeComputo_ClavesRespuesta claves = service.obtenerClavesDescifradas(serial);
+            return ResponseEntity.ok(claves);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

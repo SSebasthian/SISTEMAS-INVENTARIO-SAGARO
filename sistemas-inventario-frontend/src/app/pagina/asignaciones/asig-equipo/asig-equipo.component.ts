@@ -18,6 +18,7 @@ import { ConsultarBackupInformacionService } from '../../../arquitectura/servici
 import { ConsultarCorreoService } from '../../../arquitectura/servicio/consulta/ConsultarCorreo.service';
 import { ConsultarSoftwareTipoService } from '../../../arquitectura/servicio/consulta/ConsultarSoftwareTipo.service';
 import { ConsultarSoftwareService } from '../../../arquitectura/servicio/consulta/ConsultarSoftware.service';
+import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
@@ -191,6 +192,10 @@ export class AsigEquipoComponent {
   ipSeleccionadaTemporal: number | null = null; // IP seleccionada en el modal
 
 
+  detalleEquipo: any = null;
+  mostrarClaveAdminDetalle: boolean = false;
+  mostrarClaveUsuarioDetalle: boolean = false;
+  mostrarClaveAdicionalDetalle: boolean = false;
 
 
   constructor(
@@ -206,6 +211,7 @@ export class AsigEquipoComponent {
     private consultarSoftwareTipoService: ConsultarSoftwareTipoService,
     private consultarSoftwareService: ConsultarSoftwareService,
     private consultarAntivirusPoliticaService: ConsultarAntivirusPoliticaService,
+    private consultarAsignacionesService: ConsultarAsignacionesService,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef
   ) {
@@ -215,6 +221,7 @@ export class AsigEquipoComponent {
     if (this.yaAsignada) {
       let obs = this.equipo.observaciones || '';
       this.observacionesOriginal = obs.replace(/^ASIGNACION:\s*/, '');
+      this.cargarDetalleEquipo(this.equipo.serial);
     }
 
     // Carga inicial de datos
@@ -320,7 +327,7 @@ export class AsigEquipoComponent {
     this.consultarCorreoService.listarDisponibles().subscribe({
       next: (data) => {
         this.correosList = data;
-        console.log('Correos disponibles:', data);
+        // console.log('Correos disponibles:', data);
       },
       error: (err) => {
         console.error('Error al cargar correos:', err);
@@ -350,6 +357,48 @@ export class AsigEquipoComponent {
     });
   }
 
+
+
+  cargarDetalleEquipo(serial: string): void {
+    // 1. Obtener el detalle sin claves
+    this.consultarAsignacionesService.obtenerDetalleActivoDTO(serial).subscribe({
+      next: (detalle) => {
+        this.detalleEquipo = detalle;
+        this.equipo.detalle = detalle;
+        this.cdr.detectChanges();
+
+        // 2. Luego obtener las claves descifradas
+        this.cargarClavesEquipo(serial);
+      },
+      error: (err) => {
+        console.error('Error al cargar detalle:', err);
+        this.detalleEquipo = null;
+      }
+    });
+  }
+
+  // Metodo para cargar las claves descifradas
+  cargarClavesEquipo(serial: string): void {
+    this.consultarAsignacionesService.obtenerClavesEquipo(serial).subscribe({
+      next: (claves) => {
+        if (this.equipo.detalle) {
+          this.equipo.detalle.claveUsuario = claves.claveUsuario || '******';
+          this.equipo.detalle.claveUsuarioAdministrador = claves.claveUsuarioAdministrador || '******';
+          this.equipo.detalle.claveUsuarioAdicional = claves.claveUsuarioAdicional || '******';
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('Error al cargar claves:', err);
+        // Si falla, mostrar asteriscos
+        if (this.equipo.detalle) {
+          this.equipo.detalle.claveUsuario = '******';
+          this.equipo.detalle.claveUsuarioAdministrador = '******';
+          this.equipo.detalle.claveUsuarioAdicional = '******';
+        }
+      }
+    });
+  }
 
 
   // ==================== FILTROS Y SELECCION ====================
@@ -1026,7 +1075,7 @@ export class AsigEquipoComponent {
             }
           }
 
-          // Mostrar mensaje de éxito
+          // Mostrar mensaje de exito
           this.notificacionSnackbarService.success('Exito', 'Backup de correo ACTUALIZADO correctamente.');
 
           // Limpiar estado de edicion (pero NO limpiar la lista)
@@ -2577,5 +2626,24 @@ export class AsigEquipoComponent {
     this.mostrarModalIP = false;
     this.ipSeleccionadaTemporal = null;
   }
+
+
+
+  /////////////////////////////////////////////////////////////
+  ///////////// MOSTRAR CONTRASEÑA ASIGNACION /////////////////
+  /////////////////////////////////////////////////////////////
+
+  // Metodos para alternar
+  toggleClaveAdminDetalle(): void {
+    this.mostrarClaveAdminDetalle = !this.mostrarClaveAdminDetalle;
+  }
+
+  toggleClaveUsuarioDetalle(): void {
+    this.mostrarClaveUsuarioDetalle = !this.mostrarClaveUsuarioDetalle;
+  }
+
+  toggleClaveAdicionalDetalle(): void {
+    this.mostrarClaveAdicionalDetalle = !this.mostrarClaveAdicionalDetalle;
+}
 
 }
