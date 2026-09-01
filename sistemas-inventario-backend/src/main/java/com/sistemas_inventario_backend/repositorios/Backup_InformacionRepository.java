@@ -12,10 +12,10 @@ import java.util.Optional;
 public interface Backup_InformacionRepository extends JpaRepository<Backup_Informacion, Long> {
     List<Backup_Informacion> findByActivoTrue();
 
-    List<Backup_Informacion> findByBackupCodigoAndActivoTrue(Long backupCodigo);
+    List<Backup_Informacion> findBySoftwareCodigoAndActivoTrue(Long softwareCodigo);
 
     // Filtrar por backup y tipo
-    List<Backup_Informacion> findByBackupCodigoAndTipoAndActivoTrue(Long backupCodigo, String tipo);
+    List<Backup_Informacion> findBySoftwareCodigoAndTipoAndActivoTrue(Long softwareCodigo, String tipo);
 
 
 
@@ -27,7 +27,7 @@ public interface Backup_InformacionRepository extends JpaRepository<Backup_Infor
             "(:ubicacionExcluida IS NULL OR b.ubicacionExcluida = :ubicacionExcluida) AND " +
             "(:dia IS NULL OR b.dia = :dia) AND " +
             "(:hora IS NULL OR b.hora = :hora) AND " +
-            "b.backup.codigo = :backupCodigo AND " +
+            "b.software.codigo = :softwareCodigo AND " +   // ← cambio
             "b.tipo = :tipo")
     Optional<Backup_Informacion> buscarPorCriterios(
             @Param("nombre") String nombre,
@@ -36,7 +36,7 @@ public interface Backup_InformacionRepository extends JpaRepository<Backup_Infor
             @Param("ubicacionExcluida") String ubicacionExcluida,
             @Param("dia") Integer dia,
             @Param("hora") LocalTime hora,
-            @Param("backupCodigo") Long backupCodigo,
+            @Param("softwareCodigo") Long softwareCodigo,  // ← cambio
             @Param("tipo") String tipo
     );
 }

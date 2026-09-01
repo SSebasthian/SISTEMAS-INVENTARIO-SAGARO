@@ -26,7 +26,7 @@ public class EquipoDeComputo_AsignacionService {
     private final CatalogoRepository catalogoRepository;
     private final DispositivoTecnologico_TipoRepository tipoRepository;
     private final EquipoDeComputo_DetalleRepository detalleRepository;
-    private final BackupService backupService;
+    private final SoftwareService softwareService;
     private final Backup_InformacionService backupInformacionService;
     private final EquipoDeComputo_DetalleService detalleService;
     private final IPRepository ipRepository;
@@ -140,14 +140,14 @@ public class EquipoDeComputo_AsignacionService {
                     backupInfoCodigo = existente.getCodigo();
                 } else {
                     // CREAR NUEVO
-                    Backup backupPrograma = backupService.obtenerPorCodigo(bd.getBackupCodigo());
+                    Software software = softwareService.obtenerPorCodigo(bd.getBackupCodigo());
                     Backup_Informacion backupInfo = new Backup_Informacion();
                     backupInfo.setNombre(bd.getNombre());
                     backupInfo.setFrecuencia(bd.getFrecuencia());
                     backupInfo.setUbicacion(String.join(";", bd.getUbicaciones()));
                     backupInfo.setUbicacionExcluida(String.join(";", bd.getUbicacionesExcluidas()));
                     backupInfo.setDia(bd.getDia());
-                    backupInfo.setBackup(backupPrograma);
+                    backupInfo.setSoftware(software);
                     backupInfo.setActivo(true);
                     backupInfo.setTipo(bd.getTipo());
                     if (bd.getHora() != null && !bd.getHora().isEmpty()) {
@@ -198,15 +198,15 @@ public class EquipoDeComputo_AsignacionService {
         // Desactivar detalle y liberar IP
         EquipoDeComputo_Detalle detalle = detalleRepository.findByAsignacionConsecutivo(asignacionId).orElse(null);
         if (detalle != null) {
-            // Liberar la IP
+            detalle.setActivo(false);
             if (detalle.getIp() != null) {
                 IP ip = detalle.getIp();
                 ip.setActivo(false);
                 ip.setCatalogoCodigo(1L);
                 ip.setDispositivoTipoCodigo(null);
                 ipRepository.save(ip);
+                detalle.setIp(null);
             }
-            detalle.setActivo(false);
             detalleRepository.save(detalle);
         }
 

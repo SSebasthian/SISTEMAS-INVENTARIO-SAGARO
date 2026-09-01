@@ -15,7 +15,7 @@ public class Backup_InformacionRespuesta {
     private Integer dia;
     private LocalTime hora;
     private String tipo;
-    private Long backupCodigo;
+    private Long softwareCodigo;
     private Boolean activo;
     private Boolean enUso;
 
@@ -29,7 +29,7 @@ public class Backup_InformacionRespuesta {
         this.dia = entity.getDia();
         this.hora = entity.getHora();
         this.tipo = entity.getTipo();
-        this.backupCodigo = entity.getBackup() != null ? entity.getBackup().getCodigo() : null;
+        this.softwareCodigo = entity.getSoftware() != null ? entity.getSoftware().getCodigo() : null;
         this.activo = entity.getActivo();
         this.enUso = enUso;
     }

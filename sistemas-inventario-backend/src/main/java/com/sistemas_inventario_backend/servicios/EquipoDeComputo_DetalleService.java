@@ -30,8 +30,15 @@ public class EquipoDeComputo_DetalleService {
     }
 
     public EquipoDeComputo_Detalle obtenerPorSerial(String serial) {
-        return repository.findByEquipoSerial(serial)
-                .orElseThrow(() -> new RuntimeException("Detalle no encontrado para el equipo " + serial));
+        List<EquipoDeComputo_Detalle> detalles = repository.findByEquipoSerial(serial);
+        if (detalles.isEmpty()) {
+            throw new RuntimeException("Detalle no encontrado para el equipo " + serial);
+        }
+        // Buscar activo, si no hay, devolver el más reciente (el de mayor numero)
+        return detalles.stream()
+                .filter(EquipoDeComputo_Detalle::getActivo)
+                .findFirst()
+                .orElse(detalles.get(detalles.size() - 1));
     }
 
     public EquipoDeComputo_Detalle obtenerPorIp(Integer ip) {
@@ -39,26 +46,45 @@ public class EquipoDeComputo_DetalleService {
                 .orElseThrow(() -> new RuntimeException("No se encontro detalle con IP " + ip));
     }
 
+
     @Transactional
     public EquipoDeComputo_Detalle guardar(String serial, EquipoDeComputo_Detalle detalle, Integer ipNumero, Long tipoCodigo) {
-        // Buscar equipo
         EquipoDeComputo equipo = equipoRepository.findById(serial)
                 .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
 
-        // Buscar la IP en la tabla maestra
-        IP ip = ipRepository.findById(ipNumero)
-                .orElseThrow(() -> new RuntimeException("IP no encontrada"));
+        // Desactivar cualquier detalle activo existente
+        repository.findByEquipoSerialAndActivoTrue(serial).ifPresent(activo -> {
+            activo.setActivo(false);
+            // Liberar su IP si tiene
+            if (activo.getIp() != null) {
+                IP ipAnt = activo.getIp();
+                ipAnt.setActivo(false);
+                ipAnt.setCatalogoCodigo(1L);
+                ipAnt.setDispositivoTipoCodigo(null);
+                ipRepository.save(ipAnt);
+                activo.setIp(null);
+            }
+            repository.save(activo);
+        });
 
-        // Verificar si la IP esta disponible (activo = true)
-        if (ip.getActivo()) {
-            throw new RuntimeException("La IP " + ipNumero + " no esta disponible");
-        }
+        // Crear nuevo detalle
+        detalle.setEquipo(equipo);
+        detalle.setActivo(true);
 
-        // Desactivar detalle anterior si existe
-        EquipoDeComputo_Detalle existente = repository.findByEquipoSerialAndActivoTrue(serial).orElse(null);
-        if (existente != null) {
-            existente.setActivo(false);
-            repository.save(existente);
+        // Asignar IP si se proporciona
+        if (ipNumero != null) {
+            IP ip = ipRepository.findById(ipNumero)
+                    .orElseThrow(() -> new RuntimeException("IP no encontrada"));
+            if (ip.getActivo()) {
+                throw new RuntimeException("La IP " + ipNumero + " no está disponible");
+            }
+            detalle.setIp(ip);
+            ip.setActivo(true);
+            ip.setCatalogoCodigo(1L);
+            ip.setDispositivoTipoCodigo(tipoCodigo);
+            ipRepository.save(ip);
+        } else {
+            detalle.setIp(null);
         }
 
         // Encriptar claves
@@ -76,19 +102,9 @@ public class EquipoDeComputo_DetalleService {
             throw new RuntimeException("Error al cifrar las claves: " + e.getMessage());
         }
 
-        // Asignar la IP y el equipo
-        detalle.setEquipo(equipo);
-        detalle.setIp(ip);
-        detalle.setActivo(true);
-
-        // Marcar la IP como ocupada (activo = true) en la tabla maestra
-        ip.setActivo(true);
-        ip.setCatalogoCodigo(1L); // 1 = Equipo de computo
-        ip.setDispositivoTipoCodigo(tipoCodigo); // Usar el tipoCodigo recibido
-        ipRepository.save(ip);
-
         return repository.save(detalle);
     }
+
 
     // Metodo para obtener las claves descifradas
     public EquipoDeComputo_ClavesRespuesta obtenerClavesDescifradas(String serial) {
@@ -124,11 +140,8 @@ public class EquipoDeComputo_DetalleService {
 
     // Metodo para obtener el detalle activo por serial y convertirlo a DTO
     public EquipoDeComputo_DetalleRespuesta obtenerDetalleActivoPorSerialDTO(String serial) {
-
         EquipoDeComputo_Detalle detalle = repository.findByEquipoSerialAndActivoTrue(serial)
                 .orElseThrow(() -> new RuntimeException("No se encontro detalle activo para el equipo " + serial));
-
-        // Mapear entidad a DTO
         return convertirADTO(detalle);
     }
 

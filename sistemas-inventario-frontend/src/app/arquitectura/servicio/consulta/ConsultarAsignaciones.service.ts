@@ -35,4 +35,10 @@ export class ConsultarAsignacionesService {
   obtenerClavesEquipo(serial: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrlBase}/equipos-detalle/serial/${serial}/claves`);
   }
+
+  obtenerSoftwarePorSerial(serial: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrlBase}/equipos-software/serial/${serial}/dto`);
+  }
+
+  
 }

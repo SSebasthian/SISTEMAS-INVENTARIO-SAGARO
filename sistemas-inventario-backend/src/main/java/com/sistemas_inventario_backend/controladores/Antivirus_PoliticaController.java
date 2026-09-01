@@ -26,7 +26,7 @@ public class Antivirus_PoliticaController {
         return service.listarTodos();
     }
 
-    // ✅ NUEVO ENDPOINT: listar politicas por software (antivirus)
+    // NUEVO ENDPOINT: listar politicas por software (antivirus)
     @GetMapping("/por-software/{softwareCodigo}")
     public List<Antivirus_Politica> listarPorSoftware(@PathVariable Long softwareCodigo) {
         return service.listarPorSoftware(softwareCodigo);

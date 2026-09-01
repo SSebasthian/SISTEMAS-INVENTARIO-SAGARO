@@ -11,36 +11,34 @@ import java.util.Optional;
 public interface CorreoCorporativoRepository extends JpaRepository<CorreosCorporativos, Long> {
 
     Optional<CorreosCorporativos> findByDireccion(String direccion);
+
     List<CorreosCorporativos> findByActivoTrue();
 
     List<CorreosCorporativos> findByDireccionContainingIgnoreCase(String direccion);
 
 
-    // Incluye siempre el codigo 0 (NO APLICA) + los correos disponibles
+    // Metodo para obtener correos disponibles (sin incluir codigo 0)
     @Query("SELECT c FROM CorreosCorporativos c " +
             "WHERE c.activo = true " +
             "AND c.recurso.codigo = 1 " +
-            "AND (c.codigo = 0 " +
-            "    OR NOT EXISTS (" +
-            "        SELECT 1 FROM RecursoAsignado ra " +
-            "        WHERE ra.activo = true " +
-            "        AND ra.recurso.codigo = 1 " +
-            "        AND CAST(ra.recursoCodigoAsignado AS long) = c.codigo" +
-            "    )" +
+            "AND NOT EXISTS (" +
+            "    SELECT 1 FROM RecursoAsignado ra " +
+            "    WHERE ra.activo = true " +
+            "    AND ra.recurso.codigo = 1 " +
+            "    AND CAST(ra.recursoCodigoAsignado AS long) = c.codigo" +
             ")")
     List<CorreosCorporativos> findCorreosDisponibles();
 
+
+    // Metodo para obtener correos disponibles por recurso (sin incluir codigo 0)
     @Query("SELECT c FROM CorreosCorporativos c " +
             "WHERE c.activo = true " +
             "AND c.recurso.codigo = :recursoCodigo " +
-            "AND (c.codigo = 0 " +
-            "    OR NOT EXISTS (" +
-            "        SELECT 1 FROM RecursoAsignado ra " +
-            "        WHERE ra.activo = true " +
-            "        AND ra.recurso.codigo = :recursoCodigo " +
-            "        AND CAST(ra.recursoCodigoAsignado AS long) = c.codigo" +
-            "    )" +
+            "AND NOT EXISTS (" +
+            "    SELECT 1 FROM RecursoAsignado ra " +
+            "    WHERE ra.activo = true " +
+            "    AND ra.recurso.codigo = :recursoCodigo " +
+            "    AND CAST(ra.recursoCodigoAsignado AS long) = c.codigo" +
             ")")
     List<CorreosCorporativos> findCorreosDisponiblesByRecurso(@Param("recursoCodigo") Long recursoCodigo);
-
 }

@@ -1,10 +1,9 @@
 package com.sistemas_inventario_backend.servicios;
 
 import com.sistemas_inventario_backend.DTOs.Respuesta.Backup_InformacionRespuesta;
-import com.sistemas_inventario_backend.entidades.Backup;
 import com.sistemas_inventario_backend.entidades.Backup_Informacion;
+import com.sistemas_inventario_backend.entidades.Software;
 import com.sistemas_inventario_backend.repositorios.Backup_InformacionRepository;
-import com.sistemas_inventario_backend.repositorios.BackupRepository;
 import com.sistemas_inventario_backend.repositorios.EquipoDeComputo_BackupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 public class Backup_InformacionService {
 
     private final Backup_InformacionRepository repository;
-    private final BackupRepository backupRepository;
+    private final SoftwareService softwareService;
     private final EquipoDeComputo_BackupRepository equipoDeComputoBackupRepository;
 
 
@@ -28,13 +27,22 @@ public class Backup_InformacionService {
         return repository.findByActivoTrue();
     }
 
-    public List<Backup_Informacion> listarPorBackup(Long backupCodigo) {
-        return repository.findByBackupCodigoAndActivoTrue(backupCodigo);
+    public List<Backup_Informacion> listarTodos() {
+        return repository.findAll();
     }
 
-    //  NUEVO: listar por backup y tipo
-    public List<Backup_InformacionRespuesta> listarPorBackupYTipo(Long backupCodigo, String tipo) {
-        List<Backup_Informacion> lista = repository.findByBackupCodigoAndTipoAndActivoTrue(backupCodigo, tipo);
+
+    public Backup_Informacion obtenerPorCodigo(Long codigo) {
+        return repository.findById(codigo)
+                .orElseThrow(() -> new RuntimeException("Informacion de backup no encontrada"));
+    }
+
+    public List<Backup_Informacion> listarPorSoftware(Long softwareCodigo) {
+        return repository.findBySoftwareCodigoAndActivoTrue(softwareCodigo);
+    }
+
+    public List<Backup_InformacionRespuesta> listarPorSoftwareYTipo(Long softwareCodigo, String tipo) {
+        List<Backup_Informacion> lista = repository.findBySoftwareCodigoAndTipoAndActivoTrue(softwareCodigo, tipo);
         return lista.stream().map(info -> {
             boolean enUso = equipoDeComputoBackupRepository.existsByBackupInformacionCodigoAndActivoTrue(info.getCodigo());
             return new Backup_InformacionRespuesta(info, enUso);
@@ -42,33 +50,22 @@ public class Backup_InformacionService {
     }
 
 
-    public List<Backup_Informacion> listarTodos() {
-        return repository.findAll();
-    }
-
-    public Backup_Informacion obtenerPorCodigo(Long codigo) {
-        return repository.findById(codigo)
-                .orElseThrow(() -> new RuntimeException("Informacion de backup no encontrada"));
-    }
-
     @Transactional
     public Backup_Informacion guardar(Backup_Informacion info) {
         try {
-            if (info.getBackup() == null || info.getBackup().getCodigo() == null) {
-                throw new RuntimeException("Debe asignar un backup");
+            if (info.getSoftware() == null || info.getSoftware().getCodigo() == null) {
+                throw new RuntimeException("Debe asignar un software de backup");
             }
             if (info.getTipo() == null || info.getTipo().trim().isEmpty()) {
                 throw new RuntimeException("Debe especificar el tipo (EQUIPO o CORREO)");
             }
 
-            Backup backup = backupRepository.findById(info.getBackup().getCodigo())
-                    .orElseThrow(() -> new RuntimeException("Backup no encontrado"));
-            info.setBackup(backup);
+            Software software = softwareService.obtenerPorCodigo(info.getSoftware().getCodigo());
+            info.setSoftware(software);
             info.setActivo(true);
-            this.validarDiaSegunFrecuencia(info);
+            validarDiaSegunFrecuencia(info);
             return repository.save(info);
         } catch (DataIntegrityViolationException e) {
-            // Capturar violacion de unicidad (nombre duplicado)
             throw new RuntimeException("Ya existe una configuracion de backup con el nombre: " + info.getNombre());
         }
     }
@@ -86,11 +83,11 @@ public class Backup_InformacionService {
             existente.setActivo(datos.getActivo());
             existente.setTipo(datos.getTipo());
 
-            if (datos.getBackup() != null && datos.getBackup().getCodigo() != null) {
-                Backup backup = backupRepository.findById(datos.getBackup().getCodigo())
-                        .orElseThrow(() -> new RuntimeException("Backup no encontrado"));
-                existente.setBackup(backup);
+            if (datos.getSoftware() != null && datos.getSoftware().getCodigo() != null) {
+                Software software = softwareService.obtenerPorCodigo(datos.getSoftware().getCodigo());
+                existente.setSoftware(software);
             }
+            validarDiaSegunFrecuencia(existente);
             return repository.save(existente);
         } catch (DataIntegrityViolationException e) {
             throw new RuntimeException("Ya existe otra configuracion con el nombre: " + datos.getNombre());
@@ -104,6 +101,7 @@ public class Backup_InformacionService {
         existente.setActivo(false);
         repository.save(existente);
     }
+
 
     private void validarDiaSegunFrecuencia(Backup_Informacion info) {
         String frecuencia = info.getFrecuencia();

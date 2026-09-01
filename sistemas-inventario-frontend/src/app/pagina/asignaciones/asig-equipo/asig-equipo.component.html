@@ -1,414 +1,196 @@
 <div class="modal">
-    <div class="modal-contenido">
+    <div class="modal-contenedor">
 
-        <div class="modal-cabezera">
-            <div class="titulo">
-                <h2>
-                    <mat-icon class="cargoicon">blur_on</mat-icon>
-                    <strong>{{ getTitulo() }}</strong>
-                </h2>
-            </div>
-        </div>
+        <!-- Flechas de navegaciOn (solo si equipo asignado) -->
+        <ng-container *ngIf="yaAsignada">
+            <button class="flecha-nav flecha-izquierda" (click)="cambiarPaso(-1)" [disabled]="paso === 1">
+                <mat-icon>arrow_left</mat-icon>
+            </button>
+            <button class="flecha-nav flecha-derecha" (click)="cambiarPaso(1)" [disabled]="paso === totalPasos">
+                <mat-icon>arrow_right</mat-icon>
+            </button>
+        </ng-container>
 
-        <!-- CONTENEDOR DE DOS COLUMNAS -->
-        <div class="asignacion">
 
-            <!-- COLUMNA IZQUIERDA (siempre visible) -->
-            <div class="columna-izquierda">
-                <div class="info-dispositivo">
-                    <div class="info-imagen">
-                        <div class="contenedor-imagen">
-                            <div class="contenido-img">
-                                <img *ngIf="imagenModeloSeleccionado" [src]="imagenModeloSeleccionado"
-                                    class="imagen-modelo" alt="Imagen modelo">
-                                <mat-icon *ngIf="!imagenModeloSeleccionado" class="icono-img-default">image</mat-icon>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="label">TIPO:</span>
-                            <span class="valor">{{ equipo.tipo.descripcion }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">MARCA:</span>
-                            <span class="valor">{{ equipo.marca.descripcion }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">MODELO:</span>
-                            <span class="valor">{{ equipo.modelo.descripcion }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">SERIAL:</span>
-                            <span class="valor">{{ equipo.serial }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">ESTADO:</span>
-                            <span class="valor">{{ equipo.estado }}</span>
-                        </div>
-                    </div>
+
+        <div class="modal-contenido">
+
+            <div class="modal-cabezera">
+                <div class="titulo">
+                    <h2>
+                        <mat-icon class="cargoicon">blur_on</mat-icon>
+                        <strong>{{ getTitulo() }}</strong>
+                    </h2>
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA -->
-            <div class="columna-derecha">
-                <div class="form-asignacion">
+            <!-- CONTENEDOR DE DOS COLUMNAS -->
+            <div class="asignacion">
 
-                    <!-- Tipo de asignacion -->
-                    <div class="tipo-asignacion">
-                        <label class="radio-option active">
-                            <input type="radio" value="empleado" checked>
-                            <mat-icon>person</mat-icon>
-                            <span>EMPLEADO</span>
-                        </label>
-                    </div>
-
-
-                    <!-- ================================================ -->
-                    <!-- CASO 1: YA ESTA ASIGNADA -->
-                    <!-- ================================================ -->
-                    <div *ngIf="yaAsignada" class="vista-asignada">
-
-                        <!-- Asignado a Empleado -->
-                        <div *ngIf="equipo.tipoAsignacion === 'empleado'" class="empleado-seleccionado">
-                            <div class="seleccionado-contenido">
-                                <div class="seleccionado-info">
-                                    <div class="seleccionado-nombre">
-                                        {{ equipo.asignadoA }}
-                                    </div>
-                                    <div class="seleccionado-detalle">
-                                        <span class="seleccionado-cedula">{{ equipo.asignadoCedula }}</span>
-                                        <span class="seleccionado-area">{{ equipo.asignadoArea }}</span>
-                                    </div>
+                <!-- COLUMNA IZQUIERDA (siempre visible) -->
+                <div class="columna-izquierda">
+                    <div class="info-dispositivo">
+                        <div class="info-imagen">
+                            <div class="contenedor-imagen">
+                                <div class="contenido-img">
+                                    <img *ngIf="imagenModeloSeleccionado" [src]="imagenModeloSeleccionado"
+                                        class="imagen-modelo" alt="Imagen modelo">
+                                    <mat-icon *ngIf="!imagenModeloSeleccionado"
+                                        class="icono-img-default">image</mat-icon>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- ================================================ -->
-                        <!-- PASO 1: DETALLE DEL EQUIPO (SOLO LECTURA)       -->
-                        <!-- ================================================ -->
-                        <div *ngIf="paso === 1" class="seccion-detalle">
-                            <div class="seleccion-detalle">
-                                <div class="detalle-campo">
-                                    <mat-icon>queue_play_next</mat-icon>
-                                    <label>DETALLE EQUIPO</label>
-                                </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="label">TIPO:</span>
+                                <span class="valor">{{ equipo.tipo.descripcion }}</span>
                             </div>
-
-                            <div class="detalle-grid">
-                                <!-- Nombre Equipo -->
-                                <div class="campo-detalle">
-                                    <label>NOMBRE EQUIPO</label>
-                                    <input [value]="detalleEquipo?.nombreEquipo || 'SIN NOMBRE'" readonly
-                                        class="input-readonly" />
-                                </div>
-
-                                <!-- IP -->
-                                <div class="campo-detalle">
-                                    <label>IP</label>
-                                    <input [value]="detalleEquipo?.ip || 'SIN IP'" disabled class="input-readonly" />
-                                </div>
-
-                                <!-- Usuario Admin -->
-                                <div class="campo-detalle">
-                                    <label>USUARIO ADMIN</label>
-                                    <input [value]="detalleEquipo?.nombreUsuarioAdministrador || 'SISTEMAS'" readonly
-                                        class="input-readonly" />
-                                </div>
-
-                                <!-- Clave Admin -->
-                                <div class="campo-detalle">
-                                    <label>CLAVE ADMIN</label>
-                                    <div class="input-con-toggle">
-                                        <input [type]="mostrarClaveAdminDetalle ? 'text' : 'password'"
-                                            [value]="detalleEquipo?.claveUsuarioAdministrador || '******'" disabled
-                                            class="input-readonly" />
-                                        <mat-icon class="toggle-icon" (click)="toggleClaveAdminDetalle()">
-                                            {{ mostrarClaveAdminDetalle ? 'visibility_off' : 'visibility' }}
-                                        </mat-icon>
-                                    </div>
-                                </div>
-
-                                <!-- Usuario -->
-                                <div class="campo-detalle">
-                                    <label>USUARIO</label>
-                                    <input [value]="detalleEquipo?.nombreUsuario || 'SIN USUARIO'" readonly
-                                        class="input-readonly" />
-                                </div>
-
-                                <!-- Clave Usuario -->
-                                <div class="campo-detalle">
-                                    <label>CLAVE USUARIO</label>
-                                    <div class="input-con-toggle">
-                                        <input [type]="mostrarClaveUsuarioDetalle ? 'text' : 'password'"
-                                            [value]="detalleEquipo?.claveUsuario || '******'" disabled
-                                            class="input-readonly" />
-                                        <mat-icon class="toggle-icon" (click)="toggleClaveUsuarioDetalle()">
-                                            {{ mostrarClaveUsuarioDetalle ? 'visibility_off' : 'visibility' }}
-                                        </mat-icon>
-                                    </div>
-                                </div>
-
-                                <!-- Usuario Adicional -->
-                                <div class="campo-detalle">
-                                    <label>USUARIO ADICIONAL</label>
-                                    <input [value]="detalleEquipo?.nombreUsuarioAdicional || ''" disabled
-                                        class="input-readonly" />
-                                </div>
-
-                                <!-- Clave Adicional -->
-                                <div class="campo-detalle">
-                                    <label>CLAVE ADICIONAL</label>
-                                    <div class="input-con-toggle">
-                                        <input [type]="mostrarClaveAdicionalDetalle ? 'text' : 'password'"
-                                            [value]="detalleEquipo?.claveUsuarioAdicional || ''" disabled
-                                            class="input-readonly" />
-                                        <mat-icon class="toggle-icon" (click)="toggleClaveAdicionalDetalle()">
-                                            {{ mostrarClaveAdicionalDetalle ? 'visibility_off' : 'visibility' }}
-                                        </mat-icon>
-                                    </div>
-                                </div>
+                            <div class="info-item">
+                                <span class="label">MARCA:</span>
+                                <span class="valor">{{ equipo.marca.descripcion }}</span>
                             </div>
-                        </div>
-
-                        <!-- ================================================ -->
-                        <!-- PASO 2: SOFTWARE (SOLO LECTURA) - VACIO POR AHORA -->
-                        <!-- ================================================ -->
-                        <div *ngIf="paso === 2" class="seccion-detalle">
-                            <div class="seleccion-detalle">
-                                <div class="detalle-campo">
-                                    <mat-icon>layers</mat-icon>
-                                    <label>SOFTWARE INSTALADO</label>
-                                </div>
+                            <div class="info-item">
+                                <span class="label">MODELO:</span>
+                                <span class="valor">{{ equipo.modelo.descripcion }}</span>
                             </div>
-                            <div class="sin-datos">
-                                <mat-icon>info</mat-icon>
-                                <span>Información de software en desarrollo</span>
+                            <div class="info-item">
+                                <span class="label">SERIAL:</span>
+                                <span class="valor">{{ equipo.serial }}</span>
                             </div>
-                        </div>
-
-                        <!-- ================================================ -->
-                        <!-- PASO 3: FECHAS (SOLO LECTURA) - VACIO POR AHORA -->
-                        <!-- ================================================ -->
-                        <div *ngIf="paso === 3" class="seccion-detalle">
-                            <div class="seleccion-detalle">
-                                <div class="detalle-campo">
-                                    <mat-icon>event</mat-icon>
-                                    <label>FECHAS Y DESCRIPCION</label>
-                                </div>
-                            </div>
-                            <div class="sin-datos">
-                                <mat-icon>info</mat-icon>
-                                <span>Información de fechas en desarrollo</span>
-                            </div>
-                        </div>
-
-                        <!-- Fechas y descripcion original (solo lectura) -->
-                        <!-- Esta parte la moveremos al paso 3 después -->
-                        <div class="seleccionado-fecha" *ngIf="false">
-                            <!-- Oculto temporalmente -->
-                        </div>
-
-                        <div class="seleccionado-observaciones" *ngIf="!mostrarDevolucion && false">
-                            <!-- Oculto temporalmente -->
-                        </div>
-
-                        <!-- Detalle de devolucion (solo visible en modo devolucion) -->
-                        <div class="seleccionado-observaciones" *ngIf="mostrarDevolucion">
-                            <div class="obser-campo">
-                                <span>
-                                    <mat-icon>description</mat-icon>
-                                    <label>DETALLE DE DEVOLUCION</label>
-                                </span>
-                                <textarea [(ngModel)]="detalleDevolucion" rows="2"
-                                    placeholder="Ingrese el motivo o detalles de la devolucion..."
-                                    (input)="detalleDevolucion = detalleDevolucion.toUpperCase()"></textarea>
+                            <div class="info-item">
+                                <span class="label">ESTADO:</span>
+                                <span class="valor">{{ equipo.estado }}</span>
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <!-- COLUMNA DERECHA -->
+                <div class="columna-derecha">
+                    <div class="form-asignacion">
 
-                    <!-- ================================================ -->
-                    <!-- CASO 2: NUEVA ASIGNACION (NO ESTA ASIGNADA)      -->
-                    <!-- ================================================ -->
-                    <div *ngIf="!yaAsignada" class="vista-nueva">
-
-                        <!-- Seleccion de empleado -->
-                        <div class="campo-form">
-
-                            <!-- Buscador y lista de empleados (sin seleccion) -->
-                            <ng-container *ngIf="!empleadoSeleccionado">
-                                <div class="buscador-empleado">
-                                    <mat-icon>search</mat-icon>
-                                    <input type="text" [(ngModel)]="busquedaEmpleado" (input)="filtrarEmpleados()"
-                                        placeholder="Buscar Empleado...">
-                                </div>
-                                <div class="lista-empleados" *ngIf="empleadosFiltrados.length > 0">
-                                    <div *ngFor="let emp of empleadosFiltrados" class="empleado-item"
-                                        (click)="seleccionarEmpleado(emp)">
-                                        <div class="empleado-info">
-                                            <div class="empleado-nombre">{{ emp.nombre }} {{ emp.apellido }}</div>
-                                            <div class="empleado-detalle">
-                                                <span class="empleado-cedula">{{ emp.cedula }}</span>
-                                                <span class="empleado-area">{{ emp.area.descripcion }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </ng-container>
-
-                            <!-- Empleado seleccionado -->
-                            <ng-container *ngIf="empleadoSeleccionado">
-                                <div class="empleado-seleccionado">
-                                    <div class="seleccionado-contenido">
-                                        <div class="seleccionado-info">
-                                            <div class="seleccionado-nombre">
-                                                {{ empleadoSeleccionado.nombre }} {{ empleadoSeleccionado.apellido }}
-                                            </div>
-                                            <div class="seleccionado-detalle">
-                                                <span class="seleccionado-cedula">{{ empleadoSeleccionado.cedula
-                                                    }}</span>
-                                                <span class="seleccionado-area">{{ empleadoSeleccionado.area.descripcion
-                                                    }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </ng-container>
+                        <!-- Tipo de asignacion -->
+                        <div class="tipo-asignacion">
+                            <label class="radio-option active">
+                                <input type="radio" value="empleado" checked>
+                                <mat-icon>person</mat-icon>
+                                <span>EMPLEADO</span>
+                            </label>
                         </div>
 
-                        <!-- Contenido segun paso (solo si hay empleado seleccionado) -->
-                        <ng-container *ngIf="empleadoSeleccionado">
+
+                        <!-- ================================================ -->
+                        <!-- CASO 1: YA ESTA ASIGNADA -->
+                        <!-- ================================================ -->
+                        <div *ngIf="yaAsignada" class="vista-asignada">
+
+                            <!-- Asignado a Empleado -->
+                            <div *ngIf="equipo.tipoAsignacion === 'empleado'" class="empleado-seleccionado">
+                                <div class="seleccionado-contenido">
+                                    <div class="seleccionado-info">
+                                        <div class="seleccionado-nombre">
+                                            {{ equipo.asignadoA }}
+                                        </div>
+                                        <div class="seleccionado-detalle">
+                                            <span class="seleccionado-cedula">{{ equipo.asignadoCedula }}</span>
+                                            <span class="seleccionado-area">{{ equipo.asignadoArea }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
 
-                            <!-- PASO 1: Detalle del equipo -->
+                            <!-- ================================================ -->
+                            <!-- PASO 1: DETALLE DEL EQUIPO (SOLO LECTURA)       -->
+                            <!-- ================================================ -->
                             <div *ngIf="paso === 1" class="seccion-detalle">
                                 <div class="seleccion-detalle">
                                     <div class="detalle-campo">
                                         <mat-icon>queue_play_next</mat-icon>
                                         <label>DETALLE EQUIPO</label>
                                     </div>
+                                </div>
 
-                                    <div class="detalle-grid">
+                                <div class="detalle-grid">
+                                    <!-- Nombre Equipo -->
+                                    <div class="campo-detalle">
+                                        <label>NOMBRE EQUIPO</label>
+                                        <input [value]="detalleEquipo?.nombreEquipo || 'SIN NOMBRE'" readonly
+                                            class="input-readonly" />
+                                    </div>
 
-                                        <!-- Nombre Equipo (obligatorio) -->
-                                        <div class="campo-detalle">
-                                            <label
-                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.nombreEquipo?.trim()">
-                                                NOMBRE EQUIPO
-                                                <span
-                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.nombreEquipo?.trim()">*</span>
-                                            </label>
-                                            <input [(ngModel)]="detalle.nombreEquipo"
-                                                (input)="detalle.nombreEquipo = detalle.nombreEquipo.toUpperCase()" />
+                                    <!-- IP -->
+                                    <div class="campo-detalle">
+                                        <label>IP</label>
+                                        <input [value]="detalleEquipo?.ip || 'SIN IP'" disabled
+                                            class="input-readonly" />
+                                    </div>
+
+                                    <!-- Usuario Admin -->
+                                    <div class="campo-detalle">
+                                        <label>USUARIO ADMIN</label>
+                                        <input [value]="detalleEquipo?.nombreUsuarioAdministrador || 'SISTEMAS'"
+                                            readonly class="input-readonly" />
+                                    </div>
+
+                                    <!-- Clave Admin -->
+                                    <div class="campo-detalle">
+                                        <label>CLAVE ADMIN</label>
+                                        <div class="input-con-toggle">
+                                            <input [type]="mostrarClaveAdminDetalle ? 'text' : 'password'"
+                                                [value]="detalleEquipo?.claveUsuarioAdministrador || '******'" disabled
+                                                class="input-readonly" />
+                                            <mat-icon class="toggle-icon" (click)="toggleClaveAdminDetalle()">
+                                                {{ mostrarClaveAdminDetalle ? 'visibility_off' : 'visibility' }}
+                                            </mat-icon>
                                         </div>
+                                    </div>
 
-                                        <!-- IP (obligatorio) -->
-                                        <div class="campo-detalle">
-                                            <label
-                                                [class.label-error]="intentadoAvanzarPaso2 && (detalle.ip === null || detalle.ip === undefined || detalle.ip < 1 || detalle.ip > 255)">
-                                                IP (1-255)
-                                                <span
-                                                    *ngIf="intentadoAvanzarPaso2 && (detalle.ip === null || detalle.ip === undefined || detalle.ip < 1 || detalle.ip > 255)">*</span>
-                                            </label>
+                                    <!-- Usuario -->
+                                    <div class="campo-detalle">
+                                        <label>USUARIO</label>
+                                        <input [value]="detalleEquipo?.nombreUsuario || 'SIN USUARIO'" readonly
+                                            class="input-readonly" />
+                                    </div>
 
-                                            <div class="selector-ip-container" (click)="abrirModalIP()">
-                                                <input type="text" class="ip-input"
-                                                    [value]="detalle.ip !== null && detalle.ip !== undefined ? detalle.ip : ''"
-                                                    readonly (click)="abrirModalIP()" />
-                                            </div>
+                                    <!-- Clave Usuario -->
+                                    <div class="campo-detalle">
+                                        <label>CLAVE USUARIO</label>
+                                        <div class="input-con-toggle">
+                                            <input [type]="mostrarClaveUsuarioDetalle ? 'text' : 'password'"
+                                                [value]="detalleEquipo?.claveUsuario || '******'" disabled
+                                                class="input-readonly" />
+                                            <mat-icon class="toggle-icon" (click)="toggleClaveUsuarioDetalle()">
+                                                {{ mostrarClaveUsuarioDetalle ? 'visibility_off' : 'visibility' }}
+                                            </mat-icon>
                                         </div>
+                                    </div>
 
-                                        <!-- Usuario Admin (obligatorio) -->
-                                        <div class="campo-detalle">
-                                            <label
-                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.nombreUsuarioAdministrador?.trim()">
-                                                USUARIO ADMIN
-                                                <span
-                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.nombreUsuarioAdministrador?.trim()">*
-                                                </span>
-                                            </label>
-                                            <input [(ngModel)]="detalle.nombreUsuarioAdministrador"
-                                                (input)="detalle.nombreUsuarioAdministrador = detalle.nombreUsuarioAdministrador.toUpperCase()" />
+                                    <!-- Usuario Adicional -->
+                                    <div class="campo-detalle">
+                                        <label>USUARIO ADICIONAL</label>
+                                        <input [value]="detalleEquipo?.nombreUsuarioAdicional || ''" disabled
+                                            class="input-readonly" />
+                                    </div>
+
+                                    <!-- Clave Adicional -->
+                                    <div class="campo-detalle">
+                                        <label>CLAVE ADICIONAL</label>
+                                        <div class="input-con-toggle">
+                                            <input [type]="mostrarClaveAdicionalDetalle ? 'text' : 'password'"
+                                                [value]="detalleEquipo?.claveUsuarioAdicional || ''" disabled
+                                                class="input-readonly" />
+                                            <mat-icon class="toggle-icon" (click)="toggleClaveAdicionalDetalle()">
+                                                {{ mostrarClaveAdicionalDetalle ? 'visibility_off' : 'visibility' }}
+                                            </mat-icon>
                                         </div>
-
-                                        <!-- Clave Admin (obligatorio) -->
-                                        <div class="campo-detalle">
-                                            <label
-                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.claveUsuarioAdministrador?.trim()">
-                                                CLAVE ADMIN
-                                                <span
-                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.claveUsuarioAdministrador?.trim()">*</span>
-                                            </label>
-                                            <div class="input-con-toggle">
-                                                <input [type]="mostrarClaveAdmin ? 'text' : 'password'"
-                                                    [(ngModel)]="detalle.claveUsuarioAdministrador" />
-                                                <mat-icon class="toggle-icon" (click)="toggleClaveAdmin()">
-                                                    {{ mostrarClaveAdmin ? 'visibility_off' : 'visibility' }}
-                                                </mat-icon>
-                                            </div>
-                                        </div>
-
-                                        <!-- Usuario (obligatorio) -->
-                                        <div class="campo-detalle">
-                                            <label
-                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.nombreUsuario?.trim()">
-                                                USUARIO
-                                                <span
-                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.nombreUsuario?.trim()">*</span>
-                                            </label>
-                                            <input [(ngModel)]="detalle.nombreUsuario"
-                                                (input)="detalle.nombreUsuario = detalle.nombreUsuario.toUpperCase()" />
-                                        </div>
-
-                                        <!-- Clave Usuario (obligatorio) -->
-                                        <div class="campo-detalle">
-                                            <label
-                                                [class.label-error]="intentadoAvanzarPaso2 && !detalle.claveUsuario?.trim()">
-                                                CLAVE USUARIO
-                                                <span
-                                                    *ngIf="intentadoAvanzarPaso2 && !detalle.claveUsuario?.trim()">*</span>
-                                            </label>
-                                            <div class="input-con-toggle">
-                                                <input [type]="mostrarClaveUsuario ? 'text' : 'password'"
-                                                    [(ngModel)]="detalle.claveUsuario" />
-                                                <mat-icon class="toggle-icon" (click)="toggleClaveUsuario()">
-                                                    {{ mostrarClaveUsuario ? 'visibility_off' : 'visibility' }}
-                                                </mat-icon>
-                                            </div>
-                                        </div>
-
-                                        <!-- Usuario Adicional (opcional) -->
-                                        <div class="campo-detalle">
-                                            <label [class.label-error]="errorAdicional">
-                                                USUARIO ADICIONAL
-                                            </label>
-                                            <input [(ngModel)]="detalle.nombreUsuarioAdicional"
-                                                (input)="detalle.nombreUsuarioAdicional = detalle.nombreUsuarioAdicional.toUpperCase()" />
-                                        </div>
-
-                                        <!-- Clave Adicional (opcional) -->
-                                        <div class="campo-detalle">
-                                            <label [class.label-error]="errorAdicional">
-                                                CLAVE ADICIONAL
-                                                <span *ngIf="errorAdicional">*</span>
-                                            </label>
-                                            <div class="input-con-toggle">
-                                                <input [type]="mostrarClaveAdicional ? 'text' : 'password'"
-                                                    [(ngModel)]="detalle.claveUsuarioAdicional" />
-                                                <mat-icon class="toggle-icon" (click)="toggleClaveAdicional()">
-                                                    {{ mostrarClaveAdicional ? 'visibility_off' : 'visibility' }}
-                                                </mat-icon>
-                                            </div>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>
 
-
-
-                            <!-- PASO 2: SOFTWARE INSTALADO -->
+                            <!-- ================================================ -->
+                            <!-- PASO 2: SOFTWARE INSTALADO (SOLO LECTURA)       -->
+                            <!-- ================================================ -->
                             <div *ngIf="paso === 2" class="seccion-detalle">
                                 <div class="seleccion-detalle">
                                     <div class="detalle-campo">
@@ -419,136 +201,176 @@
 
                                 <div class="detalle-grid-aplicacion obligatorio">
 
-                                    <!-- Antivirus -->
-                                    <div class="software-card" [class.seleccionado]="softwareSeleccionado.antivirus"
-                                        [class.label-error]="errorAntivirus">
-                                        <div class="software-card-header" (click)="abrirPanel('antivirus')">
-                                            <div class="software-icon">
-                                                <mat-icon [class.label-error]="errorAntivirus">security</mat-icon>
-                                            </div>
-                                            <div class="software-info">
-                                                <div class="software-nombre">
-                                                    {{
-                                                    softwareSeleccionado.antivirus?.nombre
-                                                    ? (softwareSeleccionado.antivirus.nombre.toLowerCase() | titlecase)
-                                                    : 'Antivirus'
-                                                    }}
-                                                    <span *ngIf="errorAntivirus">*</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <!-- Antivirus (solo lectura) -->
 
-                                    <!-- Backup -->
-                                    <div class="software-card" [class.seleccionado]="softwareSeleccionado.backup"
-                                        [class.label-error]="errorBackup">
-                                        <div class="software-header" (click)="abrirPanel('backup')">
-                                            <div class="software-icon">
-                                                <mat-icon [class.label-error]="errorBackup">backup</mat-icon>
-                                            </div>
-                                            <div class="software-info">
-                                                <div class="software-nombre">
-                                                    {{
-                                                    softwareSeleccionado.backupGeneral?.nombre
-                                                    ? (softwareSeleccionado.backupGeneral.nombre.charAt(0).toUpperCase()
-                                                    +
-                                                    softwareSeleccionado.backupGeneral.nombre.slice(1).toLowerCase())
-                                                    : 'Backup'
-                                                    }}
-                                                    <span *ngIf="errorBackup">*</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-                                    <!-- Correo -->
                                     <div class="software-card"
-                                        [class.seleccionado]="softwareSeleccionado.correos?.length > 0"
-                                        [class.label-error]="errorCorreo">
-                                        <div class="software-card-header" (click)="abrirPanel('correo')">
-                                            <div class="software-icon">
-                                                <mat-icon [class.label-error]="errorCorreo">mail_outline</mat-icon>
-                                            </div>
-                                            <div class="software-info">
-                                                <div class="software-nombre">
-                                                    <ng-container
-                                                        *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
-                                                        <!-- Extraer el dominio del primer correo -->
-                                                        <ng-container
-                                                            *ngIf="softwareSeleccionado.correos[0]?.direccion as direccion">
-                                                            {{ direccion.split('@')[1]?.split('.')[0] | titlecase }}
-                                                        </ng-container>
-                                                        <!-- Si hay mas correos, mostrar "+X mas" -->
-                                                        <span *ngIf="softwareSeleccionado.correos.length > 1"
-                                                            class="mas-correos">
-                                                            +{{ softwareSeleccionado.correos.length - 1 }} mas
-                                                        </span>
-                                                    </ng-container>
-                                                    <ng-template #sinCorreo>Correo
-                                                        <span *ngIf="errorCorreo">*</span>
-                                                    </ng-template>
-                                                </div>
-                                                <!-- Badge con cantidad de correos -->
-                                                <div class="software-estado"
-                                                    *ngIf="softwareSeleccionado.correos?.length > 0">
-                                                    <span class="badge asignado">{{ softwareSeleccionado.correos.length
-                                                        }} correo(s)</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        [class.seleccionado]="yaAsignada ? tieneSoftwareTipo('ANTIVIRUS') : softwareSeleccionado.antivirus"
+                                        [class.label-error]="!yaAsignada && errorAntivirus">
 
-
-                                    <!-- OFFICE -->
-
-                                    <div *ngIf="softwareTipoOffice" class="software-card" (click)="abrirPanel('office')"
-                                        [class.seleccionado]="softwareSeleccionadoOffice"
-                                        [class.label-error]="errorOffice">
                                         <div class="software-card-header">
-                                            <div class="software-icon">
-                                                <mat-icon [class.label-error]="errorOffice">description</mat-icon>
+
+                                            <div class="software-icon-asignado">
+                                                <!-- Modo asignado: mostrar imagen si existe -->
+                                                <ng-container *ngIf="yaAsignada">
+                                                    <img *ngIf="getSoftwarePorTipoPrimero('ANTIVIRUS')?.rutaImagen"
+                                                        [src]="getSoftwarePorTipoPrimero('ANTIVIRUS')?.rutaImagen"
+                                                        alt="Antivirus" class="software-icono-asignado" />
+                                                    <mat-icon
+                                                        *ngIf="!getSoftwarePorTipoPrimero('ANTIVIRUS')?.rutaImagen">security</mat-icon>
+                                                </ng-container>
+                                                <!-- Modo nueva asignacion: icono por defecto -->
+                                                <ng-container *ngIf="!yaAsignada">
+                                                    <mat-icon [class.label-error]="errorAntivirus">security</mat-icon>
+                                                </ng-container>
                                             </div>
-                                            <div class="software-info">
+
+                                            <div class="software-info-asignado">
                                                 <div class="software-nombre">
-                                                    {{ (softwareSeleccionadoOffice?.nombre | titlecase) || 'Office' }}
-                                                    <span *ngIf="errorOffice">*</span>
+                                                    <ng-container *ngIf="yaAsignada">
+                                                        {{ (getSoftwarePorTipoPrimero('ANTIVIRUS')?.nombreSoftware ||
+                                                        'Antivirus') | titlecase }}
+                                                    </ng-container>
+                                                    <ng-container *ngIf="!yaAsignada">
+                                                        {{ softwareSeleccionado.antivirus?.nombre
+                                                        ? (softwareSeleccionado.antivirus.nombre | titlecase)
+                                                        : 'Antivirus' }}
+                                                        <span *ngIf="!yaAsignada && errorAntivirus">*</span>
+                                                    </ng-container>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
+
+                                    <!-- Backup (solo lectura) -->
+                                    <div class="software-card"
+                                        [class.seleccionado]="yaAsignada ? tieneSoftwareTipo('BACKUP') : softwareSeleccionado.backup"
+                                        [class.label-error]="!yaAsignada && errorBackup">
+
+                                        <div class="software-card-header">
+
+                                            <div class="software-icon-asignado">
+                                                <ng-container *ngIf="yaAsignada">
+                                                    <img *ngIf="getSoftwarePorTipoPrimero('BACKUP')?.rutaImagen"
+                                                        [src]="getSoftwarePorTipoPrimero('BACKUP')?.rutaImagen"
+                                                        alt="Backup" class="software-icono-asignado" />
+                                                    <mat-icon
+                                                        *ngIf="!getSoftwarePorTipoPrimero('BACKUP')?.rutaImagen">backup</mat-icon>
+                                                </ng-container>
+                                                <ng-container *ngIf="!yaAsignada">
+                                                    <mat-icon [class.label-error]="errorBackup">backup</mat-icon>
+                                                </ng-container>
+                                            </div>
+
+                                            <div class="software-info-asignado">
+                                                <div class="software-nombre">
+                                                    <ng-container *ngIf="yaAsignada">
+                                                        {{ (getSoftwarePorTipoPrimero('BACKUP')?.nombreSoftware || 'Sin
+                                                        Backup')
+                                                        | titlecase }}
+                                                    </ng-container>
+                                                    <ng-container *ngIf="!yaAsignada">
+                                                        {{ softwareSeleccionado.backupGeneral?.nombre
+                                                        ? (softwareSeleccionado.backupGeneral.nombre | titlecase)
+                                                        : 'Backup' }}
+                                                        <span *ngIf="!yaAsignada && errorBackup">*</span>
+                                                    </ng-container>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+                                    <!-- Correo (solo lectura) -->
+                                    <div class="software-card"
+                                        [class.seleccionado]="yaAsignada ? tieneSoftwareTipo('CORREO') : softwareSeleccionado.correos?.length > 0"
+                                        [class.label-error]="!yaAsignada && errorCorreo">
+
+                                        <div class="software-card-header">
+
+                                            <div class="software-icon-asignado">
+                                                <ng-container *ngIf="yaAsignada">
+                                                    <img *ngIf="getSoftwarePorTipoPrimero('CORREO')?.rutaImagen"
+                                                        [src]="getSoftwarePorTipoPrimero('CORREO')?.rutaImagen"
+                                                        alt="Correo" class="software-icono-asignado" />
+                                                    <mat-icon
+                                                        *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.rutaImagen">mail_outline</mat-icon>
+                                                </ng-container>
+                                                <ng-container *ngIf="!yaAsignada">
+                                                    <mat-icon [class.label-error]="errorCorreo">mail_outline</mat-icon>
+                                                </ng-container>
+                                            </div>
+
+                                            <div class="software-info-asignado">
+                                                <div class="software-nombre">
+                                                    <ng-container *ngIf="yaAsignada">
+                                                        <!-- Mostrar el dominio del correo si existe -->
+                                                        <ng-container
+                                                            *ngIf="getSoftwarePorTipoPrimero('CORREO')?.nombreSoftware as nombre">
+                                                            {{ nombre | titlecase }}
+                                                        </ng-container>
+                                                        <ng-container
+                                                            *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.nombreSoftware">
+                                                            Sin Correo
+                                                        </ng-container>
+                                                    </ng-container>
+                                                    <ng-container *ngIf="!yaAsignada">
+                                                        <ng-container
+                                                            *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
+                                                            <ng-container
+                                                                *ngIf="softwareSeleccionado.correos[0]?.direccion as direccion">
+                                                                {{ direccion.split('@')[1]?.split('.')[0] | titlecase }}
+                                                            </ng-container>
+                                                            <span *ngIf="softwareSeleccionado.correos.length > 1"
+                                                                class="mas-correos">
+                                                                +{{ softwareSeleccionado.correos.length - 1 }} mas
+                                                            </span>
+                                                        </ng-container>
+                                                        <ng-template #sinCorreo>
+                                                            Correo <span *ngIf="errorCorreo">*</span>
+                                                        </ng-template>
+                                                    </ng-container>
+                                                </div>
+                                                <!-- Badge con cantidad de correos (solo en modo nueva asignacion) -->
+                                                <div class="software-estado"
+                                                    *ngIf="!yaAsignada && softwareSeleccionado.correos?.length > 0">
+                                                    <span class="badge asignado">{{ softwareSeleccionado.correos.length
+                                                        }}
+                                                        correo(s)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 </div>
 
                                 <div class="seleccion-detalle">
                                     <div class="detalle-campo">
                                         <mat-icon>layers</mat-icon>
-                                        <label>SOFTWARE OPCIONAL</label>
+                                        <label>SOFTWARE INSTALADO</label>
                                     </div>
                                 </div>
 
-                                <div class="detalle-grid-aplicacion opcional" *ngIf="softwareTiposActivos.length > 0;">
-                                    <div *ngFor="let tipo of softwareTiposActivos" class="software-card"
-                                        [class.seleccionado]="softwareSeleccionadoOpcional[tipo.codigo]?.length > 0">
-                                        <div class="software-card-header" (click)="abrirPanelOpcional(tipo.codigo)">
-                                            <div class="software-icon">
-                                                <mat-icon>extension</mat-icon>
-                                            </div>
-                                            <div class="software-info">
-                                                <div class="software-nombre">
-                                                    {{ softwareSeleccionadoOpcional[tipo.codigo]?.nombre ||
-                                                    (tipo.descripcion | titlecase) }}
-                                                </div>
-                                            </div>
+
+                                <div *ngIf="softwareOpcionalAsignado.length > 0" class="detalle-grid-software opcional">
+                                    <div *ngFor="let sw of softwareOpcionalAsignado" class="software-card">
+                                        <div class="software-icono-container">
+                                            <img *ngIf="sw.rutaImagen" [src]="sw.rutaImagen" [alt]="sw.nombreSoftware"
+                                                class="software-icono-opcional" />
+                                            <mat-icon *ngIf="!sw.rutaImagen" class="icono-default">extension</mat-icon>
                                         </div>
+                                        <div class="software-nombre-opcional">{{ sw.nombreSoftware | titlecase }}</div>
+                                        <div class="software-tipo-opcional">{{ sw.tipoSoftware | titlecase }}</div>
                                     </div>
                                 </div>
                             </div>
 
 
-                            <!-- PASO 3: Fechas y descripcion -->
-                            <div *ngIf="paso === 3">
+                            <!-- ================================================ -->
+                            <!-- PASO 3: FECHAS Y DESCRIPCION (SOLO LECTURA)      -->
+                            <!-- ================================================ -->
+                            <div *ngIf="paso === 3" class="seccion-detalle">
                                 <div class="seleccionado-fecha">
                                     <div class="campo-fecha asignac">
                                         <div class="fecha-campo sin-asignacion">
@@ -556,7 +378,9 @@
                                             <label>FECHA DE ASIGNACION</label>
                                         </div>
                                         <div class="fecha">
-                                            <input type="date" [(ngModel)]="fechaAsignacion" class="fecha-input">
+                                            <!-- Usamos value en lugar de ngModel, y readonly -->
+                                            <input type="date" [value]="equipo?.fechaAsignacion | date:'yyyy-MM-dd'"
+                                                readonly class="input-readonly" />
                                         </div>
                                     </div>
                                 </div>
@@ -567,716 +391,1086 @@
                                             <mat-icon>description</mat-icon>
                                             <label>DESCRIPCION</label>
                                         </span>
-                                        <textarea [(ngModel)]="observaciones" rows="2"
-                                            placeholder="Ingrese detalles de la asignacion..."
-                                            (input)="observaciones = observaciones.toUpperCase()"></textarea>
+                                        <textarea rows="2" readonly class="input-readonly"
+                                            [value]="equipo?.observaciones || 'SIN DESCRIPCION'"></textarea>
                                     </div>
                                 </div>
                             </div>
 
-                        </ng-container>
-                    </div>
 
-                </div>
-            </div>
-        </div>
 
-        <!-- ================================================ -->
-        <!-- PANEL INTERNO PARA AGREGAR/EDITAR SOFTWARE       -->
-        <!-- ================================================ -->
-        <div class="panel-overlay" *ngIf="panelActivo">
-            <div class="panel-contenido">
-
-                <div class="panel-header">
-
-                    <mat-icon [ngSwitch]="panelTipo">
-                        <ng-container *ngSwitchCase="'backup'">backup</ng-container>
-                        <ng-container *ngSwitchCase="'antivirus'">security</ng-container>
-                        <ng-container *ngSwitchCase="'correo'">mail_outline</ng-container>
-                        <ng-container *ngSwitchDefault>apps</ng-container>
-                    </mat-icon>
-
-                    <h3>{{ panelTitulo }}</h3>
-                </div>
-
-                <div class="panel-body">
-                    <div class="contenido-panel">
-                        <!-- Campos segun el tipo -->
-                        <ng-container [ngSwitch]="panelTipo">
-
-                            <!-- ANTIVIRUS -->
-                            <ng-container *ngSwitchCase="'antivirus'">
-                                <div class="campo-panel">
-                                    <label>ANTIVIRUS</label>
-                                    <select [(ngModel)]="panelData.antivirusCodigo"
-                                        (change)="cargarPoliticasPorAntivirus(panelData.antivirusCodigo)">
-                                        <option [value]="null" disabled selected></option>
-                                        <option *ngFor="let av of antivirusList" [value]="av.codigo">{{ av.nombre }}
-                                        </option>
-                                    </select>
-                                </div><br>
-                                <div class="campo-panel">
-                                    <label>POLITICA</label>
-                                    <select [(ngModel)]="panelData.politicaCodigo">
-                                        <option [value]="null" disabled selected></option>
-                                        <option *ngFor="let pol of politicasList" [value]="pol.codigo">{{ pol.politica
-                                            }}
-                                        </option>
-                                    </select>
+                            <!-- Detalle de devolucion (solo visible en modo devolucion) -->
+                            <div class="seleccionado-observaciones" *ngIf="mostrarDevolucion">
+                                <div class="obser-campo">
+                                    <span>
+                                        <mat-icon>description</mat-icon>
+                                        <label>DETALLE DE DEVOLUCION</label>
+                                    </span>
+                                    <textarea [(ngModel)]="detalleDevolucion" rows="2"
+                                        placeholder="Ingrese el motivo o detalles de la devolucion..."
+                                        (input)="detalleDevolucion = detalleDevolucion.toUpperCase()"></textarea>
                                 </div>
-                            </ng-container>
+                            </div>
+                        </div>
 
-                            <!-- BACKUP -->
-                            <ng-container *ngSwitchCase="'backup'">
-                                <div *ngIf="backupsSeleccionados.length === 0 || mostrarFormularioBackup"
-                                    class="formulario-backup">
 
-                                    <div class="fila-doble">
+                        <!-- ================================================ -->
+                        <!-- CASO 2: NUEVA ASIGNACION (NO ESTA ASIGNADA)      -->
+                        <!-- ================================================ -->
+                        <div *ngIf="!yaAsignada" class="vista-nueva">
 
-                                        <div class="campo-panel">
-                                            <label>PROGRAMA BACKUP</label>
-                                            <select [(ngModel)]="backupFormData.backupCodigo"
-                                                (change)="actualizarNombreBackup()">
-                                                <option [value]="null" disabled selected></option>
-                                                <option *ngFor="let b of backupList" [value]="b.codigo">{{ b.nombre }}
-                                                </option>
-                                            </select>
-                                        </div>
+                            <!-- Seleccion de empleado -->
+                            <div class="campo-form">
 
-                                        <div class="campo-panel">
-                                            <label>NOMBRE BACKUP</label>
-                                            <select [(ngModel)]="configuracionSeleccionada"
-                                                (ngModelChange)="seleccionarConfiguracionBackup($event)"
-                                                [disabled]="backupDisabled">
-                                                <option [ngValue]="null"></option>
-                                                <option *ngFor="let c of backupsDisponibles" [ngValue]="c">
-                                                    {{ c.nombre }}
-                                                </option>
-                                                <option [value]="-1" [disabled]="true">───────────────</option>
-                                                <option [ngValue]="null">CREAR NUEVO</option>
-                                            </select>
+                                <!-- Buscador y lista de empleados (sin seleccion) -->
+                                <ng-container *ngIf="!empleadoSeleccionado">
+                                    <div class="buscador-empleado">
+                                        <mat-icon>search</mat-icon>
+                                        <input type="text" [(ngModel)]="busquedaEmpleado" (input)="filtrarEmpleados()"
+                                            placeholder="Buscar Empleado...">
+                                    </div>
+                                    <div class="lista-empleados" *ngIf="empleadosFiltrados.length > 0">
+                                        <div *ngFor="let emp of empleadosFiltrados" class="empleado-item"
+                                            (click)="seleccionarEmpleado(emp)">
+                                            <div class="empleado-info">
+                                                <div class="empleado-nombre">{{ emp.nombre }} {{ emp.apellido }}</div>
+                                                <div class="empleado-detalle">
+                                                    <span class="empleado-cedula">{{ emp.cedula }}</span>
+                                                    <span class="empleado-area">{{ emp.area.descripcion }}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <br>
+                                </ng-container>
 
-                                    <div class="fila-triple">
-                                        <div class="campo-panel campo-frecuencia">
-                                            <label>FRECUENCIA</label>
-                                            <select [(ngModel)]="backupFormData.frecuencia" [disabled]="backupDisabled"
-                                                (change)="validarDia()">
-                                                <option value="" disabled selected></option>
-                                                <option value="DIARIO">DIARIO</option>
-                                                <option value="SEMANAL">SEMANAL</option>
-                                                <option value="MENSUAL">MENSUAL</option>
-                                            </select>
-                                        </div>
-                                        <div class="campo-panel campo-dia">
-                                            <label>DIA</label>
-                                            <input type="number" min="1" max="30" [(ngModel)]="backupFormData.dia"
-                                                [disabled]="backupDisabled || backupFormData.frecuencia === 'DIARIO'" />
-                                        </div>
-                                        <div class="campo-panel campo-hora">
-                                            <label>HORA</label>
-                                            <input type="time" min="00:00" max="23:59" step="3600"
-                                                [(ngModel)]="backupFormData.hora" [disabled]="backupDisabled" />
+                                <!-- Empleado seleccionado -->
+                                <ng-container *ngIf="empleadoSeleccionado">
+                                    <div class="empleado-seleccionado">
+                                        <div class="seleccionado-contenido">
+                                            <div class="seleccionado-info">
+                                                <div class="seleccionado-nombre">
+                                                    {{ empleadoSeleccionado.nombre }} {{ empleadoSeleccionado.apellido
+                                                    }}
+                                                </div>
+                                                <div class="seleccionado-detalle">
+                                                    <span class="seleccionado-cedula">{{ empleadoSeleccionado.cedula
+                                                        }}</span>
+                                                    <span class="seleccionado-area">{{
+                                                        empleadoSeleccionado.area.descripcion
+                                                        }}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <br>
+                                </ng-container>
+                            </div>
 
-                                    <div class="campo-panel">
-                                        <div class="fila-doble">
-                                            <span class="tab-label" [class.active]="modoUbicacion === 'normales'"
-                                                (click)="cambiarModoUbicacion('normales')">
-                                                AGREGAR UBICACION
-                                            </span>
-                                            <span class="tab-label" [class.active]="modoUbicacion === 'excluidas'"
-                                                (click)="cambiarModoUbicacion('excluidas')">
-                                                EXCLUIR UBICACION
-                                            </span>
+                            <!-- Contenido segun paso (solo si hay empleado seleccionado) -->
+                            <ng-container *ngIf="empleadoSeleccionado">
+
+
+                                <!-- PASO 1: Detalle del equipo -->
+                                <div *ngIf="paso === 1" class="seccion-detalle">
+                                    <div class="seleccion-detalle">
+                                        <div class="detalle-campo">
+                                            <mat-icon>queue_play_next</mat-icon>
+                                            <label>DETALLE EQUIPO</label>
                                         </div>
 
+                                        <div class="detalle-grid">
 
-                                        <div *ngIf="modoUbicacion === 'normales'"
-                                            class="ubicaciones-list agregarubicacion">
-                                            <div *ngFor="let ubic of backupFormData.ubicaciones; let i = index; trackBy: trackByIndex"
-                                                class="ubicacion-item">
-                                                <div class="ubicacion-input-group">
-                                                    <input [(ngModel)]="backupFormData.ubicaciones[i]"
-                                                        [disabled]="backupDisabled" class="agregar" />
-                                                    <button type="button" class="btn-eliminar-ubicacion"
-                                                        (click)="eliminarUbicacion(i)"
-                                                        [disabled]="backupFormData.ubicaciones.length === 1">
-                                                        <mat-icon>delete_sweep</mat-icon>
-                                                    </button>
+                                            <!-- Nombre Equipo (obligatorio) -->
+                                            <div class="campo-detalle">
+                                                <label
+                                                    [class.label-error]="intentadoAvanzarPaso2 && !detalle.nombreEquipo?.trim()">
+                                                    NOMBRE EQUIPO
+                                                    <span
+                                                        *ngIf="intentadoAvanzarPaso2 && !detalle.nombreEquipo?.trim()">*</span>
+                                                </label>
+                                                <input [(ngModel)]="detalle.nombreEquipo"
+                                                    (input)="detalle.nombreEquipo = detalle.nombreEquipo.toUpperCase()" />
+                                            </div>
+
+                                            <!-- IP (obligatorio) -->
+                                            <div class="campo-detalle">
+                                                <label
+                                                    [class.label-error]="intentadoAvanzarPaso2 && (detalle.ip === null || detalle.ip === undefined || detalle.ip < 1 || detalle.ip > 255)">
+                                                    IP (1-255)
+                                                    <span
+                                                        *ngIf="intentadoAvanzarPaso2 && (detalle.ip === null || detalle.ip === undefined || detalle.ip < 1 || detalle.ip > 255)">*</span>
+                                                </label>
+
+                                                <div class="selector-ip-container" (click)="abrirModalIP()">
+                                                    <input type="text" class="ip-input"
+                                                        [value]="detalle.ip !== null && detalle.ip !== undefined ? detalle.ip : ''"
+                                                        readonly (click)="abrirModalIP()" />
+                                                </div>
+                                            </div>
+
+                                            <!-- Usuario Admin (obligatorio) -->
+                                            <div class="campo-detalle">
+                                                <label
+                                                    [class.label-error]="intentadoAvanzarPaso2 && !detalle.nombreUsuarioAdministrador?.trim()">
+                                                    USUARIO ADMIN
+                                                    <span
+                                                        *ngIf="intentadoAvanzarPaso2 && !detalle.nombreUsuarioAdministrador?.trim()">*
+                                                    </span>
+                                                </label>
+                                                <input [(ngModel)]="detalle.nombreUsuarioAdministrador"
+                                                    (input)="detalle.nombreUsuarioAdministrador = detalle.nombreUsuarioAdministrador.toUpperCase()" />
+                                            </div>
+
+                                            <!-- Clave Admin (obligatorio) -->
+                                            <div class="campo-detalle">
+                                                <label
+                                                    [class.label-error]="intentadoAvanzarPaso2 && !detalle.claveUsuarioAdministrador?.trim()">
+                                                    CLAVE ADMIN
+                                                    <span
+                                                        *ngIf="intentadoAvanzarPaso2 && !detalle.claveUsuarioAdministrador?.trim()">*</span>
+                                                </label>
+                                                <div class="input-con-toggle">
+                                                    <input [type]="mostrarClaveAdmin ? 'text' : 'password'"
+                                                        [(ngModel)]="detalle.claveUsuarioAdministrador" />
+                                                    <mat-icon class="toggle-icon" (click)="toggleClaveAdmin()">
+                                                        {{ mostrarClaveAdmin ? 'visibility_off' : 'visibility' }}
+                                                    </mat-icon>
+                                                </div>
+                                            </div>
+
+                                            <!-- Usuario (obligatorio) -->
+                                            <div class="campo-detalle">
+                                                <label
+                                                    [class.label-error]="intentadoAvanzarPaso2 && !detalle.nombreUsuario?.trim()">
+                                                    USUARIO
+                                                    <span
+                                                        *ngIf="intentadoAvanzarPaso2 && !detalle.nombreUsuario?.trim()">*</span>
+                                                </label>
+                                                <input [(ngModel)]="detalle.nombreUsuario"
+                                                    (input)="detalle.nombreUsuario = detalle.nombreUsuario.toUpperCase()" />
+                                            </div>
+
+                                            <!-- Clave Usuario (obligatorio) -->
+                                            <div class="campo-detalle">
+                                                <label
+                                                    [class.label-error]="intentadoAvanzarPaso2 && !detalle.claveUsuario?.trim()">
+                                                    CLAVE USUARIO
+                                                    <span
+                                                        *ngIf="intentadoAvanzarPaso2 && !detalle.claveUsuario?.trim()">*</span>
+                                                </label>
+                                                <div class="input-con-toggle">
+                                                    <input [type]="mostrarClaveUsuario ? 'text' : 'password'"
+                                                        [(ngModel)]="detalle.claveUsuario" />
+                                                    <mat-icon class="toggle-icon" (click)="toggleClaveUsuario()">
+                                                        {{ mostrarClaveUsuario ? 'visibility_off' : 'visibility' }}
+                                                    </mat-icon>
+                                                </div>
+                                            </div>
+
+                                            <!-- Usuario Adicional (opcional) -->
+                                            <div class="campo-detalle">
+                                                <label [class.label-error]="errorAdicional">
+                                                    USUARIO ADICIONAL
+                                                </label>
+                                                <input [(ngModel)]="detalle.nombreUsuarioAdicional"
+                                                    (input)="detalle.nombreUsuarioAdicional = detalle.nombreUsuarioAdicional.toUpperCase()" />
+                                            </div>
+
+                                            <!-- Clave Adicional (opcional) -->
+                                            <div class="campo-detalle">
+                                                <label [class.label-error]="errorAdicional">
+                                                    CLAVE ADICIONAL
+                                                    <span *ngIf="errorAdicional">*</span>
+                                                </label>
+                                                <div class="input-con-toggle">
+                                                    <input [type]="mostrarClaveAdicional ? 'text' : 'password'"
+                                                        [(ngModel)]="detalle.claveUsuarioAdicional" />
+                                                    <mat-icon class="toggle-icon" (click)="toggleClaveAdicional()">
+                                                        {{ mostrarClaveAdicional ? 'visibility_off' : 'visibility' }}
+                                                    </mat-icon>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                                <!-- PASO 2: SOFTWARE INSTALADO -->
+                                <div *ngIf="paso === 2" class="seccion-detalle">
+                                    <div class="seleccion-detalle">
+                                        <div class="detalle-campo">
+                                            <mat-icon>layers</mat-icon>
+                                            <label>SOFTWARE OBLIGATORIO</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="detalle-grid-aplicacion obligatorio">
+
+                                        <!-- Antivirus -->
+                                        <div class="software-card" [class.seleccionado]="softwareSeleccionado.antivirus"
+                                            [class.label-error]="errorAntivirus">
+                                            <div class="software-card-header" (click)="abrirPanel('antivirus')">
+                                                <div class="software-icon">
+                                                    <mat-icon [class.label-error]="errorAntivirus">security</mat-icon>
+                                                </div>
+                                                <div class="software-info">
+                                                    <div class="software-nombre">
+                                                        {{
+                                                        softwareSeleccionado.antivirus?.nombre
+                                                        ? (softwareSeleccionado.antivirus.nombre.toLowerCase() |
+                                                        titlecase)
+                                                        : 'Antivirus'
+                                                        }}
+                                                        <span *ngIf="errorAntivirus">*</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <!-- Lista de ubicaciones excluidas (visible solo si modo === 'excluidas') -->
-                                        <div *ngIf="modoUbicacion === 'excluidas'" class="campo-panel excluirubicacion">
-                                            <div class="ubicaciones-list">
-                                                <div *ngFor="let excl of backupFormData.ubicacionesExcluidas; let i = index; trackBy: trackByIndex"
+                                        <!-- Backup -->
+                                        <div class="software-card" [class.seleccionado]="softwareSeleccionado.backup"
+                                            [class.label-error]="errorBackup">
+                                            <div class="software-header" (click)="abrirPanel('backup')">
+                                                <div class="software-icon">
+                                                    <mat-icon [class.label-error]="errorBackup">backup</mat-icon>
+                                                </div>
+                                                <div class="software-info">
+                                                    <div class="software-nombre">
+                                                        {{
+                                                        softwareSeleccionado.backupGeneral?.nombre
+                                                        ?
+                                                        (softwareSeleccionado.backupGeneral.nombre.charAt(0).toUpperCase()
+                                                        +
+                                                        softwareSeleccionado.backupGeneral.nombre.slice(1).toLowerCase())
+                                                        : 'Backup'
+                                                        }}
+                                                        <span *ngIf="errorBackup">*</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <!-- Correo -->
+                                        <div class="software-card"
+                                            [class.seleccionado]="softwareSeleccionado.correos?.length > 0"
+                                            [class.label-error]="errorCorreo">
+                                            <div class="software-card-header" (click)="abrirPanel('correo')">
+                                                <div class="software-icon">
+                                                    <mat-icon [class.label-error]="errorCorreo">mail_outline</mat-icon>
+                                                </div>
+                                                <div class="software-info">
+                                                    <div class="software-nombre">
+                                                        <ng-container
+                                                            *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
+                                                            <!-- Extraer el dominio del primer correo -->
+                                                            <ng-container
+                                                                *ngIf="softwareSeleccionado.correos[0]?.direccion as direccion">
+                                                                {{ direccion.split('@')[1]?.split('.')[0] | titlecase }}
+                                                            </ng-container>
+                                                            <!-- Si hay mas correos, mostrar "+X mas" -->
+                                                            <span *ngIf="softwareSeleccionado.correos.length > 1"
+                                                                class="mas-correos">
+                                                                +{{ softwareSeleccionado.correos.length - 1 }} mas
+                                                            </span>
+                                                        </ng-container>
+                                                        <ng-template #sinCorreo>Correo
+                                                            <span *ngIf="errorCorreo">*</span>
+                                                        </ng-template>
+                                                    </div>
+                                                    <!-- Badge con cantidad de correos -->
+                                                    <div class="software-estado"
+                                                        *ngIf="softwareSeleccionado.correos?.length > 0">
+                                                        <span class="badge asignado">{{
+                                                            softwareSeleccionado.correos.length
+                                                            }} correo(s)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="seleccion-detalle">
+                                        <div class="detalle-campo">
+                                            <mat-icon>layers</mat-icon>
+                                            <label>SOFTWARE OPCIONAL</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="detalle-grid-aplicacion opcional"
+                                        *ngIf="softwareTiposActivos.length > 0;">
+                                        <div *ngFor="let tipo of softwareTiposActivos" class="software-card"
+                                            [class.seleccionado]="softwareSeleccionadoOpcional[tipo.codigo]?.length > 0"
+                                            [class.label-error]="esTipoOpcionalObligatorio(tipo.codigo) && intentadoAsignar && (!softwareSeleccionadoOpcional[tipo.codigo] || softwareSeleccionadoOpcional[tipo.codigo].length === 0)">
+                                            <div class="software-card-header" (click)="abrirPanelOpcional(tipo.codigo)">
+                                                <div class="software-icon">
+                                                    <mat-icon
+                                                        [class.label-error]="esTipoOpcionalObligatorio(tipo.codigo) && intentadoAsignar && (!softwareSeleccionadoOpcional[tipo.codigo] || softwareSeleccionadoOpcional[tipo.codigo].length === 0)">extension</mat-icon>
+                                                </div>
+                                                <div class="software-info">
+                                                    <div class="software-nombre">
+                                                        {{ softwareSeleccionadoOpcional[tipo.codigo]?.nombre ||
+                                                        (tipo.descripcion | titlecase) }}
+                                                        <span
+                                                            *ngIf="esTipoOpcionalObligatorio(tipo.codigo) && intentadoAsignar && (!softwareSeleccionadoOpcional[tipo.codigo] || softwareSeleccionadoOpcional[tipo.codigo].length === 0)"
+                                                            class="asterisco-obligatorio">*</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- PASO 3: Fechas y descripcion -->
+                                <div *ngIf="paso === 3">
+                                    <div class="seleccionado-fecha">
+                                        <div class="campo-fecha asignac">
+                                            <div class="fecha-campo sin-asignacion">
+                                                <mat-icon>event</mat-icon>
+                                                <label>FECHA DE ASIGNACION</label>
+                                            </div>
+                                            <div class="fecha">
+                                                <input type="date" [(ngModel)]="fechaAsignacion" class="fecha-input">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="seleccionado-observaciones">
+                                        <div class="obser-campo">
+                                            <span>
+                                                <mat-icon>description</mat-icon>
+                                                <label>DESCRIPCION</label>
+                                            </span>
+                                            <textarea [(ngModel)]="observaciones" rows="2"
+                                                placeholder="Ingrese detalles de la asignacion..."
+                                                (input)="observaciones = observaciones.toUpperCase()"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </ng-container>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================ -->
+            <!-- PANEL INTERNO PARA AGREGAR/EDITAR SOFTWARE       -->
+            <!-- ================================================ -->
+            <div class="panel-overlay" *ngIf="panelActivo">
+                <div class="panel-contenido">
+
+                    <div class="panel-header">
+
+                        <mat-icon [ngSwitch]="panelTipo">
+                            <ng-container *ngSwitchCase="'backup'">backup</ng-container>
+                            <ng-container *ngSwitchCase="'antivirus'">security</ng-container>
+                            <ng-container *ngSwitchCase="'correo'">mail_outline</ng-container>
+                            <ng-container *ngSwitchDefault>apps</ng-container>
+                        </mat-icon>
+
+                        <h3>{{ panelTitulo }}</h3>
+                    </div>
+
+                    <div class="panel-body">
+                        <div class="contenido-panel">
+                            <!-- Campos segun el tipo -->
+                            <ng-container [ngSwitch]="panelTipo">
+
+                                <!-- ANTIVIRUS -->
+                                <ng-container *ngSwitchCase="'antivirus'">
+                                    <div class="campo-panel">
+                                        <label>ANTIVIRUS</label>
+                                        <select [(ngModel)]="panelData.antivirusCodigo"
+                                            (change)="cargarPoliticasPorAntivirus(panelData.antivirusCodigo)">
+                                            <option [value]="null" disabled selected></option>
+                                            <option *ngFor="let av of antivirusList" [value]="av.codigo">
+                                                {{ av.nombre }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <br>
+                                    <div class="campo-panel">
+                                        <label>POLITICA</label>
+                                        <select [(ngModel)]="panelData.politicaCodigo"
+                                            [disabled]="!panelData.antivirusCodigo || panelData.antivirusCodigo == 1">
+                                            <option [value]="null" disabled selected></option>
+                                            <option *ngFor="let pol of politicasList" [value]="pol.codigo">
+                                                {{ pol.politica }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </ng-container>
+
+                                <!-- BACKUP -->
+                                <ng-container *ngSwitchCase="'backup'">
+                                    <div *ngIf="backupsSeleccionados.length === 0 || mostrarFormularioBackup"
+                                        class="formulario-backup">
+
+                                        <div class="fila-doble">
+
+                                            <div class="campo-panel">
+                                                <label>PROGRAMA BACKUP</label>
+                                                <select [(ngModel)]="backupFormData.backupCodigo"
+                                                    (change)="onProgramaBackupChange()">
+                                                    <option *ngFor="let prog of backupProgramasConNoAplica"
+                                                        [ngValue]="prog.codigo">
+                                                        {{ prog.nombre }}
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="campo-panel">
+                                                <label>NOMBRE BACKUP</label>
+                                                <select [(ngModel)]="configuracionSeleccionada"
+                                                    (ngModelChange)="seleccionarConfiguracionBackup($event)"
+                                                    [disabled]="programaSeleccionadoEsNoAplica">
+                                                    <option [ngValue]="null"></option>
+                                                    <option *ngFor="let c of backupsDisponibles" [ngValue]="c">
+                                                        {{ c.nombre }}
+                                                    </option>
+                                                    <option [value]="-1" [disabled]="true">───────────────</option>
+                                                    <option [ngValue]="null">CREAR NUEVO</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <br>
+
+                                        <div class="fila-triple">
+                                            <div class="campo-panel campo-frecuencia">
+                                                <label>FRECUENCIA</label>
+                                                <select [(ngModel)]="backupFormData.frecuencia"
+                                                    [disabled]="programaSeleccionadoEsNoAplica">
+                                                    (change)="validarDia()">
+                                                    <option value="" disabled selected></option>
+                                                    <option value="DIARIO">DIARIO</option>
+                                                    <option value="SEMANAL">SEMANAL</option>
+                                                    <option value="MENSUAL">MENSUAL</option>
+                                                </select>
+                                            </div>
+                                            <div class="campo-panel campo-dia">
+                                                <label>DIA</label>
+                                                <input type="number" min="1" max="30" [(ngModel)]="backupFormData.dia"
+                                                    [disabled]="programaSeleccionadoEsNoAplica || backupFormData.frecuencia === 'DIARIO'" />
+                                            </div>
+                                            <div class="campo-panel campo-hora">
+                                                <label>HORA</label>
+                                                <input type="time" min="00:00" max="23:59" step="3600"
+                                                    [(ngModel)]="backupFormData.hora"
+                                                    [disabled]="programaSeleccionadoEsNoAplica" />
+                                            </div>
+                                        </div>
+                                        <br>
+
+                                        <div class="campo-panel">
+                                            <div class="fila-doble">
+                                                <span class="tab-label" [class.active]="modoUbicacion === 'normales'"
+                                                    (click)="cambiarModoUbicacion('normales')">
+                                                    AGREGAR UBICACION
+                                                </span>
+                                                <span class="tab-label" [class.active]="modoUbicacion === 'excluidas'"
+                                                    (click)="cambiarModoUbicacion('excluidas')">
+                                                    EXCLUIR UBICACION
+                                                </span>
+                                            </div>
+
+
+                                            <div *ngIf="modoUbicacion === 'normales'"
+                                                class="ubicaciones-list agregarubicacion">
+                                                <div *ngFor="let ubic of backupFormData.ubicaciones; let i = index; trackBy: trackByIndex"
                                                     class="ubicacion-item">
                                                     <div class="ubicacion-input-group">
-                                                        <input [(ngModel)]="backupFormData.ubicacionesExcluidas[i]"
-                                                            [disabled]="backupDisabled" class="excluida" />
+                                                        <input [(ngModel)]="backupFormData.ubicaciones[i]"
+                                                            [disabled]="programaSeleccionadoEsNoAplica"
+                                                            class="agregar" />
                                                         <button type="button" class="btn-eliminar-ubicacion"
-                                                            (click)="eliminarUbicacionExcluida(i)"
-                                                            [disabled]="backupFormData.ubicacionesExcluidas.length === 1">
+                                                            (click)="eliminarUbicacion(i)"
+                                                            [disabled]="backupFormData.ubicaciones.length === 1">
                                                             <mat-icon>delete_sweep</mat-icon>
                                                         </button>
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <!-- Lista de ubicaciones excluidas (visible solo si modo === 'excluidas') -->
+                                            <div *ngIf="modoUbicacion === 'excluidas'"
+                                                class="campo-panel excluirubicacion">
+                                                <div class="ubicaciones-list">
+                                                    <div *ngFor="let excl of backupFormData.ubicacionesExcluidas; let i = index; trackBy: trackByIndex"
+                                                        class="ubicacion-item">
+                                                        <div class="ubicacion-input-group">
+                                                            <input [(ngModel)]="backupFormData.ubicacionesExcluidas[i]"
+                                                                [disabled]="programaSeleccionadoEsNoAplica"
+                                                                class="excluida" />
+                                                            <button type="button" class="btn-eliminar-ubicacion"
+                                                                (click)="eliminarUbicacionExcluida(i)"
+                                                                [disabled]="backupFormData.ubicacionesExcluidas.length === 1">
+                                                                <mat-icon>delete_sweep</mat-icon>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="botones-ubicaciones" *ngIf="modoUbicacion === 'normales'">
+                                                <button type="button" class="btn-agregar-ubicacion"
+                                                    (click)="agregarUbicacion()" [disabled]="backupDisabled">
+                                                    <mat-icon>library_add</mat-icon> Agregar ubicacion
+                                                </button>
+                                            </div>
+
+
+                                            <div class="botones-ubicaciones" *ngIf="modoUbicacion === 'excluidas'">
+                                                <button type="button" class="btn-excluir-ubicacion"
+                                                    (click)="agregarUbicacionExcluida()" [disabled]="backupDisabled">
+                                                    <mat-icon>library_add</mat-icon> Excluir Ubicacion
+                                                </button>
+                                            </div>
                                         </div>
 
+                                    </div>
+                                    <!-- ============================================= -->
+                                    <!-- LISTA DE BACKUPS SELECCIONADOS                -->
+                                    <!-- ============================================= -->
+                                    <div *ngIf="!mostrarFormularioBackup && backupsSeleccionados.length > 0"
+                                        class="contenedor-backups">
 
-                                        <div class="botones-ubicaciones" *ngIf="modoUbicacion === 'normales'">
-                                            <button type="button" class="btn-agregar-ubicacion"
-                                                (click)="agregarUbicacion()" [disabled]="backupDisabled">
-                                                <mat-icon>library_add</mat-icon> Agregar ubicacion
+                                        <div class="agregar-otro-backup">
+                                            <a class="btn-agregar-backup-texto"
+                                                (click)="mostrarFormularioParaAgregarOtro()">
+                                                <mat-icon>add</mat-icon> Agregar otro backup
+                                            </a>
+                                        </div>
+
+                                        <hr>
+
+                                        <h4>Backups configurados ({{ backupsSeleccionados.length }})</h4>
+
+
+                                        <div class="backup-agregado-card"
+                                            *ngFor="let bk of backupsSeleccionados; let i = index">
+
+
+                                            <div class="backup-agregado-header">
+                                                <mat-icon>backup</mat-icon>
+
+                                                <div class="backup-agregado-info">
+                                                    <strong>{{ bk.nombre }}</strong>
+
+                                                    <div class="backup-agregado-backup">
+                                                        <div class="backup-info">
+                                                            <span class="backup-chip">
+                                                                <mat-icon>storage</mat-icon>
+                                                                {{ bk.programa.charAt(0).toUpperCase() +
+                                                                bk.programa.slice(1).toLowerCase() }}
+                                                            </span>
+
+                                                            <span class="backup-chip" *ngIf="bk.frecuencia">
+                                                                <mat-icon>schedule</mat-icon>
+                                                                {{ bk.frecuencia.charAt(0).toUpperCase() +
+                                                                bk.frecuencia.slice(1).toLowerCase()}}
+                                                            </span>
+
+                                                            <span class="backup-chip" *ngIf="bk.frecuencia">
+                                                                <mat-icon>calendar_today</mat-icon>
+                                                                Dia {{ bk.dia }}
+                                                            </span>
+
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                <a class="mat-icon-editar" (click)="editarBackup(i)"
+                                                    title="Editar backup">
+                                                    <mat-icon>edit</mat-icon>
+                                                </a>
+
+                                                <a class="mat-icon-eliminar" (click)="eliminarBackupDeLista(i)"
+                                                    title="Eliminar backup">
+                                                    <mat-icon>delete</mat-icon>
+                                                </a>
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </ng-container>
+
+
+                                <ng-container *ngSwitchCase="'correo'">
+                                    <div class="campo-panel campo-panel-correo">
+                                        <div class="fila-doble-correo">
+                                            <div>
+                                                <label>CORREO CORPORATIVO</label>
+                                            </div>
+                                            <div>
+                                                <!-- Checkbox para realizar backup -->
+                                                <div class="campo-panel checkbox-backup">
+                                                    <label class="backup-container">
+                                                        <input type="checkbox" [(ngModel)]="panelCorreo.realizarBackup"
+                                                            [disabled]="!panelCorreo.correoCodigo || esCorreoNoAplica" />
+                                                        <mat-icon class="check-outline">backup_outline</mat-icon>
+                                                        <mat-icon class="check-solid">backup</mat-icon>
+                                                        <span>¿Se Realizara Backup?</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- AGREGAR (change) -->
+                                        <select [(ngModel)]="panelCorreo.correoCodigo" [disabled]="bloquearCorreo"
+                                            (change)="onCorreoChange()">
+                                            <option [value]="null" disabled selected></option>
+                                            <option *ngFor="let c of correosFiltrados" [value]="c.codigo">{{ c.direccion
+                                                }}
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div *ngIf="panelCorreo.realizarBackup && panelCorreo.correoCodigo"
+                                        class="subpanel-backup">
+                                        <br>
+                                        <div class="fila-doble">
+                                            <div class="campo-panel">
+                                                <label>PROGRAMA BACKUP</label>
+                                                <select [(ngModel)]="backupFormData.backupCodigo"
+                                                    (change)="actualizarNombreBackup()">
+                                                    <option [value]="null" disabled selected></option>
+                                                    <option *ngFor="let b of backupProgramasSinNoAplica"
+                                                        [value]="b.codigo">
+                                                        {{ b.nombre }}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            <div class="campo-panel">
+                                                <label>NOMBRE BACKUP</label>
+                                                <select [(ngModel)]="configuracionSeleccionada"
+                                                    (ngModelChange)="seleccionarConfiguracionBackup($event)"
+                                                    [disabled]="backupDisabled">
+                                                    <option [ngValue]="null"></option>
+                                                    <ng-container *ngFor="let c of configuracionesBackup">
+                                                        <option *ngIf="!c.enUso" [ngValue]="c">
+                                                            {{ c.nombre }}
+                                                        </option>
+                                                    </ng-container>
+                                                    <option [value]="-1" [disabled]="true">───────────────</option>
+                                                    <option [ngValue]="null">CREAR NUEVO</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <br>
+
+                                        <div class="fila-triple">
+                                            <div class="campo-panel campo-frecuencia">
+                                                <label>FRECUENCIA</label>
+                                                <select [(ngModel)]="backupFormData.frecuencia" (change)="validarDia()"
+                                                    [disabled]="backupDisabled">
+                                                    <option value="" disabled selected></option>
+                                                    <option value="SEMANAL">SEMANAL</option>
+                                                    <option value="MENSUAL">MENSUAL</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="campo-panel campo-dia">
+                                                <label>DIA</label>
+                                                <input type="number" min="1" max="30" [(ngModel)]="backupFormData.dia"
+                                                    [disabled]="backupDisabled" />
+                                            </div>
+
+                                            <div class="campo-panel campo-hora">
+                                                <label>HORA</label>
+                                                <input type="time" min="00:00" max="23:59" step="3600"
+                                                    [(ngModel)]="backupFormData.hora" [disabled]="backupDisabled" />
+                                            </div>
+                                        </div>
+                                        <br>
+
+                                        <!-- UBICACIONES CON NG MODEL Y TRACK BY -->
+                                        <div *ngIf="modoUbicacion === 'normales'"
+                                            class="ubicaciones-list agregarubicacion">
+                                            <div class="campo-panel">
+                                                <label>UBICACION .PST</label>
+                                                <div *ngFor="let ubic of backupFormData.ubicaciones; let i = index; trackBy: trackByIndex"
+                                                    class="ubicacion-item">
+                                                    <div class="ubicacion-input-group">
+                                                        <input [(ngModel)]="backupFormData.ubicaciones[i]"
+                                                            class="agregar" [disabled]="backupDisabled" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="footer-backup">
+                                            <button type="button" class="btn-panel-volver" (click)="volverCorreo()">
+                                                Volver
                                             </button>
-                                        </div>
 
 
-                                        <div class="botones-ubicaciones" *ngIf="modoUbicacion === 'excluidas'">
-                                            <button type="button" class="btn-excluir-ubicacion"
-                                                (click)="agregarUbicacionExcluida()" [disabled]="backupDisabled">
-                                                <mat-icon>library_add</mat-icon> Excluir Ubicacion
+                                            <button type="button" class="btn-panel-guardar"
+                                                (click)="guardarBackupCorreo()">
+                                                Guardar
                                             </button>
                                         </div>
                                     </div>
 
-                                </div>
-                                <!-- ============================================= -->
-                                <!-- LISTA DE BACKUPS SELECCIONADOS                -->
-                                <!-- ============================================= -->
-                                <div *ngIf="!mostrarFormularioBackup && backupsSeleccionados.length > 0"
-                                    class="contenedor-backups">
-
-                                    <div class="agregar-otro-backup">
-                                        <a class="btn-agregar-backup-texto"
-                                            (click)="mostrarFormularioParaAgregarOtro()">
-                                            <mat-icon>add</mat-icon> Agregar otro backup
+                                    <div class="agregar-otro-correo"
+                                        *ngIf="!(panelTipo === 'correo' && panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
+                                        <a class="btn-agregar-correo-texto" [class.disabled]="!panelCorreo.correoCodigo"
+                                            [class.resaltar]="mostrarAyudaCorreo"
+                                            (click)="panelCorreo.correoCodigo && agregarCorreo()">
+                                            <mat-icon>add</mat-icon>
+                                            Agregar Correo Sin Backup
                                         </a>
                                     </div>
 
-                                    <hr>
 
-                                    <h4>Backups configurados ({{ backupsSeleccionados.length }})</h4>
+                                    <div *ngIf="correosFormulario.length > 0 && !(panelTipo === 'correo' &&
+                                panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
+                                        <hr>
+                                        <h4>Correos agregados</h4>
 
+                                        <div class="contenedor-correos">
+                                            <div class="backup-agregado-card"
+                                                *ngFor="let item of correosFormulario; let i = index">
 
-                                    <div class="backup-agregado-card"
-                                        *ngFor="let bk of backupsSeleccionados; let i = index">
+                                                <div class="backup-agregado-header">
+                                                    <mat-icon>mail</mat-icon>
 
+                                                    <div class="backup-agregado-info">
 
-                                        <div class="backup-agregado-header">
-                                            <mat-icon>backup</mat-icon>
+                                                        <strong>{{ item.direccion }}</strong>
 
-                                            <div class="backup-agregado-info">
-                                                <strong>{{ bk.nombre }}</strong>
+                                                        <ng-container *ngIf="item.realizarBackup; else sinBackup">
+                                                            <div class="backup-agregado-backup">
+                                                                <div class="backup-info">
+                                                                    <span class="backup-chip">
+                                                                        <mat-icon>storage</mat-icon>
+                                                                        {{ item.backup.programa.charAt(0).toUpperCase()
+                                                                        +
+                                                                        item.backup.programa.slice(1).toLowerCase() }}
+                                                                    </span>
+                                                                    <span class="backup-chip">
+                                                                        <mat-icon>schedule</mat-icon>
+                                                                        {{
+                                                                        item.backup.frecuencia.charAt(0).toUpperCase() +
+                                                                        item.backup.frecuencia.slice(1).toLowerCase() }}
+                                                                    </span>
+                                                                    <span class="backup-chip" *ngIf="item.backup.dia">
+                                                                        <mat-icon>calendar_today</mat-icon>
+                                                                        Dia {{ item.backup.dia }}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </ng-container>
 
-                                                <div class="backup-agregado-backup">
-                                                    <div class="backup-info">
-                                                        <span class="backup-chip">
-                                                            <mat-icon>storage</mat-icon>
-                                                            {{ bk.programa.charAt(0).toUpperCase() +
-                                                            bk.programa.slice(1).toLowerCase() }}
-                                                        </span>
-
-                                                        <span class="backup-chip" *ngIf="bk.frecuencia">
-                                                            <mat-icon>schedule</mat-icon>
-                                                            {{ bk.frecuencia.charAt(0).toUpperCase() +
-                                                            bk.frecuencia.slice(1).toLowerCase()}}
-                                                        </span>
-
-                                                        <span class="backup-chip" *ngIf="bk.frecuencia">
-                                                            <mat-icon>calendar_today</mat-icon>
-                                                            Dia {{ bk.dia }}
-                                                        </span>
+                                                        <ng-template #sinBackup>
+                                                            <span class="sin-backup">
+                                                                Sin backup
+                                                            </span>
+                                                        </ng-template>
 
                                                     </div>
 
-                                                </div>
-                                            </div>
-                                            <a class="mat-icon-editar" (click)="editarBackup(i)" title="Editar backup">
-                                                <mat-icon>edit</mat-icon>
-                                            </a>
-
-                                            <a class="mat-icon-eliminar" (click)="eliminarBackupDeLista(i)"
-                                                title="Eliminar backup">
-                                                <mat-icon>delete</mat-icon>
-                                            </a>
-                                        </div>
-
-
-                                    </div>
-                                </div>
-                            </ng-container>
-
-
-                            <ng-container *ngSwitchCase="'correo'">
-                                <div class="campo-panel campo-panel-correo">
-                                    <div class="fila-doble-correo">
-                                        <div>
-                                            <label>CORREO CORPORATIVO</label>
-                                        </div>
-                                        <div>
-                                            <!-- Checkbox para realizar backup -->
-                                            <div class="campo-panel checkbox-backup">
-                                                <label class="backup-container">
-                                                    <input type="checkbox" [(ngModel)]="panelCorreo.realizarBackup"
-                                                        [disabled]="!panelCorreo.correoCodigo" />
-                                                    <mat-icon class="check-outline">backup_outline</mat-icon>
-                                                    <mat-icon class="check-solid">backup</mat-icon>
-                                                    <span>¿Se Realizar Backup?</span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- AGREGAR (change) -->
-                                    <select [(ngModel)]="panelCorreo.correoCodigo" [disabled]="bloquearCorreo">
-                                        <option [value]="null" disabled selected></option>
-                                        <option *ngFor="let c of correosFiltrados" [value]="c.codigo">{{ c.direccion }}
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <div *ngIf="panelCorreo.realizarBackup && panelCorreo.correoCodigo"
-                                    class="subpanel-backup">
-                                    <br>
-                                    <div class="fila-doble">
-                                        <div class="campo-panel">
-                                            <label>PROGRAMA BACKUP</label>
-                                            <select [(ngModel)]="backupFormData.backupCodigo"
-                                                (change)="actualizarNombreBackup()">
-                                                <option [value]="null" disabled selected></option>
-                                                <option *ngFor="let b of backupListFiltrada" [value]="b.codigo">{{
-                                                    b.nombre }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                        <div class="campo-panel">
-                                            <label>NOMBRE BACKUP</label>
-                                            <select [(ngModel)]="configuracionSeleccionada"
-                                                (ngModelChange)="seleccionarConfiguracionBackup($event)"
-                                                [disabled]="backupDisabled">
-                                                <option [ngValue]="null"></option>
-                                                <ng-container *ngFor="let c of configuracionesBackup">
-                                                    <option *ngIf="!c.enUso" [ngValue]="c">
-                                                        {{ c.nombre }}
-                                                    </option>
-                                                </ng-container>
-                                                <option [value]="-1" [disabled]="true">───────────────</option>
-                                                <option [ngValue]="null">CREAR NUEVO</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <br>
-
-                                    <div class="fila-triple">
-                                        <div class="campo-panel campo-frecuencia">
-                                            <label>FRECUENCIA</label>
-                                            <select [(ngModel)]="backupFormData.frecuencia" (change)="validarDia()"
-                                                [disabled]="backupDisabled">
-                                                <option value="" disabled selected></option>
-                                                <option value="SEMANAL">SEMANAL</option>
-                                                <option value="MENSUAL">MENSUAL</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="campo-panel campo-dia">
-                                            <label>DIA</label>
-                                            <input type="number" min="1" max="30" [(ngModel)]="backupFormData.dia"
-                                                [disabled]="backupDisabled" />
-                                        </div>
-
-                                        <div class="campo-panel campo-hora">
-                                            <label>HORA</label>
-                                            <input type="time" min="00:00" max="23:59" step="3600"
-                                                [(ngModel)]="backupFormData.hora" [disabled]="backupDisabled" />
-                                        </div>
-                                    </div>
-                                    <br>
-
-                                    <!-- UBICACIONES CON NG MODEL Y TRACK BY -->
-                                    <div *ngIf="modoUbicacion === 'normales'" class="ubicaciones-list agregarubicacion">
-                                        <div class="campo-panel">
-                                            <label>UBICACION .PST</label>
-                                            <div *ngFor="let ubic of backupFormData.ubicaciones; let i = index; trackBy: trackByIndex"
-                                                class="ubicacion-item">
-                                                <div class="ubicacion-input-group">
-                                                    <input [(ngModel)]="backupFormData.ubicaciones[i]" class="agregar"
-                                                        [disabled]="backupDisabled" required />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="footer-backup">
-                                        <button type="button" class="btn-panel-volver" (click)="volverCorreo()">
-                                            Volver
-                                        </button>
-
-
-                                        <button type="button" class="btn-panel-guardar" (click)="guardarBackupCorreo()">
-                                            Guardar
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="agregar-otro-correo"
-                                    *ngIf="!(panelTipo === 'correo' && panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
-                                    <a class="btn-agregar-correo-texto" [class.disabled]="!panelCorreo.correoCodigo"
-                                        [class.resaltar]="mostrarAyudaCorreo"
-                                        (click)="panelCorreo.correoCodigo && agregarCorreo()">
-                                        <mat-icon>add</mat-icon>
-                                        Agregar Correo Sin Backup
-                                    </a>
-                                </div>
-
-
-                                <div *ngIf="correosFormulario.length > 0 && !(panelTipo === 'correo' &&
-                                panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
-                                    <hr>
-                                    <h4>Correos agregados</h4>
-
-                                    <div class="contenedor-correos">
-                                        <div class="backup-agregado-card"
-                                            *ngFor="let item of correosFormulario; let i = index">
-
-                                            <div class="backup-agregado-header">
-                                                <mat-icon>mail</mat-icon>
-
-                                                <div class="backup-agregado-info">
-
-                                                    <strong>{{ item.direccion }}</strong>
-
-                                                    <ng-container *ngIf="item.realizarBackup; else sinBackup">
-                                                        <div class="backup-agregado-backup">
-                                                            <div class="backup-info">
-                                                                <span class="backup-chip">
-                                                                    <mat-icon>storage</mat-icon>
-                                                                    {{ item.backup.programa.charAt(0).toUpperCase() +
-                                                                    item.backup.programa.slice(1).toLowerCase() }}
-                                                                </span>
-                                                                <span class="backup-chip">
-                                                                    <mat-icon>schedule</mat-icon>
-                                                                    {{ item.backup.frecuencia.charAt(0).toUpperCase() +
-                                                                    item.backup.frecuencia.slice(1).toLowerCase() }}
-                                                                </span>
-                                                                <span class="backup-chip" *ngIf="item.backup.dia">
-                                                                    <mat-icon>calendar_today</mat-icon>
-                                                                    Dia {{ item.backup.dia }}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </ng-container>
-
-                                                    <ng-template #sinBackup>
-                                                        <span class="sin-backup">
-                                                            Sin backup
-                                                        </span>
-                                                    </ng-template>
+                                                    <a class="mat-icon-editar" (click)="editarBackupCorreo(item, i)">
+                                                        <mat-icon>edit</mat-icon>
+                                                    </a>
+                                                    <a class="mat-icon-eliminar"
+                                                        (click)="correosFormulario.splice(i,1)">
+                                                        <mat-icon>delete</mat-icon>
+                                                    </a>
 
                                                 </div>
 
-                                                <a class="mat-icon-editar" (click)="editarBackupCorreo(item, i)">
-                                                    <mat-icon>edit</mat-icon>
-                                                </a>
-                                                <a class="mat-icon-eliminar" (click)="correosFormulario.splice(i,1)">
-                                                    <mat-icon>delete</mat-icon>
-                                                </a>
-
                                             </div>
+                                        </div>
 
+                                    </div>
+                                </ng-container>
+
+
+                                <!-- SOFTWARE OFFICE -->
+
+                                <ng-container *ngSwitchCase="'office'">
+                                    <div class="campo-panel">
+                                        <label>PROGRAMA OFFICE</label>
+                                        <select [(ngModel)]="panelData.softwareCodigo">
+                                            <option [value]="null" disabled selected></option>
+                                            <option *ngFor="let sw of officeList" [value]="sw.codigo">
+                                                {{ sw.nombre }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </ng-container>
+
+
+                                <!-- SOFTWARE OPCIONAL -->
+                                <ng-container *ngSwitchCase="'softwareOpcional'">
+                                    <div class="campo-panel" *ngIf="panelTipoOpcionalCodigo !== null">
+
+                                        <div *ngIf="softwarePorTipo[panelTipoOpcionalCodigo]?.length; else sinSoftware"
+                                            class="lista-software-opcional">
+                                            <div *ngFor="let sw of softwarePorTipo[panelTipoOpcionalCodigo]"
+                                                class="software-item" [class.seleccionado]="estaSeleccionado(sw)"
+                                                (click)="toggleSeleccionSoftware(sw)">
+                                                <div class="software-item-icon">
+                                                    <img *ngIf="sw.rutaImagen" [src]="sw.rutaImagen"
+                                                        alt="Icono de {{ sw.nombre }}" class="software-icono">
+                                                    <mat-icon *ngIf="!sw.rutaImagen">extension</mat-icon>
+                                                </div>
+                                                <span class="software-item-nombre">{{ sw.nombre }}</span>
+                                                <mat-icon *ngIf="estaSeleccionado(sw)"
+                                                    class="software-item-check">check_circle</mat-icon>
+                                            </div>
+                                        </div>
+
+                                        <ng-template #sinSoftware>
+                                            <p class="sin-datos">
+                                                <mat-icon>info</mat-icon> No hay software disponible para
+                                                este tipo.
+                                            </p>
+                                        </ng-template>
+
+                                        <div *ngIf="panelSeleccionesTemporales.length > 0" class="seleccionados-info">
+                                            <mat-icon>check_circle</mat-icon>
+                                            <span>{{ panelSeleccionesTemporales.length }} seleccionado(s)</span>
                                         </div>
                                     </div>
+                                </ng-container>
 
-                                </div>
                             </ng-container>
 
 
-                            <!-- SOFTWARE OFFICE -->
+                        </div>
+                    </div>
 
-                            <ng-container *ngSwitchCase="'office'">
-                                <div class="campo-panel">
-                                    <label>PROGRAMA OFFICE</label>
-                                    <select [(ngModel)]="panelData.softwareCodigo">
-                                        <option [value]="null" disabled selected></option>
-                                        <option *ngFor="let sw of officeList" [value]="sw.codigo">
-                                            {{ sw.nombre }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </ng-container>
+                    <div class="panel-footer"
+                        *ngIf="!(panelTipo === 'correo' && panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
 
+                        <button class="btn-panel-cancelar" (click)="cerrarPanel()">Cancelar</button>
 
-                            <!-- SOFTWARE OPCIONAL -->
-                            <ng-container *ngSwitchCase="'softwareOpcional'">
-                                <div class="campo-panel" *ngIf="panelTipoOpcionalCodigo !== null">
-
-                                    <div *ngIf="softwarePorTipo[panelTipoOpcionalCodigo]?.length; else sinSoftware"
-                                        class="lista-software-opcional">
-                                        <div *ngFor="let sw of softwarePorTipo[panelTipoOpcionalCodigo]"
-                                            class="software-item" [class.seleccionado]="estaSeleccionado(sw)"
-                                            (click)="toggleSeleccionSoftware(sw)">
-                                            <div class="software-item-icon">
-                                                <img *ngIf="sw.rutaImagen" [src]="sw.rutaImagen"
-                                                    alt="Icono de {{ sw.nombre }}" class="software-icono">
-                                                <mat-icon *ngIf="!sw.rutaImagen">extension</mat-icon>
-                                            </div>
-                                            <span class="software-item-nombre">{{ sw.nombre }}</span>
-                                            <mat-icon *ngIf="estaSeleccionado(sw)"
-                                                class="software-item-check">check_circle</mat-icon>
-                                        </div>
-                                    </div>
-
-                                    <ng-template #sinSoftware>
-                                        <p class="sin-datos">
-                                            <mat-icon>info</mat-icon> No hay software disponible para
-                                            este tipo.
-                                        </p>
-                                    </ng-template>
-
-                                    <div *ngIf="panelSeleccionesTemporales.length > 0" class="seleccionados-info">
-                                        <mat-icon>check_circle</mat-icon>
-                                        <span>{{ panelSeleccionesTemporales.length }} seleccionado(s)</span>
-                                    </div>
-                                </div>
-                            </ng-container>
-
+                        <!-- Caso especial: panel de backup -->
+                        <ng-container *ngIf="panelTipo === 'backup'; else normalGuardar">
+                            <!-- Modo formulario (agregando un nuevo backup) -->
+                            <button *ngIf="mostrarFormularioBackup || backupsSeleccionados.length === 0"
+                                class="btn-panel-guardar" (click)="agregarBackupALista()" [disabled]="backupDisabled">
+                                Guardar Backup
+                            </button>
+                            <!-- Modo resumen (ya hay backups guardados) -->
+                            <button *ngIf="!mostrarFormularioBackup && backupsSeleccionados.length > 0"
+                                class="btn-panel-guardar" (click)="guardarPanel()">
+                                Guardar
+                            </button>
                         </ng-container>
 
+                        <!-- Caso normal (antivirus, correo, office, etc.) -->
+                        <ng-template #normalGuardar>
+                            <!-- Boton Guardar para ANTIVIRUS, OFFICE, SOFTWARE OPCIONAL, etc. -->
+                            <button *ngIf="panelTipo !== 'correo'" class="btn-panel-guardar" (click)="guardarPanel()">
+                                Guardar
+                            </button>
+                            <!-- Boton Guardar para CORREO - SIEMPRE HABILITADO, la validacion esta en el metodo -->
+                            <button *ngIf="panelTipo === 'correo'" class="btn-panel-guardar" (click)="guardarPanel()">
+                                Guardar
+                            </button>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
 
+            <!-- BOTONES -->
+            <div class="modal-footer">
+
+                <!-- CASO 1: YA ESTA ASIGNADA -->
+                <ng-container *ngIf="yaAsignada">
+                    <button class="btn-cancelar" (click)="cerrar()">
+                        <mat-icon>close</mat-icon> Cancelar
+                    </button>
+                    <button *ngIf="!mostrarDevolucion" class="btn-reasignar" (click)="activarReasignacion()">
+                        <mat-icon>refresh</mat-icon> Reasignar
+                    </button>
+                    <button *ngIf="!mostrarDevolucion" class="btn-devolver" (click)="activarDevolucion()">
+                        <mat-icon>assignment_return</mat-icon> Devolver
+                    </button>
+                    <button *ngIf="mostrarDevolucion && !esReasignacion" class="btn-confirmar-devolver"
+                        (click)="confirmarDevolver()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
+                        <mat-icon>done_all</mat-icon> Confirmar Devolucion
+                    </button>
+                    <button *ngIf="mostrarDevolucion && esReasignacion" class="btn-confirmar-reasignar"
+                        (click)="confirmarReasignar()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
+                        <mat-icon>refresh</mat-icon> Confirmar Reasignacion
+                    </button>
+                </ng-container>
+
+                <!-- CASO 2: NO ESTA ASIGNADA (NUEVA ASIGNACION) -->
+                <ng-container *ngIf="!yaAsignada">
+
+                    <!-- Boton Cancelar (solo visible cuando NO hay seleccion) -->
+                    <button *ngIf="!tieneSeleccion()" class="btn-cancelar" (click)="cerrar()">
+                        <mat-icon>close</mat-icon> Cancelar
+                    </button>
+
+
+                    <!-- PASO 1: Seleccion de empleado -->
+                    <ng-container *ngIf="paso === 1 && tieneSeleccion()">
+                        <!-- Boton Volver Atras (solo visible cuando HAY seleccion) -->
+                        <button class="btn-devolver" (click)="limpiarSeleccionTotal()">
+                            <mat-icon>keyboard_arrow_left</mat-icon> Volver
+                        </button>
+
+                        <!-- Boton Siguiente (ir a detalle) -->
+                        <button class="btn-asignar" [disabled]="!empleadoSeleccionado" (click)="irAlPaso2()">
+                            Siguiente <mat-icon>keyboard_arrow_right</mat-icon>
+                        </button>
+                    </ng-container>
+
+
+                    <!-- PASO 2: Detalle del equipo -->
+                    <ng-container *ngIf="paso === 2 && tieneSeleccion()">
+                        <!-- Boton Volver (a paso 1) -->
+                        <button class="btn-devolver" (click)="irAlPaso1()">
+                            <mat-icon>keyboard_arrow_left</mat-icon> Volver
+                        </button>
+
+                        <!-- Boton paso 3 -->
+                        <button class="btn-asignar" (click)="irAlPaso3()">
+                            Siguiente <mat-icon>keyboard_arrow_right</mat-icon>
+                        </button>
+                    </ng-container>
+
+                    <!-- PASO 3: Software instalado -->
+                    <ng-container *ngIf="paso === 3 && tieneSeleccion()">
+                        <button class="btn-devolver" (click)="irAlPaso2DesdePaso3()">
+                            <mat-icon>keyboard_arrow_left</mat-icon> Volver
+                        </button>
+                        <button class="btn-asignar" (click)="asignar()">
+                            <mat-icon>done_all</mat-icon> Asignar Equipo
+                        </button>
+                    </ng-container>
+
+                </ng-container>
+
+            </div>
+
+            <!-- Mensaje de error -->
+            <div *ngIf="fechaDevolucion && !isFechaDevolucionValida()" class="error-mensaje">
+                <mat-icon>warning</mat-icon>
+                La fecha de devolucion no puede ser anterior a {{ equipo.fechaAsignacion | date:'dd/MM/yyyy' }}
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="modalcrearbackup" [class.show]="mostrarModalBackup" *ngIf="mostrarModalBackup">
+        <div class="modal-contenido">
+            <div class="modal-cabezera">
+                <div class="titulo">
+                    <mat-icon>backup</mat-icon>
+                    <h2>Crear Nuevo Backup</h2>
+                </div>
+            </div>
+
+            <div class="crear" *ngIf="mostrarModalBackup">
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Nombre del Backup</mat-label>
+                    <input matInput [(ngModel)]="nuevoBackupNombre" [matAutocomplete]="autoBackup"
+                        (input)="nuevoBackupNombre = nuevoBackupNombre.toUpperCase(); filtrarNombresBackup()"
+                        placeholder="Ejemplo: BACKUP-FD" autocomplete="off" />
+
+                    <mat-autocomplete #autoBackup="matAutocomplete"
+                        (optionSelected)="seleccionarNombreBackupExistente($event)">
+                        <mat-option *ngFor="let config of backupNombresFiltrados" [value]="config.nombre">
+                            <div class="sugerencia-option">
+                                <mat-icon>assignment_turned_in</mat-icon>
+                                <span>{{ config.nombre }}</span>
+                                <small class="ya-existe"> - Ya existe</small>
+                            </div>
+                        </mat-option>
+
+                    </mat-autocomplete>
+                </mat-form-field>
+
+                <!-- Mensaje si ya existe (cuando el usuario escribe y no selecciona) -->
+                <div *ngIf="nombreBackupYaExiste && nuevoBackupNombre" class="error-mensaje">
+                    <mat-icon>warning</mat-icon>
+                    <span>Ya existe una configuracion con este nombre. Elija otro nombre o seleccione de la
+                        lista.</span>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button mat-raised-button type="button" class="btn-guardar" color="primary"
+                    (click)="crearNuevoBackup()">
+                    <mat-icon>done_all</mat-icon> Crear
+                </button>
+                <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalBackup()">
+                    <mat-icon>cancel</mat-icon> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Modal para seleccionar IP -->
+    <div class="modal-ip" [class.show]="mostrarModalIP" *ngIf="mostrarModalIP">
+        <div class="modal-contenido">
+            <div class="modal-cabezera">
+                <div class="titulo">
+                    <mat-icon>settings_ethernet</mat-icon>
+                    <h2>Seleccionar IP</h2>
+                </div>
+            </div>
+
+            <div class="ip-body">
+                <!-- Leyenda -->
+                <div class="leyenda-ip">
+                    <span class="leyenda-item">
+                        <span class="color-disponible"></span> Disponible
+                    </span>
+                    <span class="leyenda-item">
+                        <span class="color-ocupada"></span> Ocupada
+                    </span>
+                    <span class="leyenda-item">
+                        <span class="color-seleccionada"></span> Seleccionada
+                    </span>
+                </div>
+
+                <!-- Grid de IPs -->
+                <div class="ip-grid">
+                    <div *ngFor="let ip of ipsDisponibles" class="ip-item"
+                        [class.disponible]="ip.catalogoCodigo === 1 && ip.activo === false"
+                        [class.ocupada]="!(ip.catalogoCodigo === 1 && ip.activo === false)"
+                        [class.seleccionada]="ip.ip === ipSeleccionadaTemporal" (click)="seleccionarIpTemporal(ip)">
+                        {{ ip.ip }}
                     </div>
                 </div>
 
-                <div class="panel-footer"
-                    *ngIf="!(panelTipo === 'correo' && panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
-
-                    <button class="btn-panel-cancelar" (click)="cerrarPanel()">Cancelar</button>
-
-                    <!-- Caso especial: panel de backup -->
-                    <ng-container *ngIf="panelTipo === 'backup'; else normalGuardar">
-
-                        <!-- Modo formulario (agregando un nuevo backup) -->
-                        <button *ngIf="mostrarFormularioBackup || backupsSeleccionados.length === 0"
-                            class="btn-panel-guardar" (click)="agregarBackupALista()"
-                            [disabled]="!backupFormData.backupCodigo">
-                            Guardar Backup
-                        </button>
-
-                        <!-- Modo resumen (ya hay backups guardados) -->
-                        <button *ngIf="!mostrarFormularioBackup && backupsSeleccionados.length > 0"
-                            class="btn-panel-guardar" (click)="guardarPanel()">
-                            Guardar
-                        </button>
-
-                    </ng-container>
-
-                    <!-- Caso normal (antivirus, correo, office, etc.) -->
-                    <ng-template #normalGuardar>
-                        <!-- CONDICION ESPECIAL PARA CORREO -->
-                        <button *ngIf="panelTipo !== 'correo'" class="btn-panel-guardar" (click)="guardarPanel()">
-                            Guardar
-                        </button>
-
-                        <!-- Boton Guardar para CORREO - SIEMPRE HABILITADO, la validacion esta en el metodo -->
-                        <button *ngIf="panelTipo === 'correo'" class="btn-panel-guardar" (click)="guardarPanel()">
-                            Guardar
-                        </button>
-                    </ng-template>
-
-                </div>
-
-            </div>
-        </div>
-
-        <!-- BOTONES -->
-        <div class="modal-footer">
-
-            <!-- CASO 1: YA ESTA ASIGNADA -->
-            <ng-container *ngIf="yaAsignada">
-                <button class="btn-cancelar" (click)="cerrar()">
-                    <mat-icon>close</mat-icon> Cancelar
-                </button>
-                <button *ngIf="!mostrarDevolucion" class="btn-reasignar" (click)="activarReasignacion()">
-                    <mat-icon>refresh</mat-icon> Reasignar
-                </button>
-                <button *ngIf="!mostrarDevolucion" class="btn-devolver" (click)="activarDevolucion()">
-                    <mat-icon>assignment_return</mat-icon> Devolver
-                </button>
-                <button *ngIf="mostrarDevolucion && !esReasignacion" class="btn-confirmar-devolver"
-                    (click)="confirmarDevolver()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
-                    <mat-icon>done_all</mat-icon> Confirmar Devolucion
-                </button>
-                <button *ngIf="mostrarDevolucion && esReasignacion" class="btn-confirmar-reasignar"
-                    (click)="confirmarReasignar()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
-                    <mat-icon>refresh</mat-icon> Confirmar Reasignacion
-                </button>
-            </ng-container>
-
-            <!-- CASO 2: NO ESTA ASIGNADA (NUEVA ASIGNACION) -->
-            <ng-container *ngIf="!yaAsignada">
-
-                <!-- Boton Cancelar (solo visible cuando NO hay seleccion) -->
-                <button *ngIf="!tieneSeleccion()" class="btn-cancelar" (click)="cerrar()">
-                    <mat-icon>close</mat-icon> Cancelar
-                </button>
-
-
-                <!-- PASO 1: Seleccion de empleado -->
-                <ng-container *ngIf="paso === 1 && tieneSeleccion()">
-                    <!-- Boton Volver Atras (solo visible cuando HAY seleccion) -->
-                    <button class="btn-devolver" (click)="limpiarSeleccionTotal()">
-                        <mat-icon>keyboard_arrow_left</mat-icon> Volver
-                    </button>
-
-                    <!-- Boton Siguiente (ir a detalle) -->
-                    <button class="btn-asignar" [disabled]="!empleadoSeleccionado" (click)="irAlPaso2()">
-                        Siguiente <mat-icon>keyboard_arrow_right</mat-icon>
-                    </button>
-                </ng-container>
-
-
-                <!-- PASO 2: Detalle del equipo -->
-                <ng-container *ngIf="paso === 2 && tieneSeleccion()">
-                    <!-- Boton Volver (a paso 1) -->
-                    <button class="btn-devolver" (click)="irAlPaso1()">
-                        <mat-icon>keyboard_arrow_left</mat-icon> Volver
-                    </button>
-
-                    <!-- Boton paso 3 -->
-                    <button class="btn-asignar" (click)="irAlPaso3()">
-                        Siguiente <mat-icon>keyboard_arrow_right</mat-icon>
-                    </button>
-                </ng-container>
-
-                <!-- PASO 3: Software instalado -->
-                <ng-container *ngIf="paso === 3 && tieneSeleccion()">
-                    <button class="btn-devolver" (click)="irAlPaso2DesdePaso3()">
-                        <mat-icon>keyboard_arrow_left</mat-icon> Volver
-                    </button>
-                    <button class="btn-asignar" (click)="asignar()">
-                        <mat-icon>done_all</mat-icon> Asignar Equipo
-                    </button>
-                </ng-container>
-
-            </ng-container>
-
-        </div>
-
-        <!-- Mensaje de error -->
-        <div *ngIf="fechaDevolucion && !isFechaDevolucionValida()" class="error-mensaje">
-            <mat-icon>warning</mat-icon>
-            La fecha de devolucion no puede ser anterior a {{ equipo.fechaAsignacion | date:'dd/MM/yyyy' }}
-        </div>
-    </div>
-</div>
-
-
-
-
-<div class="modalcrearbackup" [class.show]="mostrarModalBackup" *ngIf="mostrarModalBackup">
-    <div class="modal-contenido">
-        <div class="modal-cabezera">
-            <div class="titulo">
-                <mat-icon>backup</mat-icon>
-                <h2>Crear Nuevo Backup</h2>
-            </div>
-        </div>
-
-        <div class="crear" *ngIf="mostrarModalBackup">
-            <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nombre del Backup</mat-label>
-                <input matInput [(ngModel)]="nuevoBackupNombre" [matAutocomplete]="autoBackup"
-                    (input)="nuevoBackupNombre = nuevoBackupNombre.toUpperCase(); filtrarNombresBackup()"
-                    placeholder="Ejemplo: BACKUP-FD" autocomplete="off" />
-
-                <mat-autocomplete #autoBackup="matAutocomplete"
-                    (optionSelected)="seleccionarNombreBackupExistente($event)">
-                    <mat-option *ngFor="let config of backupNombresFiltrados" [value]="config.nombre">
-                        <div class="sugerencia-option">
-                            <mat-icon>assignment_turned_in</mat-icon>
-                            <span>{{ config.nombre }}</span>
-                            <small class="ya-existe"> - Ya existe</small>
-                        </div>
-                    </mat-option>
-
-                </mat-autocomplete>
-            </mat-form-field>
-
-            <!-- Mensaje si ya existe (cuando el usuario escribe y no selecciona) -->
-            <div *ngIf="nombreBackupYaExiste && nuevoBackupNombre" class="error-mensaje">
-                <mat-icon>warning</mat-icon>
-                <span>Ya existe una configuracion con este nombre. Elija otro nombre o seleccione de la lista.</span>
-            </div>
-        </div>
-
-        <div class="modal-footer">
-            <button mat-raised-button type="button" class="btn-guardar" color="primary" (click)="crearNuevoBackup()">
-                <mat-icon>done_all</mat-icon> Crear
-            </button>
-            <button mat-button type="button" class="btn-cancelar" (click)="cerrarModalBackup()">
-                <mat-icon>cancel</mat-icon> Cancelar
-            </button>
-        </div>
-    </div>
-</div>
-
-
-
-
-
-<!-- Modal para seleccionar IP -->
-<div class="modal-ip" [class.show]="mostrarModalIP" *ngIf="mostrarModalIP">
-    <div class="modal-contenido">
-        <div class="modal-cabezera">
-            <div class="titulo">
-                <mat-icon>settings_ethernet</mat-icon>
-                <h2>Seleccionar IP</h2>
-            </div>
-        </div>
-
-        <div class="ip-body">
-            <!-- Leyenda -->
-            <div class="leyenda-ip">
-                <span class="leyenda-item">
-                    <span class="color-disponible"></span> Disponible
-                </span>
-                <span class="leyenda-item">
-                    <span class="color-ocupada"></span> Ocupada
-                </span>
-                <span class="leyenda-item">
-                    <span class="color-seleccionada"></span> Seleccionada
-                </span>
-            </div>
-
-            <!-- Grid de IPs -->
-            <div class="ip-grid">
-                <div *ngFor="let ip of ipsDisponibles" class="ip-item"
-                    [class.disponible]="ip.catalogoCodigo === 1 && ip.activo === false"
-                    [class.ocupada]="!(ip.catalogoCodigo === 1 && ip.activo === false)"
-                    [class.seleccionada]="ip.ip === ipSeleccionadaTemporal" (click)="seleccionarIpTemporal(ip)">
-                    {{ ip.ip }}
+                <div *ngIf="ipsDisponibles.length === 0" class="sin-ips">
+                    <mat-icon>warning</mat-icon>
+                    <span>No se pudieron cargar las IPs</span>
                 </div>
             </div>
 
-            <div *ngIf="ipsDisponibles.length === 0" class="sin-ips">
-                <mat-icon>warning</mat-icon>
-                <span>No se pudieron cargar las IPs</span>
+            <div class="modal-footer">
+                <button mat-raised-button type="button" class="btn-cancelar" (click)="cerrarModalIP()">
+                    <mat-icon>cancel</mat-icon> Cancelar
+                </button>
+                <button mat-raised-button type="button" class="btn-guardar" (click)="confirmarSeleccionIP()"
+                    [disabled]="ipSeleccionadaTemporal === null">
+                    <mat-icon>done_all</mat-icon> Seleccionar
+                </button>
             </div>
         </div>
-
-        <div class="modal-footer">
-            <button mat-raised-button type="button" class="btn-cancelar" (click)="cerrarModalIP()">
-                <mat-icon>cancel</mat-icon> Cancelar
-            </button>
-            <button mat-raised-button type="button" class="btn-guardar" (click)="confirmarSeleccionIP()"
-                [disabled]="ipSeleccionadaTemporal === null">
-                <mat-icon>done_all</mat-icon> Seleccionar
-            </button>
-        </div>
     </div>
+
+
+
+
 </div>

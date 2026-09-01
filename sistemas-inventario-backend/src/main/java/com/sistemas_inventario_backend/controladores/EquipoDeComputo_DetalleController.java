@@ -44,7 +44,10 @@ public class EquipoDeComputo_DetalleController {
     }
 
     @PostMapping("/{serial}")
-    public ResponseEntity<?> guardar(@PathVariable String serial, @RequestBody EquipoDeComputo_Detalle detalle, @RequestParam Integer ip, @RequestParam Long tipoCodigo) {
+    public ResponseEntity<?> guardar(@PathVariable String serial,
+                                     @RequestBody EquipoDeComputo_Detalle detalle,
+                                     @RequestParam(required = false) Integer ip,
+                                     @RequestParam(required = false) Long tipoCodigo) {
         try {
             EquipoDeComputo_Detalle guardado = service.guardar(serial, detalle, ip, tipoCodigo);
             return ResponseEntity.ok(guardado);

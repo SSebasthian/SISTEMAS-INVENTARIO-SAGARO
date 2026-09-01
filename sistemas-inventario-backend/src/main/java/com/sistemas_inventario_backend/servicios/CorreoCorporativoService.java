@@ -98,38 +98,11 @@ public class CorreoCorporativoService {
     }
 
     public List<CorreosCorporativos> listarCorreosDisponibles() {
-        // Obtener los correos disponibles (sin NO APLICA)
-        List<CorreosCorporativos> disponibles = repository.findCorreosDisponibles();
-
-        // Crear el objeto NO APLICA
-        CorreosCorporativos noAplica = new CorreosCorporativos();
-        noAplica.setCodigo(0L);
-        noAplica.setDireccion("NO APLICA");
-        noAplica.setActivo(true);
-        noAplica.setClave("NO APLICA");
-
-        // Crear lista con NO APLICA al inicio
-        List<CorreosCorporativos> resultado = new ArrayList<>();
-        resultado.add(noAplica);
-        resultado.addAll(disponibles);
-
-        return resultado;
+        return repository.findCorreosDisponibles();  // solo los disponibles reales
     }
 
     public List<CorreosCorporativos> listarCorreosDisponiblesPorRecurso(Long recursoCodigo) {
-        List<CorreosCorporativos> disponibles = repository.findCorreosDisponiblesByRecurso(recursoCodigo);
-
-        CorreosCorporativos noAplica = new CorreosCorporativos();
-        noAplica.setCodigo(0L);
-        noAplica.setDireccion("NO APLICA");
-        noAplica.setActivo(true);
-        noAplica.setClave("NO APLICA");
-
-        List<CorreosCorporativos> resultado = new ArrayList<>();
-        resultado.add(noAplica);
-        resultado.addAll(disponibles);
-
-        return resultado;
+        return repository.findCorreosDisponiblesByRecurso(recursoCodigo);
     }
 
 }

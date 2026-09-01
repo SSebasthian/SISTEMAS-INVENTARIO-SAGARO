@@ -1,5 +1,6 @@
 package com.sistemas_inventario_backend.controladores;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.EquipoDeComputo_SoftwareRespuesta;
 import com.sistemas_inventario_backend.entidades.EquipoDeComputo_Software;
 import com.sistemas_inventario_backend.servicios.EquipoDeComputo_SoftwareService;
 import lombok.RequiredArgsConstructor;
@@ -82,5 +83,17 @@ public class EquipoDeComputo_SoftwareController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+
+    @GetMapping("/serial/{serial}/dto")
+    public ResponseEntity<?> listarSoftwareDTOPorSerial(@PathVariable String serial) {
+        try {
+            List<EquipoDeComputo_SoftwareRespuesta> lista = service.obtenerSoftwareDTOPorSerial(serial);
+            return ResponseEntity.ok(lista);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
 
 }

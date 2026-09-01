@@ -11,14 +11,21 @@ export class ConsultarBackupInformacionService {
 
   constructor(private http: HttpClient) { }
 
-  listarPorBackup(backupCodigo: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/por-backup/${backupCodigo}`);
+  // Obtener configuraciones por software (antes por backup)
+  listarPorSoftware(softwareCodigo: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/por-software/${softwareCodigo}`);
+  }
+
+  // Obtener configuraciones por software y tipo
+  listarPorSoftwareYTipo(softwareCodigo: number, tipo: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/por-software/${softwareCodigo}/tipo/${tipo}`);
   }
 
   listarActivos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/activos`);
   }
 
+  // Busqueda por criterios (ahora usa softwareCodigo)
   buscarPorCriterios(
     nombre: string,
     frecuencia: string,
@@ -26,8 +33,8 @@ export class ConsultarBackupInformacionService {
     ubicacionExcluida: string | null,
     dia: number | null,
     hora: string | null,
-    backupCodigo: number,
-    tipo: string                    // tipo ("EQUIPO" o "CORREO")
+    softwareCodigo: number,
+    tipo: string
   ): Observable<any> {
     const params = new HttpParams()
       .set('nombre', nombre)
@@ -36,17 +43,14 @@ export class ConsultarBackupInformacionService {
       .set('ubicacionExcluida', ubicacionExcluida || '')
       .set('dia', dia !== null && dia !== undefined ? dia.toString() : '')
       .set('hora', hora || '')
-      .set('backupCodigo', backupCodigo.toString())
+      .set('softwareCodigo', softwareCodigo.toString())  
       .set('tipo', tipo);
 
     return this.http.get<any>(`${this.apiUrl}/buscar`, { params });
   }
 
-  listarPorBackupYTipo(backupCodigo: number, tipo: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/por-backup/${backupCodigo}/tipo/${tipo}`);
+  obtenerPorCodigo(codigo: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${codigo}`);
   }
 
-  obtenerPorCodigo(codigo: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/backup-informacion/${codigo}`);
-  }
 }

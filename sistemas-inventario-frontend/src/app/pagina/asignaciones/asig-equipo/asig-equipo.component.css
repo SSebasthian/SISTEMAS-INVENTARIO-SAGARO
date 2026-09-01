@@ -443,7 +443,7 @@
     margin-left: -90px;
 }
 
-.seleccionado-fecha .fecha-campo.asignado{
+.seleccionado-fecha .fecha-campo.asignado {
     margin-left: -160px;
 }
 
@@ -603,9 +603,10 @@
 
 /* VISTA DE ICONO SOFTWARE */
 
-.detalle-grid-aplicacion {
+.detalle-grid-aplicacion,
+.detalle-grid-software {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
     padding: 8px 6px;
     background: #f8f9fa;
@@ -614,7 +615,8 @@
     margin-top: 7px;
 }
 
-.detalle-grid-aplicacion.opcional {
+.detalle-grid-aplicacion.opcional,
+.detalle-grid-software.opcional {
     grid-template-columns: repeat(3, 1fr);
     max-height: 145px;
     overflow-x: hidden;
@@ -623,6 +625,7 @@
 
 /* Scroll Chrome, Edge, Opera */
 .detalle-grid-aplicacion::-webkit-scrollbar,
+.detalle-grid-software::-webkit-scrollbar,
 .lista-empleados::-webkit-scrollbar,
 .lista-software-opcional::-webkit-scrollbar,
 .contenedor-correos::-webkit-scrollbar,
@@ -633,8 +636,9 @@
 }
 
 .detalle-grid-aplicacion::-webkit-scrollbar-track,
-.lista-empleados::-webkit-scrollbar-track ,
-.lista-software-opcional::-webkit-scrollbar-track ,
+.detalle-grid-software::-webkit-scrollbar-track,
+.lista-empleados::-webkit-scrollbar-track,
+.lista-software-opcional::-webkit-scrollbar-track,
 .contenedor-correos::-webkit-scrollbar-track,
 .ip-body::-webkit-scrollbar-track,
 .ip-grid::-webkit-scrollbar-track {
@@ -643,6 +647,7 @@
 }
 
 .detalle-grid-aplicacion::-webkit-scrollbar-thumb,
+.detalle-grid-software::-webkit-scrollbar-thumb,
 .lista-empleados::-webkit-scrollbar-thumb,
 .lista-software-opcional::-webkit-scrollbar-thumb,
 .contenedor-correos::-webkit-scrollbar-thumb,
@@ -654,9 +659,7 @@
 
 
 .detalle-grid-aplicacion .software-card {
-    width: 70px;
-    height: 50px;
-    overflow: hidden;
+    width: 80px;
     cursor: pointer;
     font-size: 11px;
     text-align: center;
@@ -666,7 +669,6 @@
 
 .detalle-grid-aplicacion.obligatorio .software-card {
     height: 38px;
-    ;
 }
 
 .detalle-grid-aplicacion.opcional .software-card {
@@ -690,6 +692,7 @@
 .detalle-grid-aplicacion .software-card.seleccionado {
     color: #3fb57a !important;
 }
+
 
 
 
@@ -1230,7 +1233,7 @@
     margin-top: 10px;
     padding: 4px 0;
     justify-content: center;
-    max-height: 220px;
+    max-height: 200px;
     overflow-y: auto;
     align-content: flex-start;
 }
@@ -1776,7 +1779,7 @@
     border-radius: 4px;
     background: #3f51b5;
     border: 1px solid #1a237e;
-} 
+}
 
 /* Grid de IPs */
 .ip-grid {
@@ -1847,7 +1850,9 @@
     width: 24px;
     height: 24px;
     color: #f59e0b;
-}   */
+}
+
+*/
 
 /* Footer del modal */
 .modal-ip .modal-footer {
@@ -1912,10 +1917,200 @@
 }
 
 @keyframes resaltarBoton {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.05);
     }
 }
+
+
+
+
+/* ============================================================ */
+/* SOFTWARE OBLIGATORIO                                         */
+/* ============================================================ */
+
+
+/* Imagen dentro del contenedor */
+.software-icono-asignado {
+    width: 30px;
+    height: 30px;
+    display: block;
+}
+
+.software-card .software-card-header .software-info-asignado {
+    color: #595959 !important;
+    font-size: 12px;
+    font-weight: 500;
+    width: 95px;
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.software-icon-asignado {
+    width: 100px;
+    height: 23px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding-bottom: 3px;
+    margin-top: 1.5px;
+}
+
+
+/* ============================================================ */
+/* SOFTWARE INSTALADO                                           */
+/* ============================================================ */
+
+
+.software-icono-container {
+    width: 83%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+}
+
+.software-icono-opcional {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+
+.icono-default {
+    font-size: 25px !important;
+    width: 25px !important;
+    height: 25px !important;
+    color: #6c757d;
+}
+
+.software-nombre {
+    text-overflow: ellipsis;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.software-nombre-opcional {
+    font-size: 12px;
+    font-weight: 500;
+    color: #595959;
+    max-width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.software-tipo-opcional {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: 4px;
+    text-align: center;
+    padding-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+
+
+.sin-datos mat-icon {
+    color: #ccc;
+}
+
+
+.software-card .software-card-header .software-icon-asignado mat-icon.mat-icon {
+    color: #6c757d !important;
+}
+
+.asterisco-obligatorio {
+    color: #dc3545 !important;
+    font-weight: bold;
+    margin-left: 2px;
+    font-size: 16px;
+}
+
+
+
+/* Mensaje sin datos */
+.sin-datos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 30px 20px;
+    color: #999;
+    font-size: 14px;
+    background: #fafafa;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+
+/*******************************************************************************/
+/* DISEÑO FLECHAS PARA VER LA ASIGNACION DE EQUIPO (SOLO CUANDO ESTA ASIGNADO) */
+/*******************************************************************************/
+
+
+
+
+.modal-contenedor {
+    position: relative;
+    overflow: visible; 
+}
+
+
+.flecha-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20; 
+    
+    padding: 0px;
+    margin: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    outline: none;
+    border: none;
+    background:transparent;
+}
+
+.flecha-nav mat-icon {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    color: #3f51b5;
+    background: #ffffff;
+    border-radius: 20%;
+}
+
+
+.flecha-nav[disabled] {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none; 
+}
+
+
+.flecha-izquierda {
+    left: -45px;
+}
+
+
+.flecha-derecha {
+    right: -45px; 
+} 

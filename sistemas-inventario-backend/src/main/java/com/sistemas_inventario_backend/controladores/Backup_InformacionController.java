@@ -28,17 +28,18 @@ public class Backup_InformacionController {
         return service.listarTodos();
     }
 
-    @GetMapping("/por-backup/{backupCodigo}")
-    public List<Backup_Informacion> listarPorBackup(@PathVariable Long backupCodigo) {
-        return service.listarPorBackup(backupCodigo);
+
+    @GetMapping("/por-software/{softwareCodigo}")
+    public List<Backup_Informacion> listarPorSoftware(@PathVariable Long softwareCodigo) {
+        return service.listarPorSoftware(softwareCodigo);
     }
 
     // NUEVO ENDPOINT: listar por backup y tipo
-    @GetMapping("/por-backup/{backupCodigo}/tipo/{tipo}")
-    public List<Backup_InformacionRespuesta> listarPorBackupYTipo(
-            @PathVariable Long backupCodigo,
+    @GetMapping("/por-software/{softwareCodigo}/tipo/{tipo}")
+    public List<Backup_InformacionRespuesta> listarPorSoftwareYTipo(
+            @PathVariable Long softwareCodigo,
             @PathVariable String tipo) {
-        return service.listarPorBackupYTipo(backupCodigo, tipo);
+        return service.listarPorSoftwareYTipo(softwareCodigo, tipo);
     }
 
 
@@ -77,7 +78,7 @@ public class Backup_InformacionController {
     public ResponseEntity<?> desactivar(@PathVariable Long codigo) {
         try {
             service.desactivar(codigo);
-            return ResponseEntity.ok(Map.of("mensaje", "Informacion de backup desactivada"));
+            return ResponseEntity.ok(Map.of("mensaje", "Información de backup desactivada"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

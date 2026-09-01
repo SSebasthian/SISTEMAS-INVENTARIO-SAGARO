@@ -1,6 +1,7 @@
 package com.sistemas_inventario_backend.servicios;
 
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.EquipoDeComputo_SoftwareRespuesta;
 import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.repositorios.*;
 import lombok.RequiredArgsConstructor;
@@ -109,7 +110,6 @@ public class EquipoDeComputo_SoftwareService {
     }
 
 
-
     @Transactional
     public void desactivarSoftwarePorAsignacion(Long asignacionConsecutivo) {
         List<EquipoDeComputo_Software> softwares = repository
@@ -128,4 +128,36 @@ public class EquipoDeComputo_SoftwareService {
         es.setActivo(false);
         repository.save(es);
     }
+
+
+    public List<EquipoDeComputo_SoftwareRespuesta> obtenerSoftwareDTOPorSerial(String serial) {
+        List<EquipoDeComputo_Software> lista = repository.findByEquipoSerialAndActivoTrue(serial);
+        return lista.stream()
+                .map(es -> {
+                    EquipoDeComputo_SoftwareRespuesta dto = new EquipoDeComputo_SoftwareRespuesta();
+                    dto.setSoftwareCodigo(es.getSoftware().getCodigo());
+                    dto.setNombreSoftware(es.getSoftware().getNombre());
+                    dto.setRutaImagen(es.getSoftware().getRutaImagen());
+
+                    // ✅ ASIGNAR tipoCodigo
+                    if (es.getSoftware().getTipo() != null) {
+                        dto.setTipoCodigo(es.getSoftware().getTipo().getCodigo());  // <-- FALTA ESTA LÍNEA
+                        dto.setTipoSoftware(es.getSoftware().getTipo().getDescripcion());
+                    } else {
+                        dto.setTipoCodigo(0L);
+                        dto.setTipoSoftware("Sin tipo");
+                    }
+
+                    if (es.getPolitica() != null) {
+                        dto.setPoliticaCodigo(es.getPolitica().getCodigo());
+                    } else {
+                        dto.setPoliticaCodigo(0L);
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+
 }

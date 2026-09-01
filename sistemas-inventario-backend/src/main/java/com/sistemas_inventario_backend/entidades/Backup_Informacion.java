@@ -35,6 +35,6 @@ public class Backup_Informacion {
     private String tipo; // "EQUIPO" o "CORREO"
 
     @ManyToOne
-    @JoinColumn(name = "backup_codigo", nullable = false)
-    private Backup backup;
+    @JoinColumn(name = "software_codigo", nullable = false)
+    private Software software;
 }
