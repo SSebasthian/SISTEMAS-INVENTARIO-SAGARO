@@ -5,6 +5,7 @@ import com.sistemas_inventario_backend.DTOs.Solicitud.AsignacionesSolicitud;
 import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionesRespuesta;
 import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.repositorios.*;
+import com.sistemas_inventario_backend.seguridad.SeguridadClave;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -131,7 +132,7 @@ public class EquipoDeComputo_AsignacionService {
                             bd.getTipo()  // "CORREO"
                     );
                 } catch (Exception e) {
-                    // Si falla la busqueda, no importa, se creará uno nuevo
+                    // Si falla la busqueda, no importa, se creara uno nuevo
                 }
 
                 Long backupInfoCodigo;
@@ -334,4 +335,119 @@ public class EquipoDeComputo_AsignacionService {
             return dto;
         }).collect(Collectors.toList());
     }
+
+
+    //ACTUALIZAR DETALLE EQUIPO ASIGNACION
+
+    @Transactional
+    public void actualizarDetalleEquipo(String serial, EquipoDeComputo_Detalle nuevoDetalle, Integer ipNumero) {
+        // 1. Obtener asignacion activa
+        EquipoDeComputo_Asignacion asignacion = asignacionRepository
+                .findFirstBySerialActivoAndActivoTrue(serial);
+        if (asignacion == null) {
+            throw new RuntimeException("El equipo no tiene una asignacion activa");
+        }
+
+        // 2. Obtener el detalle actual
+        EquipoDeComputo_Detalle detalle = detalleRepository
+                .findByAsignacionConsecutivo(asignacion.getConsecutivo())
+                .orElseThrow(() -> new RuntimeException("No se encontro detalle para esta asignacion"));
+
+        // 3. Actualizar campos del detalle (con cifrado de claves)
+        if (nuevoDetalle.getNombreEquipo() != null) {
+            detalle.setNombreEquipo(nuevoDetalle.getNombreEquipo());
+        }
+        if (nuevoDetalle.getNombreUsuario() != null) {
+            detalle.setNombreUsuario(nuevoDetalle.getNombreUsuario());
+        }
+        if (nuevoDetalle.getClaveUsuario() != null) {
+            String clavePlana = nuevoDetalle.getClaveUsuario();
+            if (clavePlana.isEmpty()) {
+                detalle.setClaveUsuario(null);
+            } else {
+                try {
+                    detalle.setClaveUsuario(SeguridadClave.encrypt(clavePlana));
+                } catch (Exception e) {
+                    throw new RuntimeException("Error al cifrar la clave de usuario: " + e.getMessage(), e);
+                }
+            }
+        }
+        if (nuevoDetalle.getNombreUsuarioAdministrador() != null) {
+            detalle.setNombreUsuarioAdministrador(nuevoDetalle.getNombreUsuarioAdministrador());
+        }
+        if (nuevoDetalle.getClaveUsuarioAdministrador() != null) {
+            String clavePlana = nuevoDetalle.getClaveUsuarioAdministrador();
+            if (clavePlana.isEmpty()) {
+                detalle.setClaveUsuarioAdministrador(null);
+            } else {
+                try {
+                    detalle.setClaveUsuarioAdministrador(SeguridadClave.encrypt(clavePlana));
+                } catch (Exception e) {
+                    throw new RuntimeException("Error al cifrar la clave de administrador: " + e.getMessage(), e);
+                }
+            }
+        }
+        if (nuevoDetalle.getNombreUsuarioAdicional() != null) {
+            detalle.setNombreUsuarioAdicional(nuevoDetalle.getNombreUsuarioAdicional());
+        }
+        if (nuevoDetalle.getClaveUsuarioAdicional() != null) {
+            String clavePlana = nuevoDetalle.getClaveUsuarioAdicional();
+            if (clavePlana.isEmpty()) {
+                detalle.setClaveUsuarioAdicional(null);
+            } else {
+                try {
+                    detalle.setClaveUsuarioAdicional(SeguridadClave.encrypt(clavePlana));
+                } catch (Exception e) {
+                    throw new RuntimeException("Error al cifrar la clave adicional: " + e.getMessage(), e);
+                }
+            }
+        }
+
+        // 4. Manejar la IP
+        if (ipNumero != null) {
+            // Buscar la IP solicitada
+            IP nuevaIp = ipRepository.findById(ipNumero)
+                    .orElseThrow(() -> new RuntimeException("IP no encontrada: " + ipNumero));
+
+            // Validar que la IP este disponible (si no es la misma que ya tiene)
+            if (detalle.getIp() == null || !detalle.getIp().getIp().equals(ipNumero)) {
+                // Liberar IP anterior si existe
+                if (detalle.getIp() != null) {
+                    IP ipAnterior = detalle.getIp();
+                    ipAnterior.setActivo(false);
+                    ipAnterior.setCatalogoCodigo(1L);
+                    ipAnterior.setDispositivoTipoCodigo(null);
+                    ipRepository.save(ipAnterior);
+                }
+
+                // Verificar que la nueva IP no este ocupada por otro equipo
+                if (nuevaIp.getActivo()) {
+                    throw new RuntimeException("La IP " + ipNumero + " ya esta ocupada");
+                }
+
+                // Asignar la nueva IP al detalle
+                detalle.setIp(nuevaIp);
+                // Marcar IP como ocupada
+                nuevaIp.setActivo(true);
+                nuevaIp.setCatalogoCodigo(1L);
+                nuevaIp.setDispositivoTipoCodigo(asignacion.getTipo() != null ? asignacion.getTipo().getCodigo() : null);
+                ipRepository.save(nuevaIp);
+            }
+        } else {
+            // Si se envía ip = null, liberar la IP actual (opcional)
+            if (detalle.getIp() != null) {
+                IP ipActual = detalle.getIp();
+                ipActual.setActivo(false);
+                ipActual.setCatalogoCodigo(1L);
+                ipActual.setDispositivoTipoCodigo(null);
+                ipRepository.save(ipActual);
+                detalle.setIp(null);
+            }
+        }
+
+        // 5. Guardar el detalle actualizado
+        detalleRepository.save(detalle);
+    }
+
+
 }

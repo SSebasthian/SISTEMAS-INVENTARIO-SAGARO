@@ -164,7 +164,8 @@ export class AsigEquipoComponent {
   programaSeleccionadoEsNoAplica: boolean = false;
 
 
-
+  modoEdicion: boolean = false;
+  intentadoGuardar: boolean = false;
 
 
   constructor(
@@ -288,11 +289,16 @@ export class AsigEquipoComponent {
 
   cargarCorreos(): void {
     this.consultarCorreoService.listarDisponibles().subscribe({
-      next: (data) => (this.correosList = data),
+      next: (data) => {
+        this.correosList = data.map(c => ({
+          ...c,
+          codigo: Number(c.codigo)
+        }));
+      },
       error: (err) => {
         console.error('Error al cargar correos:', err);
         this.notificacionSnackbarService.error('Error', 'No se pudieron cargar los correos');
-      },
+      }
     });
   }
 
@@ -357,7 +363,7 @@ export class AsigEquipoComponent {
         this.softwareAsignadoList = software;
         const backupSoftware = software.find((s) => s.tipoCodigo === 2);
         this.softwareSeleccionadoBackup = backupSoftware || null;
-        console.log('Software asignado:', this.softwareAsignadoList);
+        // console.log('Software asignado:', this.softwareAsignadoList);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -475,19 +481,13 @@ export class AsigEquipoComponent {
     const claveUsuario = d.claveUsuario?.trim() || '';
     const usuarioAdicional = d.nombreUsuarioAdicional?.trim() || '';
     const claveAdicional = d.claveUsuarioAdicional?.trim() || '';
-    const adicionalValido =
-      (usuarioAdicional === '' && claveAdicional === '') ||
+    const adicionalValido = (usuarioAdicional === '' && claveAdicional === '') ||
       (usuarioAdicional !== '' && claveAdicional !== '');
     return (
       nombreEquipo !== '' &&
-      ip !== null &&
-      ip !== undefined &&
-      ip >= 1 &&
-      ip <= 255 &&
-      usuarioAdmin !== '' &&
-      claveAdmin !== '' &&
-      usuario !== '' &&
-      claveUsuario !== '' &&
+      ip !== null && ip !== undefined && ip >= 1 && ip <= 255 &&
+      usuarioAdmin !== '' && claveAdmin !== '' &&
+      usuario !== '' && claveUsuario !== '' &&
       adicionalValido
     );
   }
@@ -532,28 +532,20 @@ export class AsigEquipoComponent {
   }
 
   get correosFiltrados(): any[] {
-    const codigosSeleccionados = this.correosFormulario.map((c) => c.correoCodigo);
-    const resultado: any[] = [];
-
-    // Agregar "NO APLICA" solo si no esta ya seleccionado
-    if (!codigosSeleccionados.includes(0)) {
-      resultado.push({ codigo: 0, direccion: 'NO APLICA' });
-    }
-
-    // Agregar los correos reales (excluir codigo 0 por si acaso)
-    resultado.push(...this.correosList.filter(c => c.codigo !== 0 && !codigosSeleccionados.includes(c.codigo)));
-    return resultado;
+    const codigosSeleccionados = this.correosFormulario.map((c) => Number(c.correoCodigo));
+    // Devolver todos los correos de la lista (incluyendo el 0) que no esten seleccionados
+    return this.correosList.filter(c => !codigosSeleccionados.includes(Number(c.codigo)));
   }
 
   onCorreoChange(): void {
+    console.log('correo cambiado a:', this.panelCorreo.correoCodigo);
     if (this.esCorreoNoAplica) {
       this.panelCorreo.realizarBackup = false;
     }
   }
 
   get esCorreoNoAplica(): boolean {
-    const codigo = Number(this.panelCorreo.correoCodigo);
-    return codigo === 0;
+    return Number(this.panelCorreo.correoCodigo) === 0;
   }
 
 
@@ -1188,7 +1180,8 @@ export class AsigEquipoComponent {
 
         // Si ya tiene un ID de backup_informacion, lo reutilizamos
         if (bk.backupInformacionCodigo) {
-          backups.push({ backupInformacionCodigo: bk.backupInformacionCodigo, correoCodigo: 0 });
+          // Los backups de equipo NO deben llevar correoCodigo
+          backups.push({ backupInformacionCodigo: bk.backupInformacionCodigo });
           continue;
         }
 
@@ -1255,13 +1248,18 @@ export class AsigEquipoComponent {
     const correosConBackup: any[] = [];
     if (this.softwareSeleccionado.correos && this.softwareSeleccionado.correos.length > 0) {
       for (const item of this.softwareSeleccionado.correos) {
+        // Ignorar "NO APLICA" (codigo 0)
+        if (Number(item.correoCodigo) === 0) continue;
+
         if (item.realizarBackup && item.backup) {
           if (item.backup.backupInformacionCodigo) {
+            // Si ya tiene ID de backup, lo agregamos a la lista de backups
             backups.push({
               backupInformacionCodigo: item.backup.backupInformacionCodigo,
               correoCodigo: Number(item.correoCodigo),
             });
           } else {
+            // Si no tiene ID, lo guardamos en correosConBackup para crearlo despues
             correosConBackup.push({
               correoCodigo: Number(item.correoCodigo),
               backupData: {
@@ -1323,11 +1321,7 @@ export class AsigEquipoComponent {
       Number(s.politicaCodigo) >= 0
     );
 
-    console.log('=== SOFTWARES A ENVIAR ===');
-    console.log('softwares original:', softwares);
-    console.log('softwares filtrados:', softwaresLimpios);
-    console.log('antivirus seleccionado:', this.softwareSeleccionado.antivirus);
-    console.log('==========================');
+
 
     const asignacionPayload = {
       empleadoCedula: this.empleadoSeleccionado.cedula,
@@ -1351,6 +1345,7 @@ export class AsigEquipoComponent {
           const recursoTipoIdCorreo = 1;
           const asignacionesRecursos: Observable<any>[] = [];
           for (const item of this.correosFormulario) {
+            // Excluir "NO APLICA"
             if (Number(item.correoCodigo) === 0) continue;
             const payload = {
               empleadoCedula: this.empleadoSeleccionado?.cedula,
@@ -1965,7 +1960,7 @@ export class AsigEquipoComponent {
     const actual = this.softwareSeleccionado.antivirus;
     if (actual) {
       this.panelData.antivirusCodigo = actual.antivirusCodigo || null;
-      // Si es "SIN PROTECCION", forzar política 1
+      // Si es "SIN PROTECCION", forzar politica 1
       if (actual.antivirusCodigo === 1) {
         this.panelData.politicaCodigo = 1;
       } else {
@@ -2004,37 +1999,38 @@ export class AsigEquipoComponent {
 
   guardarPanel(): void {
     if (this.panelTipo === 'correo') {
-      // 1. Si el correo seleccionado es NO APLICA y aun no esta en la lista, agregarlo automaticamente
-      if (this.panelCorreo.correoCodigo == 0) {
-        const yaExiste = this.correosFormulario.some(c => c.correoCodigo === 0);
-        if (!yaExiste) {
-          this.correosFormulario.push({
-            correoCodigo: 0,
-            direccion: 'NO APLICA',
-            realizarBackup: false,
-            backup: null
-          });
-          // Limpiar la seleccion para que no quede "NO APLICA" en el desplegable
-          this.panelCorreo.correoCodigo = null;
-        }
+      const codigoSeleccionado = Number(this.panelCorreo.correoCodigo);
+
+      // CASO 1: NO APLICA
+      if (codigoSeleccionado === 0) {
+        // Agregamos un elemento especial a la lista
+        this.correosFormulario = [{ correoCodigo: 0, direccion: 'NO APLICA', realizarBackup: false, backup: null }];
+        this.panelCorreo.correoCodigo = null;
+        this.panelCorreo.realizarBackup = false;
+        this.softwareSeleccionado.correos = [...this.correosFormulario];
+        this.cdr.detectChanges();
+        this.notificacionSnackbarService.success('Exito', 'Configuracion guardada (NO APLICA)');
+        this.cerrarPanel();
+        return;
       }
 
-      // 2. Si la lista sigue vacia (no hay correo real ni NO APLICA), mostrar advertencia
+      // CASO 2: lista vacía y no se selecciono NO APLICA
       if (this.correosFormulario.length === 0) {
         this.notificacionSnackbarService.warning(
           'Agregue en lista',
-          'Agregar Correo Sin Backup para poder guardar la configuracion'
+          'Debe agregar al menos un correo o seleccionar NO APLICA'
         );
         this.mostrarAyudaCorreo = true;
         setTimeout(() => (this.mostrarAyudaCorreo = false), 3500);
         return;
       }
 
-      // 3. Guardar los correos seleccionados
+      // CASO 3: guardar correos reales (filtramos el 0 por si acaso)
       this.softwareSeleccionado.correos = [...this.correosFormulario];
       this.cdr.detectChanges();
       this.notificacionSnackbarService.success('Exito', 'Correos guardados');
       this.cerrarPanel();
+      return;
     }
 
     this.mostrarAyudaCorreo = false;
@@ -2449,5 +2445,126 @@ export class AsigEquipoComponent {
     }
   }
 
+
+
+
+  /*** Activa el modo edicion copiando los datos actuales al objeto editable 'detalle'.  */
+
+  activarEdicion(): void {
+    if (this.mostrarDevolucion) return;
+    this.modoEdicion = true;
+
+    if (this.detalleEquipo) {
+      // Función auxiliar para limpiar claves
+      const limpiarClave = (valor: string | null | undefined): string => {
+        if (!valor || valor === '******') return '';
+        return valor;
+      };
+
+      this.detalle = {
+        nombreEquipo: this.detalleEquipo.nombreEquipo || '',
+        ip: this.detalleEquipo.ip ?? null,
+        nombreUsuarioAdministrador: this.detalleEquipo.nombreUsuarioAdministrador || 'SISTEMAS',
+        claveUsuarioAdministrador: limpiarClave(this.detalleEquipo.claveUsuarioAdministrador),
+        nombreUsuario: this.detalleEquipo.nombreUsuario || '',
+        claveUsuario: limpiarClave(this.detalleEquipo.claveUsuario),
+        nombreUsuarioAdicional: this.detalleEquipo.nombreUsuarioAdicional || '',
+        claveUsuarioAdicional: limpiarClave(this.detalleEquipo.claveUsuarioAdicional),
+      };
+    } else {
+      this.detalle = {
+        nombreEquipo: '',
+        ip: null,
+        nombreUsuarioAdministrador: 'SISTEMAS',
+        claveUsuarioAdministrador: '',
+        nombreUsuario: '',
+        claveUsuario: '',
+        nombreUsuarioAdicional: '',
+        claveUsuarioAdicional: '',
+      };
+    }
+
+    this.paso = 1;
+    this.cdr.detectChanges();
+  }
+
+
+  getClaveDisplay(valor: string | null | undefined): string {
+    if (!valor || valor === '******') {
+      return '';
+    }
+    return valor;
+  }
+
+
+  /**
+   * Cancela la edicion y restaura los datos originales.
+   */
+  cancelarEdicion(): void {
+    this.modoEdicion = false;
+    this.intentadoGuardar = false; // Resetear
+    this.cargarDetalleEquipo(this.equipo.serial);
+    this.cargarSoftwareAsignado(this.equipo.serial);
+    this.paso = 1;
+  }
+
+
+
+
+  /************************************************ */
+  /*** Guarda los cambios en el detalle del equipo. */
+  /*************************************************/
+
+
+
+
+  guardarEdicion(): void {
+    this.intentadoGuardar = true; // Marcar que se intento guardar
+
+    // Validar campos obligatorios
+    if (!this.esPaso1Valido) {
+      this.notificacionSnackbarService.warning('Advertencia', 'Complete todos los campos obligatorios');
+      // No retornamos, solo mostramos la advertencia y los asteriscos se mostrarán
+      // Porque la validacion fallo, no enviamos la peticion
+      // Podemos retornar para no enviar datos inválidos
+      return;
+    }
+
+    // Si pasa la validacion, resetear el flag (opcional)
+    this.intentadoGuardar = false;
+
+    const payload = {
+      detalle: {
+        nombreEquipo: this.detalle.nombreEquipo || '',
+        nombreUsuario: this.detalle.nombreUsuario || '',
+        claveUsuario: this.detalle.claveUsuario || '',
+        nombreUsuarioAdministrador: this.detalle.nombreUsuarioAdministrador || 'SISTEMAS',
+        claveUsuarioAdministrador: this.detalle.claveUsuarioAdministrador || '',
+        nombreUsuarioAdicional: this.detalle.nombreUsuarioAdicional || '',
+        claveUsuarioAdicional: this.detalle.claveUsuarioAdicional || '',
+      },
+      ip: this.detalle.ip ?? null,
+    };
+
+    this.registrarAsignacionesService.actualizarDetalleEquipo(this.equipo.serial, payload)
+      .subscribe({
+        next: () => {
+          this.notificacionSnackbarService.success('Exito', 'Detalle del equipo actualizado');
+          this.modoEdicion = false;
+          this.intentadoGuardar = false; // Resetear al exito
+          this.cargarDetalleEquipo(this.equipo.serial);
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          console.error('Error al actualizar detalle:', err);
+          this.notificacionSnackbarService.error('Error', err.error?.error || 'Error al actualizar');
+          // No resetear intentadoGuardar para que los errores sigan visibles
+        }
+      });
+  }
+
+
 }
+
+
 

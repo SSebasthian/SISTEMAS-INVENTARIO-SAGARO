@@ -3,6 +3,7 @@ package com.sistemas_inventario_backend.controladores;
 import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionPorEmpleado;
 import com.sistemas_inventario_backend.DTOs.Solicitud.AsignacionesSolicitud;
 import com.sistemas_inventario_backend.DTOs.Respuesta.AsignacionesRespuesta;
+import com.sistemas_inventario_backend.entidades.EquipoDeComputo_Detalle;
 import com.sistemas_inventario_backend.servicios.EquipoDeComputo_AsignacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,6 @@ public class EquipoDeComputo_AsignacionController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-
 
 
     // ========== DEVOLVER ==========
@@ -106,5 +106,34 @@ public class EquipoDeComputo_AsignacionController {
     public ResponseEntity<?> obtenerAsignacionesPorEmpleadoConDetalle(@PathVariable String cedula) {
         List<AsignacionPorEmpleado> asignaciones = equipoDeComputoAsignacionesService.obtenerAsignacionesPorEmpleadoConDetalle(cedula);
         return ResponseEntity.ok(asignaciones);
+    }
+
+
+    @PutMapping("/activos/detalle/{serial}")
+    public ResponseEntity<?> actualizarDetalleEquipo(
+            @PathVariable String serial,
+            @RequestBody Map<String, Object> payload) {
+        try {
+            // Extraer detalle e ip del payload
+            Map<String, Object> detalleMap = (Map<String, Object>) payload.get("detalle");
+            Integer ipNumero = payload.get("ip") != null ? ((Number) payload.get("ip")).intValue() : null;
+
+            // Convertir el mapa a un objeto Detalle (o usar un DTO específico)
+            EquipoDeComputo_Detalle detalle = new EquipoDeComputo_Detalle();
+            if (detalleMap != null) {
+                detalle.setNombreEquipo((String) detalleMap.get("nombreEquipo"));
+                detalle.setNombreUsuario((String) detalleMap.get("nombreUsuario"));
+                detalle.setClaveUsuario((String) detalleMap.get("claveUsuario"));
+                detalle.setNombreUsuarioAdministrador((String) detalleMap.get("nombreUsuarioAdministrador"));
+                detalle.setClaveUsuarioAdministrador((String) detalleMap.get("claveUsuarioAdministrador"));
+                detalle.setNombreUsuarioAdicional((String) detalleMap.get("nombreUsuarioAdicional"));
+                detalle.setClaveUsuarioAdicional((String) detalleMap.get("claveUsuarioAdicional"));
+            }
+
+            equipoDeComputoAsignacionesService.actualizarDetalleEquipo(serial, detalle, ipNumero);
+            return ResponseEntity.ok(Map.of("mensaje", "Detalle actualizado correctamente"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

@@ -71,4 +71,14 @@ export class RegistrarAsignacionesService {
     return this.http.post(`${this.apiUrlConsultarAsignaciones}/ips/inicializar`, {});
   }
 
+
+
+
+
+  // EDITAR ASIGNACION ACTIVA
+
+
+  actualizarDetalleEquipo(serial: string, payload: any): Observable<any> {
+    return this.http.put(`${this.apiUrlConsultarAsignaciones}/asignaciones/activos/detalle/${serial}`, payload);
+  }
 }

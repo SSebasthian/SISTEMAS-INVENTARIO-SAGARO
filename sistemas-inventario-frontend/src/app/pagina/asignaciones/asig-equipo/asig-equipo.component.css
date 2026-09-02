@@ -515,6 +515,7 @@
     margin-left: 11px;
 }
 
+
 .detalle-campo h4 {
     margin: 0;
 }
@@ -529,6 +530,21 @@
     font-size: 24px;
     width: 24px;
     height: 24px;
+}
+
+
+.btn-editar-titulo {
+    margin-left: auto;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-editar-titulo mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
 }
 
 
@@ -1468,7 +1484,8 @@
 /* Boton Reasignar */
 .btn-reasignar,
 .btn-asignar,
-.btn-confirmar-reasignar {
+.btn-confirmar-reasignar,
+.btn-guardar {
     background: #34C759;
     border: none;
     color: white;
@@ -1476,7 +1493,8 @@
 
 .btn-reasignar:hover,
 .btn-asignar:hover,
-.btn-confirmar-reasignar:hover {
+.btn-confirmar-reasignar:hover,
+.btn-guardar:hover {
     transform: translateY(-2px);
 }
 
@@ -2114,3 +2132,20 @@
 .flecha-derecha {
     right: -45px; 
 } 
+
+
+/* Estilo para el label del campo en error (texto en rojo) */
+.label-error {
+    color: #e53935 !important;
+}
+
+/* Estilo para el input en error */
+.input-error {
+    border: 2px solid #e53935 !important;
+    background-color: #fff5f5 !important;
+}
+
+.input-error:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.3);
+}
