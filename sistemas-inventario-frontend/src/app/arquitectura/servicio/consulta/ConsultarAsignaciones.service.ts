@@ -40,5 +40,8 @@ export class ConsultarAsignacionesService {
     return this.http.get<any[]>(`${this.apiUrlBase}/equipos-software/serial/${serial}/dto`);
   }
 
-  
+  desactivarSoftwareEquipo(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrlBase}/equipos-software/${id}/desactivar`, {});
+  }
+
 }

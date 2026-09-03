@@ -690,7 +690,6 @@
 .detalle-grid-aplicacion.opcional .software-card {
     width: 80px;
     height: 45px;
-    ;
 }
 
 .detalle-grid-aplicacion .software-card mat-icon {
@@ -2085,7 +2084,7 @@
 
 .modal-contenedor {
     position: relative;
-    overflow: visible; 
+    overflow: visible;
 }
 
 
@@ -2093,8 +2092,8 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 20; 
-    
+    z-index: 20;
+
     padding: 0px;
     margin: 0px;
     display: flex;
@@ -2104,7 +2103,7 @@
     color: #fff;
     outline: none;
     border: none;
-    background:transparent;
+    background: transparent;
 }
 
 .flecha-nav mat-icon {
@@ -2120,7 +2119,7 @@
 .flecha-nav[disabled] {
     opacity: 0.3;
     cursor: not-allowed;
-    pointer-events: none; 
+    pointer-events: none;
 }
 
 
@@ -2130,8 +2129,8 @@
 
 
 .flecha-derecha {
-    right: -45px; 
-} 
+    right: -45px;
+}
 
 
 /* Estilo para el label del campo en error (texto en rojo) */
@@ -2148,4 +2147,119 @@
 .input-error:focus {
     outline: none;
     box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.3);
+}
+
+
+
+
+
+/* SECCION EDITAR SOFTWARE INSTALADO */
+
+
+.software-card.modo-eliminar {
+    position: relative;
+}
+
+.btn-eliminar-software-card mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #e53935;
+}
+
+.btn-eliminar-software-card {
+    position: absolute;
+    top: -5px;
+    right: 1px;
+    border-radius: 5px;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    border: none;
+    transform: scale(1.15);
+    background-color: transparent;
+}
+
+.btn-eliminar-software-card:hover {
+
+    transform: scale(1.30);
+}
+
+
+/* Estilos generales del modal */
+
+.mostrar-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.425);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.mostrar-modal .modal-eliminacion {
+    background-color: #fff;
+    width: 300px;
+    max-width: calc(100% - 40px);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.418);
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.mostrar-modal .modal-eliminacion h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.3;
+    color: #595959;
+}
+
+.mostrar-modal .modal-eliminacion h2 strong {
+    font-size: 20px;
+    color: #c23232d5;
+}
+
+.mostrar-modal .modal-eliminacion hr {
+    margin: 15px 0;
+    border: 0;
+    border-top: 1px solid #aaa;
+}
+
+.mostrar-modal .modal-botones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: 10px;
+}
+
+.mostrar-modal .cancel-button,
+.mostrar-modal .confirm-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #fff;
+}
+
+.mostrar-modal .cancel-button {
+    background: #393e7f;
+}
+
+.mostrar-modal .confirm-button {
+    background: #c23232d5;
+}
+
+.mostrar-modal .cancel-button:hover,
+.mostrar-modal .confirm-button:hover {
+    opacity: 0.9;
 }

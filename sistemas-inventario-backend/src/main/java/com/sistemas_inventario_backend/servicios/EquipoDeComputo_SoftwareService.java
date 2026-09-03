@@ -135,25 +135,22 @@ public class EquipoDeComputo_SoftwareService {
         return lista.stream()
                 .map(es -> {
                     EquipoDeComputo_SoftwareRespuesta dto = new EquipoDeComputo_SoftwareRespuesta();
+                    dto.setNumero(es.getNumero());  // <-- AGREGAR ESTA LÍNEA
                     dto.setSoftwareCodigo(es.getSoftware().getCodigo());
                     dto.setNombreSoftware(es.getSoftware().getNombre());
                     dto.setRutaImagen(es.getSoftware().getRutaImagen());
-
-                    // ✅ ASIGNAR tipoCodigo
                     if (es.getSoftware().getTipo() != null) {
-                        dto.setTipoCodigo(es.getSoftware().getTipo().getCodigo());  // <-- FALTA ESTA LÍNEA
+                        dto.setTipoCodigo(es.getSoftware().getTipo().getCodigo());
                         dto.setTipoSoftware(es.getSoftware().getTipo().getDescripcion());
                     } else {
                         dto.setTipoCodigo(0L);
                         dto.setTipoSoftware("Sin tipo");
                     }
-
                     if (es.getPolitica() != null) {
                         dto.setPoliticaCodigo(es.getPolitica().getCodigo());
                     } else {
                         dto.setPoliticaCodigo(0L);
                     }
-
                     return dto;
                 })
                 .collect(Collectors.toList());

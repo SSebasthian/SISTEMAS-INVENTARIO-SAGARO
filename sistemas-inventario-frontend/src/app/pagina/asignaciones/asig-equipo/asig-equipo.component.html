@@ -403,12 +403,17 @@
                                     <div class="detalle-campo">
                                         <mat-icon>layers</mat-icon>
                                         <label>SOFTWARE INSTALADO</label>
+                                        <a class="btn-editar-titulo" 
+                                                (click)="toggleModoEliminarSoftware()" 
+                                                [class.active]="modoEliminarSoftware">
+                                            <mat-icon>{{ modoEliminarSoftware ? 'close' : 'remove' }}</mat-icon>
+                                        </a>
                                     </div>
                                 </div>
 
-
                                 <div *ngIf="softwareOpcionalAsignado.length > 0" class="detalle-grid-software opcional">
-                                    <div *ngFor="let sw of softwareOpcionalAsignado" class="software-card">
+                                    <div *ngFor="let sw of softwareOpcionalAsignado; let i = index" class="software-card" 
+                                        [class.modo-eliminar]="modoEliminarSoftware">   <!-- Cambio 1 -->
                                         <div class="software-icono-container">
                                             <img *ngIf="sw.rutaImagen" [src]="sw.rutaImagen" [alt]="sw.nombreSoftware"
                                                 class="software-icono-opcional" />
@@ -416,11 +421,15 @@
                                         </div>
                                         <div class="software-nombre-opcional">{{ sw.nombreSoftware | titlecase }}</div>
                                         <div class="software-tipo-opcional">{{ sw.tipoSoftware | titlecase }}</div>
+                                        
+                                        <!-- Boton Eliminar (solo en modo eliminar) -->
+                                        <a *ngIf="modoEliminarSoftware" class="btn-eliminar-software-card" (click)="abrirModalEliminar(sw, i)" >
+                                            <mat-icon>delete_forever</mat-icon>
+                                        </a>
                                     </div>
                                 </div>
+
                             </div>
-
-
 
 
 
@@ -1342,6 +1351,7 @@
                         (click)="confirmarReasignar()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
                         <mat-icon>refresh</mat-icon> Confirmar Reasignacion
                     </button>
+                    
                 </ng-container>
 
                 <!-- CASO 2: NO ESTA ASIGNADA (NUEVA ASIGNACION) -->
@@ -1513,4 +1523,31 @@
 
 
 
+</div>
+
+
+
+
+<!-- Modal de Confirmacion Eliminacion -->
+<div class="mostrar-modal" *ngIf="mostrarModalEliminar">
+    <div class="modal-eliminacion">
+        <h2>
+            ¿Ya desinstalaste el programa
+            <strong>{{ softwareAEliminar?.nombreSoftware | titlecase }}</strong> ?
+        </h2>
+        <hr>
+        <div class="modal-botones">
+            <button
+                class="cancel-button"
+                (click)="cancelarEliminacion()">
+                Cancelar
+            </button>
+            <button
+                class="confirm-button"
+                (click)="eliminarPrograma()">
+                Eliminar
+            </button>
+        </div>
+
+    </div>
 </div>

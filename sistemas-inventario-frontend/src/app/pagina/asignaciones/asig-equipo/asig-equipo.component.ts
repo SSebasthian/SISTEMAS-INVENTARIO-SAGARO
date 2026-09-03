@@ -23,6 +23,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
 import { forkJoin, Observable } from 'rxjs';
 
+
 @Component({
   selector: 'app-asig-equipo',
   imports: [
@@ -166,6 +167,11 @@ export class AsigEquipoComponent {
 
   modoEdicion: boolean = false;
   intentadoGuardar: boolean = false;
+
+  modoEliminarSoftware: boolean = false;
+  mostrarModalEliminar: boolean = false;
+  softwareAEliminar: any = null;
+  indiceAEliminar: number = -1;
 
 
   constructor(
@@ -2562,6 +2568,82 @@ export class AsigEquipoComponent {
         }
       });
   }
+
+
+
+
+  // SECCION EDITAR SOFTWARE INSTALADO
+
+
+  /* Elimina un software instalado (desactivarlo) */
+  toggleModoEliminarSoftware(): void {
+    if (this.softwareOpcionalAsignado.length === 0) {
+      this.notificacionSnackbarService.warning('Sin software', 'No hay software instalado para eliminar');
+      return;
+    }
+    this.modoEliminarSoftware = !this.modoEliminarSoftware;
+    this.cdr.detectChanges();
+  }
+
+
+  // Modal Elimnar programa
+  abrirModalEliminar(software: any, index: number): void {
+    this.softwareAEliminar = software;
+    this.indiceAEliminar = index;
+    this.mostrarModalEliminar = true;
+  }
+
+  cancelarEliminacion(): void {
+    this.mostrarModalEliminar = false;
+    this.softwareAEliminar = null;
+    this.indiceAEliminar = -1;
+  }
+
+
+  async eliminarPrograma(): Promise<void> {
+    if (!this.softwareAEliminar) {
+      this.cancelarEliminacion();
+      return;
+    }
+
+    try {
+      // Llamar al endpoint para desactivar el software
+      await firstValueFrom(
+        this.consultarAsignacionesService.desactivarSoftwareEquipo(this.softwareAEliminar.numero)
+      );
+
+      this.notificacionSnackbarService.success(
+        'Exito',
+        `Software "${this.softwareAEliminar.nombreSoftware}" eliminado`
+      );
+
+      // Eliminar de la lista local (software opcional)
+      this.softwareOpcionalAsignado.splice(this.indiceAEliminar, 1);
+
+      // También eliminar de la lista global (software asignado)
+      const idxGlobal = this.softwareAsignadoList.findIndex(
+        s => s.numero === this.softwareAEliminar.numero
+      );
+      if (idxGlobal !== -1) {
+        this.softwareAsignadoList.splice(idxGlobal, 1);
+      }
+
+      // Si ya no hay software, desactivar el modo eliminar
+      if (this.softwareOpcionalAsignado.length === 0) {
+        this.modoEliminarSoftware = false;
+      }
+
+      // Cerrar modal y limpiar
+      this.cancelarEliminacion();
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Error al eliminar software:', error);
+      this.notificacionSnackbarService.error('Error', 'No se pudo eliminar el software');
+      this.cancelarEliminacion();
+    }
+  }
+
+
 
 
 }

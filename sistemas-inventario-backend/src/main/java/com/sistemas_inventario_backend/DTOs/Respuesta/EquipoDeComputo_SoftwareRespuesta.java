@@ -4,6 +4,7 @@ import lombok.Data;
 @Data
 public class EquipoDeComputo_SoftwareRespuesta {
 
+    private Long numero;
     private Long tipoCodigo;
     private Long softwareCodigo;
     private String nombreSoftware;
@@ -12,3 +13,4 @@ public class EquipoDeComputo_SoftwareRespuesta {
     private Long politicaCodigo;
 
 }
+
