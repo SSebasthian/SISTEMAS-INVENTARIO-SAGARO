@@ -173,6 +173,9 @@ export class AsigEquipoComponent {
   softwareAEliminar: any = null;
   indiceAEliminar: number = -1;
 
+  modoAgregarSoftware: boolean = false;
+  categoriaSeleccionada: number | null = null;
+  softwareSeleccionadosParaAgregar: any[] = [];
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -370,6 +373,38 @@ export class AsigEquipoComponent {
         const backupSoftware = software.find((s) => s.tipoCodigo === 2);
         this.softwareSeleccionadoBackup = backupSoftware || null;
         // console.log('Software asignado:', this.softwareAsignadoList);
+
+        if (this.yaAsignada) {
+          // Recorrer todos los tipos activos
+          this.softwareTiposActivos.forEach(tipo => {
+            const instalados = software.filter(sw => sw.tipoCodigo === tipo.codigo);
+            if (instalados.length > 0) {
+              // Cargar los software disponibles de este tipo
+              if (!this.softwarePorTipo[tipo.codigo]) {
+                this.consultarSoftwareService.listarPorTipo(tipo.codigo).subscribe({
+                  next: (data) => {
+                    const disponibles = data.filter(s => s.codigo !== 0);
+                    this.softwarePorTipo[tipo.codigo] = disponibles;
+
+                    // Mapear los instalados a la estructura de softwareSeleccionadoOpcional
+                    this.softwareSeleccionadoOpcional[tipo.codigo] = disponibles.filter(
+                      sw => instalados.some((inst: any) => inst.softwareCodigo === sw.codigo)
+                    );
+                    this.cdr.detectChanges();
+                  }
+                });
+              } else {
+                // Ya está cargado
+                const disponibles = this.softwarePorTipo[tipo.codigo];
+                this.softwareSeleccionadoOpcional[tipo.codigo] = disponibles.filter(
+                  sw => instalados.some((inst: any) => inst.softwareCodigo === sw.codigo)
+                );
+              }
+            }
+          });
+        }
+
+
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -544,7 +579,7 @@ export class AsigEquipoComponent {
   }
 
   onCorreoChange(): void {
-    console.log('correo cambiado a:', this.panelCorreo.correoCodigo);
+    // console.log('correo cambiado a:', this.panelCorreo.correoCodigo);
     if (this.esCorreoNoAplica) {
       this.panelCorreo.realizarBackup = false;
     }
@@ -1390,6 +1425,16 @@ export class AsigEquipoComponent {
     this.detalleDevolucion = '';
   }
 
+  cancelarDevolucion(): void {
+    this.mostrarDevolucion = false;
+    this.esReasignacion = false;
+    this.fechaDevolucion = '';
+    this.detalleDevolucion = '';
+    this.errorFechaDevolucion = false;
+    this.paso = 1; // Volver al paso 1 para mostrar los datos del equipo
+    this.cdr.detectChanges();
+  }
+
   confirmarDevolver(): void {
     if (!this.fechaDevolucion) {
       this.notificacionSnackbarService.warning('Fecha requerida', 'Seleccione una fecha de devolucion');
@@ -2020,7 +2065,7 @@ export class AsigEquipoComponent {
         return;
       }
 
-      // CASO 2: lista vacía y no se selecciono NO APLICA
+      // CASO 2: lista vacia y no se selecciono NO APLICA
       if (this.correosFormulario.length === 0) {
         this.notificacionSnackbarService.warning(
           'Agregue en lista',
@@ -2197,27 +2242,86 @@ export class AsigEquipoComponent {
   }
 
   toggleSeleccionSoftware(software: any): void {
-    // Office (codigo 4) → seleccion unica
+    // ==========================================
+    // CASO ESPECIAL: OFFICE (codigo 4)
+    // ==========================================
     if (this.panelTipoOpcionalCodigo === 4) {
+
+      // ¿Hay algun Office ya instalado en este equipo?
+      const officeInstalado = this.softwareAsignadoList.find(
+        s => s.tipoCodigo === 4
+      );
+
+      if (officeInstalado) {
+        // Si el software sobre el que se hace clic ES el instalado → no se puede desmarcar
+        if (officeInstalado.softwareCodigo === software.codigo) {
+          this.notificacionSnackbarService.info(
+            'Office ya instalado',
+            `"${software.nombre}" ya esta instalado y no se puede desmarcar.`
+          );
+          return;
+        }
+
+        // Si es otro Office distinto → no se puede seleccionar
+        this.notificacionSnackbarService.warning(
+          'Office bloqueado',
+          `Ya hay un Office instalado ("${officeInstalado.nombreSoftware}"). Primero desinstalelo para poder seleccionar otro.`
+        );
+        return;
+      }
+
+      // No hay Office instalado → comportamiento normal (solo 1 seleccion)
       const yaSeleccionado = this.panelSeleccionesTemporales.some(
-        (s) => s.codigo === software.codigo
+        s => s.codigo === software.codigo
       );
       if (yaSeleccionado) {
         this.panelSeleccionesTemporales = [];
       } else {
         this.panelSeleccionesTemporales = [software];
       }
-    } else {
-      // Otros tipos (Navegador, Visor PDF, etc.) → seleccion multiple
-      const index = this.panelSeleccionesTemporales.findIndex(
-        (s) => s.codigo === software.codigo
-      );
-      if (index > -1) {
-        this.panelSeleccionesTemporales.splice(index, 1);
-      } else {
-        this.panelSeleccionesTemporales.push(software);
-      }
+      this.cdr.detectChanges();
+      return;
     }
+
+    // ==========================================
+    // OTROS TIPOS (Navegador, Visor PDF, etc.)
+    // ==========================================
+
+    // Verificar si el software YA ESTa INSTALADO en este tipo
+    const yaInstalado = this.softwareAsignadoList.some(
+      s => s.softwareCodigo === software.codigo &&
+        s.tipoCodigo === this.panelTipoOpcionalCodigo
+    );
+
+    // Si ya esta instalado, NO se puede desmarcar
+    if (yaInstalado) {
+      const yaSeleccionado = this.panelSeleccionesTemporales.some(
+        s => s.codigo === software.codigo
+      );
+      if (yaSeleccionado) {
+        this.notificacionSnackbarService.info(
+          'Ya instalado',
+          `"${software.nombre}" ya esta instalado y no se puede desmarcar.`
+        );
+        return;
+      }
+      // Si por alguna razon no estaba seleccionado, lo agregamos
+      this.panelSeleccionesTemporales.push(software);
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Seleccion multiple normal
+    const index = this.panelSeleccionesTemporales.findIndex(
+      s => s.codigo === software.codigo
+    );
+    if (index > -1) {
+      this.panelSeleccionesTemporales.splice(index, 1);
+    } else {
+      this.panelSeleccionesTemporales.push(software);
+    }
+
+    this.cdr.detectChanges();
   }
 
 
@@ -2233,28 +2337,76 @@ export class AsigEquipoComponent {
     this.panelTipo = 'softwareOpcional';
     this.panelTipoOpcionalCodigo = tipoCodigo;
 
+    // Cargar la lista de software disponible
     if (!this.softwarePorTipo[tipoCodigo]) {
       this.consultarSoftwareService.listarPorTipo(tipoCodigo).subscribe({
         next: (data) => {
-          // Filtrar para excluir "NO APLICA" (codigo 0)
-          this.softwarePorTipo[tipoCodigo] = data.filter(s => s.codigo !== 0);
-          this.panelSeleccionesTemporales = this.softwareSeleccionadoOpcional[tipoCodigo] || [];
+          const disponibles = data.filter(s => s.codigo !== 0);
+          this.softwarePorTipo[tipoCodigo] = disponibles;
+
+          // Si el equipo ya esta asignado, precargar los instalados
+          if (this.yaAsignada) {
+            this.precargarInstalados(tipoCodigo);
+          } else {
+            // Nueva asignacion: cargar seleccion previa
+            this.panelSeleccionesTemporales = this.softwareSeleccionadoOpcional[tipoCodigo] || [];
+          }
+          this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Error al cargar software del tipo', tipoCodigo, err);
+          console.error('Error al cargar software:', err);
           this.notificacionSnackbarService.error('Error', 'No se pudo cargar el software');
           this.cerrarPanel();
-        },
+        }
       });
     } else {
-      // Si ya esta en cache, aplicar el filtro por si acaso
-      this.softwarePorTipo[tipoCodigo] = this.softwarePorTipo[tipoCodigo].filter(s => s.codigo !== 0);
-      this.panelSeleccionesTemporales = this.softwareSeleccionadoOpcional[tipoCodigo] || [];
+      // Ya esta en cache
+      if (this.yaAsignada) {
+        this.precargarInstalados(tipoCodigo);
+      } else {
+        this.panelSeleccionesTemporales = this.softwareSeleccionadoOpcional[tipoCodigo] || [];
+      }
     }
 
     const tipo = this.softwareTiposActivos.find((t) => t.codigo === tipoCodigo);
     this.panelTitulo = tipo ? this.capitalizarPrimera(tipo.descripcion) : 'Software Opcional';
   }
+
+  // Precarga los software que YA estan instalados (para equipo asignado)
+  private precargarInstalados(tipoCodigo: number): void {
+    const instalados = this.softwareAsignadoList
+      .filter(sw => sw.tipoCodigo === tipoCodigo)
+      .map(sw => sw.softwareCodigo);
+
+    const disponibles = this.softwarePorTipo[tipoCodigo] || [];
+
+    this.panelSeleccionesTemporales = disponibles.filter(
+      sw => instalados.includes(sw.codigo)
+    );
+  }
+
+
+  private marcarInstaladosComoSeleccionados(tipoCodigo: number): void {
+    const instalados = this.softwareAsignadoList
+      .filter(sw => sw.tipoCodigo === tipoCodigo)
+      .map(sw => sw.softwareCodigo);
+
+    const disponibles = this.softwarePorTipo[tipoCodigo] || [];
+
+    const seleccionPrevia = this.softwareSeleccionadoOpcional[tipoCodigo] || [];
+    const codigosSeleccionados = new Set(seleccionPrevia.map((s: any) => s.codigo));
+
+    for (const sw of disponibles) {
+      if (instalados.includes(sw.codigo) && !codigosSeleccionados.has(sw.codigo)) {
+        seleccionPrevia.push(sw);
+        codigosSeleccionados.add(sw.codigo);
+      }
+    }
+
+    this.panelSeleccionesTemporales = [...seleccionPrevia];
+    this.softwareSeleccionadoOpcional[tipoCodigo] = [...seleccionPrevia];
+  }
+
 
 
   private capitalizarPrimera(texto: string): string {
@@ -2445,6 +2597,15 @@ export class AsigEquipoComponent {
   totalPasos: number = 3; // si tienes mas, actualiza
 
   cambiarPaso(direccion: number): void {
+    // Cancelar cualquier modo de edicion antes de cambiar de paso
+    if (this.modoEdicion) {
+      this.cancelarEdicion();
+    }
+    if (this.modoAgregarSoftware) {
+      this.cancelarAgregarSoftware();
+    }
+    // Tambien si hay modo eliminar? No tiene cambios pendientes, asi que no es necesario.
+
     const nuevoPaso = this.paso + direccion;
     if (nuevoPaso >= 1 && nuevoPaso <= this.totalPasos) {
       this.paso = nuevoPaso;
@@ -2461,7 +2622,7 @@ export class AsigEquipoComponent {
     this.modoEdicion = true;
 
     if (this.detalleEquipo) {
-      // Función auxiliar para limpiar claves
+      // Funcion auxiliar para limpiar claves
       const limpiarClave = (valor: string | null | undefined): string => {
         if (!valor || valor === '******') return '';
         return valor;
@@ -2530,9 +2691,9 @@ export class AsigEquipoComponent {
     // Validar campos obligatorios
     if (!this.esPaso1Valido) {
       this.notificacionSnackbarService.warning('Advertencia', 'Complete todos los campos obligatorios');
-      // No retornamos, solo mostramos la advertencia y los asteriscos se mostrarán
+      // No retornamos, solo mostramos la advertencia y los asteriscos se mostraran
       // Porque la validacion fallo, no enviamos la peticion
-      // Podemos retornar para no enviar datos inválidos
+      // Podemos retornar para no enviar datos invalidos
       return;
     }
 
@@ -2581,6 +2742,12 @@ export class AsigEquipoComponent {
       this.notificacionSnackbarService.warning('Sin software', 'No hay software instalado para eliminar');
       return;
     }
+    // Si el modo agregar esta activo, lo desactivo y limpio
+    if (this.modoAgregarSoftware) {
+      this.modoAgregarSoftware = false;
+      this.limpiarSeleccionAgregar();
+    }
+    // Alterno el modo eliminar
     this.modoEliminarSoftware = !this.modoEliminarSoftware;
     this.cdr.detectChanges();
   }
@@ -2613,14 +2780,13 @@ export class AsigEquipoComponent {
       );
 
       this.notificacionSnackbarService.success(
-        'Exito',
-        `Software "${this.softwareAEliminar.nombreSoftware}" eliminado`
+        'Exito', `Software "${this.softwareAEliminar.nombreSoftware}" eliminado`
       );
 
       // Eliminar de la lista local (software opcional)
       this.softwareOpcionalAsignado.splice(this.indiceAEliminar, 1);
 
-      // También eliminar de la lista global (software asignado)
+      // Tambien eliminar de la lista global (software asignado)
       const idxGlobal = this.softwareAsignadoList.findIndex(
         s => s.numero === this.softwareAEliminar.numero
       );
@@ -2645,6 +2811,183 @@ export class AsigEquipoComponent {
 
 
 
+  /* Agregar un software instalado (activar) */
+
+
+  getSoftwareList(categoriaCodigo: number | null): any[] {
+    if (categoriaCodigo === null) return [];
+    return this.softwarePorTipo[categoriaCodigo] || [];
+  }
+
+
+  toggleModoAgregarSoftware(): void {
+    if (this.softwareTiposActivos.length === 0) {
+      this.notificacionSnackbarService.warning('Sin categorias', 'No hay categorias de software disponibles');
+      return;
+    }
+    // Si el modo eliminar esta activo, lo desactivo
+    if (this.modoEliminarSoftware) {
+      this.modoEliminarSoftware = false;
+    }
+    // Alterno el modo agregar
+    this.modoAgregarSoftware = !this.modoAgregarSoftware;
+    if (this.modoAgregarSoftware) {
+      this.inicializarSeleccionesInstaladas();
+    } else {
+      this.limpiarSeleccionAgregar();
+    }
+    this.cdr.detectChanges();
+  }
+
+
+
+  seleccionarCategoria(codigo: number): void {
+    this.categoriaSeleccionada = codigo;
+    // Cargar software de la categoria si no esta cargado
+    if (!this.softwarePorTipo[codigo]) {
+      this.consultarSoftwareService.listarPorTipo(codigo).subscribe({
+        next: (data) => {
+          this.softwarePorTipo[codigo] = data.filter(s => s.codigo !== 0);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error al cargar software:', err);
+          this.notificacionSnackbarService.error('Error', 'No se pudo cargar el software');
+        }
+      });
+    }
+  }
+
+  estaSeleccionadoParaAgregar(software: any): boolean {
+    return this.softwareSeleccionadosParaAgregar.some(s => s.codigo === software.codigo);
+  }
+
+
+  toggleSeleccionParaAgregar(software: any): void {
+    const index = this.softwareSeleccionadosParaAgregar.findIndex(s => s.codigo === software.codigo);
+    if (index > -1) {
+      this.softwareSeleccionadosParaAgregar.splice(index, 1);
+    } else {
+      this.softwareSeleccionadosParaAgregar.push(software);
+    }
+  }
+
+  limpiarSeleccionAgregar(): void {
+    this.categoriaSeleccionada = null;
+    this.softwareSeleccionadosParaAgregar = [];
+  }
+
+
+  async agregarSoftwareSeleccionado(): Promise<void> {
+
+    if (this.panelSeleccionesTemporales.length === 0) {
+      this.notificacionSnackbarService.warning('Seleccion vacia', 'Seleccione al menos un software');
+      return;
+    }
+
+    if (!this.equipo.asignacionId) {
+      this.notificacionSnackbarService.error('Error', 'No se encontro la asignacion del equipo');
+      return;
+    }
+
+    // Filtrar los que YA estan instalados para no duplicar
+    const softwareParaAgregar = this.panelSeleccionesTemporales.filter(sw => {
+      const yaInstalado = this.softwareAsignadoList.some(
+        s => Number(s.softwareCodigo) === Number(sw.codigo)
+      );
+      return !yaInstalado;
+    });
+
+    if (softwareParaAgregar.length === 0) {
+      this.notificacionSnackbarService.info('Sin cambios', 'El software seleccionado ya esta instalado');
+      return;
+    }
+
+    try {
+      const promesas = softwareParaAgregar.map(async (sw) => {
+        return firstValueFrom(
+          this.registrarAsignacionesService.asignarSoftwareAEquipo(
+            this.equipo.serial,
+            sw.codigo,
+            this.equipo.asignacionId,
+            null // politica (solo para antivirus)
+          )
+        );
+      });
+
+      await Promise.all(promesas);
+
+
+      // ============================================================
+      // ACTUALIZAR softwareSeleccionadoOpcional PARA REFLEJAR EN VERDE
+      // ============================================================
+      const tipoCodigo = this.panelTipoOpcionalCodigo;
+      if (tipoCodigo !== null) {
+        // Obtener TODOS los software instalados de este tipo
+        const instaladosDeEsteTipo = this.softwareAsignadoList
+          .filter(sw => sw.tipoCodigo === tipoCodigo)
+          .map(sw => sw.softwareCodigo);
+
+        // Obtener la lista completa de software disponible de este tipo
+        const disponibles = this.softwarePorTipo[tipoCodigo] || [];
+
+        // Actualizar softwareSeleccionadoOpcional con TODOS los instalados
+        this.softwareSeleccionadoOpcional[tipoCodigo] = disponibles.filter(
+          sw => instaladosDeEsteTipo.includes(sw.codigo)
+        );
+      }
+
+      // Recargar la lista actualizada desde el backend
+      await this.cargarSoftwareAsignado(this.equipo.serial);
+
+      this.notificacionSnackbarService.success(
+        'Exito',
+        `${softwareParaAgregar.length} software(s) agregado(s) correctamente`
+      );
+
+      // Limpiar y cerrar
+      this.panelSeleccionesTemporales = [];
+      this.cerrarPanel();
+
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('❌ Error al agregar software:', error);
+      this.notificacionSnackbarService.error('Error', 'No se pudo agregar el software');
+    }
+  }
+
+
+
+  cancelarAgregarSoftware(): void {
+    this.modoAgregarSoftware = false;
+    this.limpiarSeleccionAgregar();
+    this.cdr.detectChanges();
+  }
+
+  guardarAgregarSoftware(): void {
+    this.agregarSoftwareSeleccionado();
+  }
+
+
+  private inicializarSeleccionesInstaladas(): void {
+    // Recorrer todos los tipos activos
+    this.softwareTiposActivos.forEach(tipo => {
+      // Obtener los software asignados de este tipo (instalados)
+      const instalados = this.softwareAsignadoList.filter(sw => sw.tipoCodigo === tipo.codigo);
+      if (instalados.length > 0) {
+        // Mapear a objetos con la estructura que espera softwareSeleccionadoOpcional
+        this.softwareSeleccionadoOpcional[tipo.codigo] = instalados.map(sw => ({
+          codigo: sw.softwareCodigo,
+          nombre: sw.nombreSoftware,
+          rutaImagen: sw.rutaImagen,
+          tipo: { codigo: tipo.codigo, descripcion: tipo.descripcion }
+        }));
+      } else {
+        // Asegurar que no queden datos de sesiones anteriores
+        this.softwareSeleccionadoOpcional[tipo.codigo] = [];
+      }
+    });
+  }
 
 }
 

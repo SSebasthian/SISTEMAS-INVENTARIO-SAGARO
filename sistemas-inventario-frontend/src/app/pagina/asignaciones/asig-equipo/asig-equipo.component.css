@@ -444,7 +444,7 @@
 }
 
 .seleccionado-fecha .fecha-campo.asignado {
-    margin-left: -160px;
+    margin-left: -80px;
 }
 
 .seleccionado-fecha .fecha input {
@@ -985,6 +985,15 @@
 .btn-panel-guardar {
     background: #3f51b5;
     color: white;
+    padding: 5px 10px;
+}
+
+.btn-panel-guardar mat-icon{
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    position: relative;
+    margin-bottom: -3px;
 }
 
 .btn-panel-volver {
@@ -1869,7 +1878,6 @@
     color: #f59e0b;
 }
 
-*/
 
 /* Footer del modal */
 .modal-ip .modal-footer {

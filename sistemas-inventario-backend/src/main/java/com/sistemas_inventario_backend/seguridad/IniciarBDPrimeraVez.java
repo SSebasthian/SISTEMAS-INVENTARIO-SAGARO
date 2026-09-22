@@ -29,74 +29,121 @@ public class IniciarBDPrimeraVez implements CommandLineRunner {
     public void run(String... args) {
 
         // ============================================
-        // 1. VALIDAR SI YA EXISTE INFORMACIÓN
+        // 1. INSERTAR ROLES
         // ============================================
 
-        // Cuenta cuántos registros existen en la tabla permsisos
-        Integer count = jdbcTemplate.queryForObject(
+        Integer cantidadRoles = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM rol",
+                Integer.class
+        );
+
+        // Solo crea los roles si todavía no existen
+        if (cantidadRoles != null && cantidadRoles == 0) {
+
+            jdbcTemplate.update(
+                    "INSERT INTO rol (id, nombre) VALUES (1, 'Administrador')"
+            );
+
+            jdbcTemplate.update(
+                    "INSERT INTO rol (id, nombre) VALUES (2, 'Aprendiz')"
+            );
+        }
+
+
+        // ============================================
+        // 2. INSERTAR PERMISOS
+        // ============================================
+
+        Integer cantidadPermisos = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM permisos",
                 Integer.class
         );
 
-        // Si ya hay datos, no ejecuta nada (evita duplicados)
-        if (count != null && count > 0) {
-            return;
+        // Solo crea los permisos si todavía no existen
+        if (cantidadPermisos != null && cantidadPermisos == 0) {
+
+            Object[][] permisos = {
+
+                    {1L, "usuarios", "ver"},
+                    {2L, "usuarios", "crear"},
+                    {3L, "usuarios", "editar"},
+                    {4L, "usuarios", "eliminar"},
+
+                    {5L, "roles", "ver"},
+                    {6L, "roles", "crear"},
+                    {7L, "roles", "editar"},
+                    {8L, "roles", "eliminar"},
+
+                    {9L, "permisos", "ver"},
+                    {10L, "permisos", "crear"},
+                    {11L, "permisos", "editar"},
+                    {12L, "permisos", "eliminar"},
+                    {13L, "permisos", "asignar"},
+
+                    {14L, "registro", "ver"},
+                    {15L, "registro", "crear"},
+                    {16L, "registro", "editar"}
+            };
+
+
+            for (Object[] p : permisos) {
+
+                jdbcTemplate.update(
+                        "INSERT INTO permisos (id, modulo, accion) VALUES (?, ?, ?)",
+                        p[0],
+                        p[1],
+                        p[2]
+                );
+            }
         }
 
 
         // ============================================
-        // 2. INSERTAR ROLES
+        // 3. ASIGNAR PERMISOS AL ADMINISTRADOR
         // ============================================
 
-        // Se insertan dos roles con ID fijo
-        jdbcTemplate.update("INSERT INTO rol (nombre) VALUES ('Administrador')");
-        jdbcTemplate.update("INSERT INTO rol (nombre) VALUES ('Normal')");
-
-
-        // ============================================
-        // 3. INSERTAR PERMISOS
-        // ============================================
-
-        // Lista de permisos: id, módulo y acción
-        Object[][] permisos = {
-                {1L, "usuarios", "ver"},
-                {2L, "usuarios", "crear"},
-                {3L, "usuarios", "editar"},
-                {4L, "usuarios", "eliminar"},
-                {5L, "roles", "ver"},
-                {6L, "roles", "crear"},
-                {7L, "roles", "editar"},
-                {8L, "roles", "eliminar"},
-                {9L, "permisos", "ver"},
-                {10L, "permisos", "crear"},
-                {11L, "permisos", "editar"},
-                {12L, "permisos", "eliminar"},
-                {13L, "permisos", "asignar"},
-                {14L, "registro", "ver"},
-                {15L, "registro", "crear"},
-                {16L, "registro", "editar"}
-
-        };
-        // Inserta cada permiso en la base de datos
-        for (Object[] p : permisos) {
-            jdbcTemplate.update("INSERT INTO permisos (id, modulo, accion) VALUES (?, ?, ?)", p[0], p[1], p[2]);
-        }
-
-
-        // ============================================
-        // 4. ASIGNAR PERMISOS AL ROL ADMINISTRADOR
-        // ============================================
-
-        // Se asignan todos los permisos al rol con id = 1 (Administrador)
-        List<Long> ids = jdbcTemplate.queryForList(
-                "SELECT id FROM permisos",
-                Long.class
+        Integer cantidadPermisosAdmin = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM permisosxrol WHERE id_rol = 1",
+                Integer.class
         );
 
-        for (Long id : ids) {
+        // Si el administrador todavía no tiene permisos,
+        // se le asignan todos.
+        if (cantidadPermisosAdmin != null && cantidadPermisosAdmin == 0) {
+
+            List<Long> ids = jdbcTemplate.queryForList(
+                    "SELECT id FROM permisos ORDER BY id",
+                    Long.class
+            );
+
+            for (Long id : ids) {
+
+                jdbcTemplate.update(
+                        "INSERT INTO permisosxrol (id_rol, id_permiso) VALUES (1, ?)",
+                        id
+                );
+            }
+        }
+
+
+        // ============================================
+        // 4. ASIGNAR PERMISO AL APRENDIZ
+        // ============================================
+
+        Integer permisoAprendiz = jdbcTemplate.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM permisosxrol
+                WHERE id_rol = 2
+                AND id_permiso = 14
+                """,
+                Integer.class
+        );
+
+        if (permisoAprendiz != null && permisoAprendiz == 0) {
+
             jdbcTemplate.update(
-                    "INSERT INTO permisosxrol (id_rol, id_permiso) VALUES (1, ?)",
-                    id
+                    "INSERT INTO permisosxrol (id_rol, id_permiso) VALUES (2, 14)"
             );
         }
 
@@ -110,12 +157,28 @@ public class IniciarBDPrimeraVez implements CommandLineRunner {
                 Integer.class
         );
 
+        // Si el usuario admin no existe, se crea
         if (adminExiste != null && adminExiste == 0) {
-            String claveEncriptada = passwordEncoder.encode("admin");
 
+            // Contraseña original
+            String clave = "admin";
+
+            // Encriptar contraseña con BCrypt
+            String claveEncriptada =
+                    passwordEncoder.encode(clave);
+
+            // Crear usuario administrador
             jdbcTemplate.update(
-                    "INSERT INTO usuarios (usuario, nombre, clave, activo, rol_id) VALUES ('admin', 'admin', ?, 1, 1)",
+                    """
+                    INSERT INTO usuarios
+                    (usuario, nombre, clave, activo, rol_id)
+                    VALUES ('admin', 'admin', ?, 1, 1)
+                    """,
                     claveEncriptada
+            );
+
+            System.out.println(
+                    "Usuario administrador creado correctamente."
             );
         }
     }

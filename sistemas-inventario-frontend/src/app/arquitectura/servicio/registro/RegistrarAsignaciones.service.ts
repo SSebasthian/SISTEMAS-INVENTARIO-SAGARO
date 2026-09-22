@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { HttpParams } from '@angular/common/http';
+
 
 @Injectable({
   providedIn: 'root'
@@ -81,4 +83,20 @@ export class RegistrarAsignacionesService {
   actualizarDetalleEquipo(serial: string, payload: any): Observable<any> {
     return this.http.put(`${this.apiUrlConsultarAsignaciones}/asignaciones/activos/detalle/${serial}`, payload);
   }
+
+
+  asignarSoftwareAEquipo(serial: string, softwareCodigo: number, asignacionConsecutivo: number, politicaCodigo: number | null): Observable<any> {
+    let params = new HttpParams()
+      .set('serial', serial)
+      .set('softwareCodigo', softwareCodigo.toString())
+      .set('asignacionConsecutivo', asignacionConsecutivo.toString());
+
+    if (politicaCodigo) {
+      params = params.set('politicaCodigo', politicaCodigo.toString());
+    }
+
+    return this.http.post(`${this.apiUrlConsultarAsignaciones}/equipos-software/asignar`, null, { params });
+  }
+
+
 }

@@ -2,7 +2,7 @@
     <div class="modal-contenedor">
 
         <!-- Flechas de navegacion (solo si equipo asignado) -->
-        <ng-container *ngIf="yaAsignada">
+        <ng-container *ngIf="yaAsignada && !mostrarDevolucion">
             <button class="flecha-nav flecha-izquierda" (click)="cambiarPaso(-1)" [disabled]="paso === 1">
                 <mat-icon>arrow_left</mat-icon>
             </button>
@@ -104,7 +104,7 @@
                             <!-- ================================================ -->
                             <!-- PASO 1: DETALLE DEL EQUIPO (SOLO LECTURA)       -->
                             <!-- ================================================ -->
-                            <div *ngIf="paso === 1" class="seccion-detalle">
+                            <div *ngIf="!mostrarDevolucion && paso === 1" class="seccion-detalle">
                                 <div class="seleccion-detalle">
                                     <div class="detalle-campo">
                                         <mat-icon>queue_play_next</mat-icon>
@@ -244,7 +244,7 @@
                             <!-- ================================================ -->
                             <!-- PASO 2: SOFTWARE INSTALADO (SOLO LECTURA)       -->
                             <!-- ================================================ -->
-                            <div *ngIf="paso === 2" class="seccion-detalle">
+                            <div *ngIf="!mostrarDevolucion && paso === 2" class="seccion-detalle">
                                 <div class="seleccion-detalle">
                                     <div class="detalle-campo">
                                         <mat-icon>layers</mat-icon>
@@ -345,7 +345,8 @@
                                                     <img *ngIf="getSoftwarePorTipoPrimero('CORREO')?.rutaImagen"
                                                         [src]="getSoftwarePorTipoPrimero('CORREO')?.rutaImagen"
                                                         alt="Correo" class="software-icono-asignado" />
-                                                    <mat-icon *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.rutaImagen">mail_outline</mat-icon>
+                                                    <mat-icon
+                                                        *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.rutaImagen">mail_outline</mat-icon>
                                                 </ng-container>
                                                 <ng-container *ngIf="!yaAsignada">
                                                     <mat-icon [class.label-error]="errorCorreo">mail_outline</mat-icon>
@@ -356,32 +357,39 @@
                                                 <div class="software-nombre">
                                                     <!-- Caso equipo ya asignado -->
                                                     <ng-container *ngIf="yaAsignada">
-                                                        <ng-container *ngIf="getSoftwarePorTipoPrimero('CORREO')?.nombreSoftware as nombre">
+                                                        <ng-container
+                                                            *ngIf="getSoftwarePorTipoPrimero('CORREO')?.nombreSoftware as nombre">
                                                             {{ nombre | titlecase }}
                                                         </ng-container>
-                                                        <ng-container *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.nombreSoftware">
+                                                        <ng-container
+                                                            *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.nombreSoftware">
                                                             Sin Correo
                                                         </ng-container>
                                                     </ng-container>
 
                                                     <!-- Caso nueva asignacion -->
                                                     <ng-container *ngIf="!yaAsignada">
-                                                        <ng-container *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
+                                                        <ng-container
+                                                            *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
                                                             <!-- Si es NO APLICA -->
-                                                            <ng-container *ngIf="softwareSeleccionado.correos[0]?.correoCodigo === 0; else correoNormal">
+                                                            <ng-container
+                                                                *ngIf="softwareSeleccionado.correos[0]?.correoCodigo === 0; else correoNormal">
                                                                 NO APLICA
                                                             </ng-container>
                                                             <!-- Si es un correo real -->
                                                             <ng-template #correoNormal>
-                                                                <ng-container *ngIf="softwareSeleccionado.correos[0]?.direccion as direccion">
-                                                                    {{ direccion.split('@')[1]?.split('.')[0] | titlecase }}
+                                                                <ng-container
+                                                                    *ngIf="softwareSeleccionado.correos[0]?.direccion as direccion">
+                                                                    {{ direccion.split('@')[1]?.split('.')[0] |
+                                                                    titlecase }}
                                                                 </ng-container>
-                                                                <span *ngIf="softwareSeleccionado.correos.length > 1" class="mas-correos">
+                                                                <span *ngIf="softwareSeleccionado.correos.length > 1"
+                                                                    class="mas-correos">
                                                                     +{{ softwareSeleccionado.correos.length - 1 }} mas
                                                                 </span>
                                                             </ng-template>
                                                         </ng-container>
-                                                        <!-- Template alternativo cuando la lista está vacía -->
+                                                        <!-- Template alternativo cuando la lista esta vacia -->
                                                         <ng-template #sinCorreo>
                                                             Correo <span *ngIf="errorCorreo">*</span>
                                                         </ng-template>
@@ -391,7 +399,8 @@
                                                 <!-- Badge con cantidad de correos (solo en modo nueva asignacion) -->
                                                 <div class="software-estado"
                                                     *ngIf="!yaAsignada && softwareSeleccionado.correos?.length > 0 && !(softwareSeleccionado.correos.length === 1 && softwareSeleccionado.correos[0]?.correoCodigo === 0)">
-                                                    <span class="badge asignado">{{ softwareSeleccionado.correos.length }} correo(s)</span>
+                                                    <span class="badge asignado">{{ softwareSeleccionado.correos.length
+                                                        }} correo(s)</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -403,17 +412,21 @@
                                     <div class="detalle-campo">
                                         <mat-icon>layers</mat-icon>
                                         <label>SOFTWARE INSTALADO</label>
-                                        <a class="btn-editar-titulo" 
-                                                (click)="toggleModoEliminarSoftware()" 
-                                                [class.active]="modoEliminarSoftware">
+                                        <a class="btn-editar-titulo btn-agregar" (click)="toggleModoAgregarSoftware()"
+                                            [class.active]="modoAgregarSoftware">
+                                            <mat-icon>{{ modoAgregarSoftware ? 'close' : 'add' }}</mat-icon>
+                                        </a>
+                                        <a class="btn-editar-titulo" (click)="toggleModoEliminarSoftware()"
+                                            [class.active]="modoEliminarSoftware">
                                             <mat-icon>{{ modoEliminarSoftware ? 'close' : 'remove' }}</mat-icon>
                                         </a>
                                     </div>
                                 </div>
 
-                                <div *ngIf="softwareOpcionalAsignado.length > 0" class="detalle-grid-software opcional">
-                                    <div *ngFor="let sw of softwareOpcionalAsignado; let i = index" class="software-card" 
-                                        [class.modo-eliminar]="modoEliminarSoftware">   <!-- Cambio 1 -->
+                                <div *ngIf="softwareOpcionalAsignado.length > 0 && !modoAgregarSoftware"
+                                    class="detalle-grid-software opcional">
+                                    <div *ngFor="let sw of softwareOpcionalAsignado; let i = index"
+                                        class="software-card" [class.modo-eliminar]="modoEliminarSoftware">
                                         <div class="software-icono-container">
                                             <img *ngIf="sw.rutaImagen" [src]="sw.rutaImagen" [alt]="sw.nombreSoftware"
                                                 class="software-icono-opcional" />
@@ -421,29 +434,93 @@
                                         </div>
                                         <div class="software-nombre-opcional">{{ sw.nombreSoftware | titlecase }}</div>
                                         <div class="software-tipo-opcional">{{ sw.tipoSoftware | titlecase }}</div>
-                                        
+
                                         <!-- Boton Eliminar (solo en modo eliminar) -->
-                                        <a *ngIf="modoEliminarSoftware" class="btn-eliminar-software-card" (click)="abrirModalEliminar(sw, i)" >
+                                        <a *ngIf="modoEliminarSoftware" class="btn-eliminar-software-card"
+                                            (click)="abrirModalEliminar(sw, i)" title="Eliminar este software">
                                             <mat-icon>delete_forever</mat-icon>
                                         </a>
                                     </div>
                                 </div>
 
+
+                                <div *ngIf="modoAgregarSoftware" class="seccion-agregar-software">
+                                    <div class="detalle-grid-aplicacion opcional">
+                                        <div *ngFor="let tipo of softwareTiposActivos" class="software-card"
+                                            [class.seleccionado]="softwareSeleccionadoOpcional[tipo.codigo]?.length > 0"
+                                            (click)="abrirPanelOpcional(tipo.codigo)">
+                                            <div class="software-card-header">
+                                                <div class="software-icon">
+                                                    <mat-icon>extension</mat-icon>
+                                                </div>
+                                                <div class="software-info">
+                                                    <div class="software-nombre">{{ tipo.descripcion | titlecase }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
 
+                            <div *ngIf="!mostrarDevolucion && paso === 3" class="seccion-detalle">
+                                <div class="seleccionado-fecha">
+                                    <div class="campo-fecha asignac">
+                                        <div class="fecha-campo asignado">
+                                            <mat-icon>event</mat-icon>
+                                            <label>FECHA DE ASIGNACION</label>
+                                        </div>
+                                        <div class="fecha">
+                                            <input type="date" [value]="equipo.fechaAsignacion | date:'yyyy-MM-dd'"
+                                                class="fecha-input" disabled>
+                                        </div>
+                                    </div>
+                                </div>
 
-
+                                <div class="seleccionado-observaciones">
+                                    <div class="obser-campo">
+                                        <span>
+                                            <mat-icon>description</mat-icon>
+                                            <label>DESCRIPCION</label>
+                                        </span>
+                                        <textarea [value]="observacionesOriginal || 'SIN OBSERVACIONES'" rows="3"
+                                            disabled></textarea>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- Detalle de devolucion (solo visible en modo devolucion) -->
-                            <div class="seleccionado-observaciones" *ngIf="mostrarDevolucion">
-                                <div class="obser-campo">
-                                    <span>
-                                        <mat-icon>description</mat-icon>
-                                        <label>DETALLE DE DEVOLUCION</label>
-                                    </span>
-                                    <textarea [(ngModel)]="detalleDevolucion" rows="2"
-                                        placeholder="Ingrese el motivo o detalles de la devolucion..."
-                                        (input)="detalleDevolucion = detalleDevolucion.toUpperCase()"></textarea>
+                            <div *ngIf="mostrarDevolucion" class="seccion-devolucion">
+
+
+                                <!-- ============================================ -->
+                                <!-- FECHA DE DEVOLUCION (con fecha actual)       -->
+                                <!-- ============================================ -->
+                                <div class="seleccionado-fecha">
+                                    <div class="campo-fecha devoluc">
+                                        <div class="fecha-campo asignado">
+                                            <mat-icon>event</mat-icon>
+                                            <label>FECHA DE DEVOLUCION</label>
+                                        </div>
+                                        <div class="fecha">
+                                            <input type="date" [(ngModel)]="fechaDevolucion" class="fecha-input"
+                                                (change)="validarFechaDevolucion()">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Detalle de devolucion -->
+                                <div class="seleccionado-observaciones">
+                                    <div class="obser-campo">
+                                        <span>
+                                            <mat-icon>description</mat-icon>
+                                            <label>DETALLE DE DEVOLUCION</label>
+                                        </span>
+                                        <textarea [(ngModel)]="detalleDevolucion" rows="3"
+                                            placeholder="Ingrese el motivo o detalles de la devolucion..."
+                                            (input)="detalleDevolucion = detalleDevolucion.toUpperCase()"></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -491,8 +568,7 @@
                                                     <span class="seleccionado-cedula">{{ empleadoSeleccionado.cedula
                                                         }}</span>
                                                     <span class="seleccionado-area">{{
-                                                        empleadoSeleccionado.area.descripcion
-                                                        }}</span>
+                                                        empleadoSeleccionado.area.descripcion }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1047,7 +1123,7 @@
                                                 <div class="campo-panel checkbox-backup">
                                                     <label class="backup-container">
                                                         <input type="checkbox" [(ngModel)]="panelCorreo.realizarBackup"
-                                                        [disabled]="!panelCorreo.correoCodigo || esCorreoNoAplica" />
+                                                            [disabled]="!panelCorreo.correoCodigo || esCorreoNoAplica" />
                                                         <mat-icon class="check-outline">backup_outline</mat-icon>
                                                         <mat-icon class="check-solid">backup</mat-icon>
                                                         <span>¿Se Realizara Backup?</span>
@@ -1058,7 +1134,8 @@
                                         <!-- AGREGAR (change) -->
                                         <select [(ngModel)]="panelCorreo.correoCodigo" ...>
                                             <option tion [ngValue]="null" disabled selected></option>
-                                            <option *ngFor="let c of correosFiltrados" [ngValue]="c.codigo">{{ c.direccion }}</option>
+                                            <option *ngFor="let c of correosFiltrados" [ngValue]="c.codigo">{{
+                                                c.direccion }}</option>
                                         </select>
                                     </div>
 
@@ -1299,14 +1376,33 @@
 
                         <!-- Caso normal (antivirus, correo, office, etc.) -->
                         <ng-template #normalGuardar>
-                            <!-- Boton Guardar para ANTIVIRUS, OFFICE, SOFTWARE OPCIONAL, etc. -->
-                            <button *ngIf="panelTipo !== 'correo'" class="btn-panel-guardar" (click)="guardarPanel()">
+
+                            <!-- Para SOFTWARE OPCIONAL cuando el equipo YA ESTA ASIGNADO -->
+                            <ng-container *ngIf="panelTipo === 'softwareOpcional' && yaAsignada">
+                                <button class="btn-panel-guardar" (click)="agregarSoftwareSeleccionado()"
+                                    [disabled]="panelSeleccionesTemporales.length === 0">
+                                    <mat-icon>save</mat-icon> Guardar Software
+                                </button>
+                            </ng-container>
+
+                            <!-- Para SOFTWARE OPCIONAL cuando es NUEVA ASIGNACION -->
+                            <ng-container *ngIf="panelTipo === 'softwareOpcional' && !yaAsignada">
+                                <button class="btn-panel-guardar" (click)="guardarPanel()">
+                                    Guardar
+                                </button>
+                            </ng-container>
+
+                            <!-- Boton Guardar para ANTIVIRUS, OFFICE, etc. (NO correo, NO softwareOpcional) -->
+                            <button *ngIf="panelTipo !== 'correo' && panelTipo !== 'softwareOpcional'"
+                                class="btn-panel-guardar" (click)="guardarPanel()">
                                 Guardar
                             </button>
-                            <!-- Boton Guardar para CORREO - SIEMPRE HABILITADO, la validacion esta en el metodo -->
+
+                            <!-- Boton Guardar para CORREO -->
                             <button *ngIf="panelTipo === 'correo'" class="btn-panel-guardar" (click)="guardarPanel()">
                                 Guardar
                             </button>
+
                         </ng-template>
                     </div>
                 </div>
@@ -1318,7 +1414,12 @@
                 <!-- CASO 1: YA ESTA ASIGNADA -->
                 <ng-container *ngIf="yaAsignada">
                     <!-- Boton Cancelar (cerrar modal) solo si NO estamos en modo edicion -->
-                    <button *ngIf="!modoEdicion" class="btn-cancelar" (click)="cerrar()">
+                    <button *ngIf="mostrarDevolucion" class="btn-cancelar" (click)="cancelarDevolucion()">
+                        <mat-icon>close</mat-icon> Cancelar
+                    </button>
+
+                    <!-- Boton Cancelar normal (cerrar modal) solo si NO estamos en modo edicion NI devolucion -->
+                    <button *ngIf="!modoEdicion && !mostrarDevolucion" class="btn-cancelar" (click)="cerrar()">
                         <mat-icon>close</mat-icon> Cancelar
                     </button>
 
@@ -1351,7 +1452,7 @@
                         (click)="confirmarReasignar()" [disabled]="!fechaDevolucion || !isFechaDevolucionValida()">
                         <mat-icon>refresh</mat-icon> Confirmar Reasignacion
                     </button>
-                    
+
                 </ng-container>
 
                 <!-- CASO 2: NO ESTA ASIGNADA (NUEVA ASIGNACION) -->
@@ -1537,14 +1638,10 @@
         </h2>
         <hr>
         <div class="modal-botones">
-            <button
-                class="cancel-button"
-                (click)="cancelarEliminacion()">
+            <button class="cancel-button" (click)="cancelarEliminacion()">
                 Cancelar
             </button>
-            <button
-                class="confirm-button"
-                (click)="eliminarPrograma()">
+            <button class="confirm-button" (click)="eliminarPrograma()">
                 Eliminar
             </button>
         </div>
