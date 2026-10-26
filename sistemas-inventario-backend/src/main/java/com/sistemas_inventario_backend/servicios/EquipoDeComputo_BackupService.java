@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,22 +40,49 @@ public class EquipoDeComputo_BackupService {
             Long backupInformacionCodigo,
             Long asignacionConsecutivo,
             Long correoCodigo) {
+        return guardarOReactivarBackup(serial, backupInformacionCodigo, asignacionConsecutivo, correoCodigo);
+    }
+
+
+    @Transactional
+    public EquipoDeComputo_Backup guardarOReactivarBackup(
+            String serial,
+            Long backupInformacionCodigo,
+            Long asignacionConsecutivo,
+            Long correoCodigo) {
 
         Backup_Informacion backupInfo = backupInformacionService.obtenerPorCodigo(backupInformacionCodigo);
         EquipoDeComputo_Asignacion asignacion = equipoDeComputoAsignacionesRepository.findById(asignacionConsecutivo)
-                .orElseThrow(() ->
-                        new RuntimeException("Asignacion no encontrada"));
-        CorreosCorporativos correo = (correoCodigo != null) ? correoService.obtenerPorCodigo(correoCodigo) : null;
+                .orElseThrow(() -> new RuntimeException("Asignacion no encontrada"));
 
+        CorreosCorporativos correo = null;
+        if (correoCodigo != null && correoCodigo != 0L) {
+            correo = correoService.obtenerPorCodigo(correoCodigo);
+        }
+
+        // ¿Ya existe un registro (activo o inactivo) para esta combinacion?
+        Optional<EquipoDeComputo_Backup> existente =
+                repository.findFirstBySerialAndBackupInformacionCodigoAndAsignacionConsecutivo(
+                        serial, backupInformacionCodigo, asignacionConsecutivo);
+
+        if (existente.isPresent()) {
+            // Reactivar
+            EquipoDeComputo_Backup eb = existente.get();
+            eb.setActivo(true);
+            eb.setCorreo(correo); // por si cambió
+            return repository.save(eb);
+        }
+
+        // Crear nuevo
         EquipoDeComputo_Backup eb = new EquipoDeComputo_Backup();
         eb.setSerial(serial);
         eb.setBackupInformacion(backupInfo);
         eb.setAsignacion(asignacion);
         eb.setCorreo(correo);
         eb.setActivo(true);
-
         return repository.save(eb);
     }
+
 
     @Transactional
     public void desactivarBackup(Long id) {

@@ -24,6 +24,7 @@ import { MatInputModule } from '@angular/material/input';
 import { forkJoin, Observable } from 'rxjs';
 
 
+
 @Component({
   selector: 'app-asig-equipo',
   imports: [
@@ -403,7 +404,7 @@ export class AsigEquipoComponent {
                   }
                 });
               } else {
-                // Ya está cargado
+                // Ya esta cargado
                 const disponibles = this.softwarePorTipo[tipo.codigo];
                 this.softwareSeleccionadoOpcional[tipo.codigo] = disponibles.filter(
                   sw => instalados.some((inst: any) => inst.softwareCodigo === sw.codigo)
@@ -1863,45 +1864,116 @@ export class AsigEquipoComponent {
 
   async guardarEdicionObligatorio(): Promise<void> {
     if (!this.equipo.asignacionId) {
-      this.notificacionSnackbarService.error('Error', 'No se encontró la asignación del equipo');
+      this.notificacionSnackbarService.error('Error', 'No se encontro la asignacion del equipo');
       return;
     }
 
-    const originales = this.backupsOriginalesEquipo;
-    const actuales = this.backupsSeleccionados;
+    const originales = this.backupsOriginalesEquipo || [];
+    const actuales = this.backupsSeleccionados || [];
 
-    // Backups que YA NO están (eliminar de BD)
-    const numerosActuales = actuales.filter(b => b.numero).map(b => b.numero);
-    const eliminados = originales.filter(b => b.numero && !numerosActuales.includes(b.numero));
+    // 1. Backups que YA NO estan (tienen numero, pero ya no en la lista actual) → desactivar
+    const numerosActuales = actuales
+      .filter(b => b.numero != null)
+      .map(b => Number(b.numero));
 
-    // Backups NUEVOS (agregar a BD)
-    const nuevos = actuales.filter(b => !b.numero && b.backupInformacionCodigo);
+    const eliminados = originales.filter(
+      b => b.numero != null && !numerosActuales.includes(Number(b.numero))
+    );
+
+    // 2. Backups NUEVOS (no tienen numero porque nunca se vincularon) → crear vinculo
+    //    Solo los que ya tienen backupInformacionCodigo (ya existen en backup_informacion)
+    const codigosVinculadosOriginales = originales
+      .map(b => Number(b.backupInformacionCodigo))
+      .filter(c => !isNaN(c) && c > 0);
+
+    const nuevos = actuales.filter(b => {
+      if (b.esNoAplica) return false;
+      if (!b.backupInformacionCodigo) return false;
+      if (b.numero != null) return false;   // ya tiene vinculo (existente no eliminado)
+      return true;
+    });
+
+    // console.log('Eliminar:', eliminados.map(e => e.numero));
+    // console.log('Crear:', nuevos.map(n => n.backupInformacionCodigo));
 
     try {
+      // Desactivar eliminados
       for (const elim of eliminados) {
         await firstValueFrom(
           this.registrarAsignacionesService.desactivarBackupAsignado(elim.numero)
         );
+        // console.log('Desactivado:', elim.numero);
       }
 
+      // Crear nuevos vinculos en equipodecomputo_backup
       for (const nuevo of nuevos) {
+        const payload = {
+          serial: this.equipo.serial,
+          backupInformacionCodigo: Number(nuevo.backupInformacionCodigo),
+          asignacionConsecutivo: Number(this.equipo.asignacionId),
+          correoCodigo: null,
+        };
+        // console.log('POST equipodecomputo_backup:', payload);
+
         await firstValueFrom(
           this.registrarAsignacionesService.asignarBackupAEquipo(
-            this.equipo.serial,
-            nuevo.backupInformacionCodigo,
-            this.equipo.asignacionId
+            payload.serial,
+            payload.backupInformacionCodigo,
+            payload.asignacionConsecutivo
           )
         );
+        // console.log('Creado vinculo para backupInformacionCodigo:', nuevo.backupInformacionCodigo);
       }
 
-      this.notificacionSnackbarService.success('Éxito', 'Backups actualizados correctamente');
+      // 3. Actualizar copia de "originales" con lo que quedo en BD
+      //    (recargar desde backend para tener los numeros nuevos)
+      const recargados: any[] = await firstValueFrom(
+        this.registrarAsignacionesService.obtenerBackupsPorSerial(this.equipo.serial)
+      );
+      const soloEquipo = (recargados || []).filter((b: any) => !b.correo);
+
+      this.backupsOriginalesEquipo = soloEquipo.map((reg: any) => {
+        const info = reg.backupInformacion || {};
+        const software = info.software || {};
+        return {
+          numero: reg.numero,
+          backupInformacionCodigo: info.codigo ?? null,
+          backupCodigo: software.codigo ?? null,
+          programa: software.nombre || 'Sin programa',
+          nombre: info.nombre || '',
+          frecuencia: info.frecuencia || '',
+          dia: info.dia ?? null,
+          hora: info.hora || null,
+          ubicaciones: info.ubicacion
+            ? info.ubicacion.split(';').filter((u: string) => u.trim() !== '')
+            : [],
+          ubicacionesExcluidas: info.ubicacionExcluida
+            ? info.ubicacionExcluida.split(';').filter((u: string) => u.trim() !== '')
+            : [],
+        };
+      });
+
+      this.backupsAsignadosEquipo = soloEquipo;
+
+      this.notificacionSnackbarService.success('Exito', 'Backups guardados correctamente');
+
+      // Limpiar
       this.modoEditarObligatorio = false;
       this.backupsSeleccionados = [];
       this.backupsOriginalesEquipo = [];
-      this.cargarBackupsAsignadosEquipo(this.equipo.serial);
-    } catch (err) {
+      this.mostrarFormularioBackup = true;
+      this.cerrarPanel();
+      this.cdr.detectChanges();
+
+    } catch (err: any) {
       console.error('Error al guardar backups:', err);
-      this.notificacionSnackbarService.error('Error', 'No se pudieron guardar los cambios');
+      console.error('status:', err?.status);
+      console.error('message:', err?.message);
+      console.error('error:', err?.error);
+      this.notificacionSnackbarService.error(
+        'Error',
+        err?.error?.error || err?.message || 'No se pudieron guardar los backups'
+      );
     }
   }
 
@@ -2047,13 +2119,13 @@ export class AsigEquipoComponent {
         this.cargarBackups();
       }
 
-      // 🔥 Si el equipo ya está asignado → cargar SIEMPRE desde BD
+      // 🔥 Si el equipo ya esta asignado → cargar SIEMPRE desde BD
       if (this.yaAsignada) {
         this.cargarBackupsDelEquipoParaPanel();
         return;
       }
 
-      // CASO NUEVA ASIGNACIÓN: usar memoria
+      // CASO NUEVA ASIGNACIoN: usar memoria
       if (
         this.softwareSeleccionado.backups &&
         this.softwareSeleccionado.backups.length > 0
@@ -2245,6 +2317,14 @@ export class AsigEquipoComponent {
 
 
     } else if (this.panelTipo === 'backup') {
+
+      // Si el equipo ya esta asignado → persistir en equipodecomputo_backup
+      if (this.yaAsignada) {
+        this.guardarEdicionObligatorio();
+        return;
+      }
+
+
       if (this.backupsSeleccionados.length === 0) {
         this.softwareSeleccionado.backups = [];
         this.softwareSeleccionado.backup = false;
@@ -3151,7 +3231,7 @@ export class AsigEquipoComponent {
       this.mostrarFormularioBackup = this.backupsSeleccionados.length === 0;
       this.panelTitulo = 'Backups del Equipo';
 
-      // 6. Limpiar estado de edición
+      // 6. Limpiar estado de edicion
       this.backupFormData = this.resetBackupFormData();
       this.configuracionSeleccionada = null;
       this.editandoBackupIndex = null;

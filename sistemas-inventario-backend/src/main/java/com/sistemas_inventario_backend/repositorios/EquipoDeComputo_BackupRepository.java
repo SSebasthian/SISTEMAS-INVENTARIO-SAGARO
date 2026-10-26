@@ -3,6 +3,7 @@ package com.sistemas_inventario_backend.repositorios;
 import com.sistemas_inventario_backend.entidades.EquipoDeComputo_Backup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
+import java.util.Optional;
 
 public interface  EquipoDeComputo_BackupRepository extends JpaRepository<EquipoDeComputo_Backup, Long> {
 
@@ -18,5 +19,10 @@ public interface  EquipoDeComputo_BackupRepository extends JpaRepository<EquipoD
 
     boolean existsByBackupInformacionCodigoAndActivoTrue(Long backupInformacionCodigo);
 
-
+    // Buscar sin importar si está activo o no
+    Optional<EquipoDeComputo_Backup> findFirstBySerialAndBackupInformacionCodigoAndAsignacionConsecutivo(
+            String serial,
+            Long backupInformacionCodigo,
+            Long asignacionConsecutivo
+    );
 }
