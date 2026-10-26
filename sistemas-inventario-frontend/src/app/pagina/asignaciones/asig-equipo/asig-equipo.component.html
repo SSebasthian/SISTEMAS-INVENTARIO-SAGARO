@@ -249,6 +249,13 @@
                                     <div class="detalle-campo">
                                         <mat-icon>layers</mat-icon>
                                         <label>SOFTWARE OBLIGATORIO</label>
+
+                                        <a *ngIf="yaAsignada && !modoEditarObligatorio" 
+                                            class="btn-editar-titulo" 
+                                            (click)="activarEdicionObligatorio()">
+                                                <mat-icon>edit</mat-icon>
+                                        </a>
+                                        <span *ngIf="modoEditarObligatorio" class="badge-edicion">(Editando)</span>
                                     </div>
                                 </div>
 
@@ -296,9 +303,11 @@
 
 
                                     <!-- Backup (solo lectura) -->
-                                    <div class="software-card"
-                                        [class.seleccionado]="yaAsignada ? tieneSoftwareTipo('BACKUP') : softwareSeleccionado.backup"
-                                        [class.label-error]="!yaAsignada && errorBackup">
+                              <div class="software-card"
+                                        [class.seleccionado]="yaAsignada ? backupsAsignadosEquipo.length > 0 : softwareSeleccionado.backup"
+                                        [class.label-error]="!yaAsignada && errorBackup"
+                                        [style.cursor]="yaAsignada && modoEditarObligatorio ? 'pointer' : 'default'"
+                                        (click)="yaAsignada && modoEditarObligatorio && abrirPanel('backup')">
 
                                         <div class="software-card-header">
 
@@ -336,7 +345,7 @@
 
                                     <!-- Correo (solo lectura) -->
                                     <div class="software-card"
-                                        [class.seleccionado]="yaAsignada ? tieneSoftwareTipo('CORREO') : softwareSeleccionado.correos?.length > 0"
+                                        [class.seleccionado]="yaAsignada ? correosAsignadosEquipo.length > 0 : softwareSeleccionado.correos?.length > 0"
                                         [class.label-error]="!yaAsignada && errorCorreo">
 
                                         <div class="software-card-header">
@@ -345,8 +354,7 @@
                                                     <img *ngIf="getSoftwarePorTipoPrimero('CORREO')?.rutaImagen"
                                                         [src]="getSoftwarePorTipoPrimero('CORREO')?.rutaImagen"
                                                         alt="Correo" class="software-icono-asignado" />
-                                                    <mat-icon
-                                                        *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.rutaImagen">mail_outline</mat-icon>
+                                                    <mat-icon *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.rutaImagen">mail_outline</mat-icon>
                                                 </ng-container>
                                                 <ng-container *ngIf="!yaAsignada">
                                                     <mat-icon [class.label-error]="errorCorreo">mail_outline</mat-icon>

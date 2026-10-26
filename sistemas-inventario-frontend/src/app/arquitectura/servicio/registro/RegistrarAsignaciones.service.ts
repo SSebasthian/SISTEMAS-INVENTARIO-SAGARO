@@ -99,4 +99,47 @@ export class RegistrarAsignacionesService {
   }
 
 
+
+  // Listar backups asignados a un serial
+  obtenerBackupsPorSerial(serial: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrlConsultarAsignaciones}/equipos-backup-informacion/serial/${serial}`
+    );
+  }
+
+  // Desactivar un backup asignado
+  desactivarBackupAsignado(numero: number): Observable<any> {
+    return this.http.patch(
+      `${this.apiUrlConsultarAsignaciones}/equipos-backup-informacion/${numero}/desactivar`,
+      {}
+    );
+  }
+
+  // Asignar un backup a un equipo
+  asignarBackupAEquipo(
+    serial: string,
+    backupInformacionCodigo: number,
+    asignacionConsecutivo: number
+  ): Observable<any> {
+    const params = new HttpParams()
+      .set('serial', serial)
+      .set('backupInformacionCodigo', backupInformacionCodigo.toString())
+      .set('asignacionConsecutivo', asignacionConsecutivo.toString());
+    return this.http.post(
+      `${this.apiUrlConsultarAsignaciones}/equipos-backup-informacion`,
+      null,
+      { params }
+    );
+  }
+
+
+
+  listarBackupsActivosEquipo(serial: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrlConsultarAsignaciones}/equipos-backup-informacion/serial/${serial}`
+    );
+  }
+
+
+
 }

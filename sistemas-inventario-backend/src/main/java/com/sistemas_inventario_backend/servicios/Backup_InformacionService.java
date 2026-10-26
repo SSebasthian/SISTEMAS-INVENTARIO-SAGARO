@@ -32,6 +32,15 @@ public class Backup_InformacionService {
     }
 
 
+    public List<Backup_InformacionRespuesta> listarPorTipo(String tipo) {
+        List<Backup_Informacion> lista = repository.findByTipoAndActivoTrue(tipo);
+        return lista.stream().map(info -> {
+            boolean enUso = equipoDeComputoBackupRepository
+                    .existsByBackupInformacionCodigoAndActivoTrue(info.getCodigo());
+            return new Backup_InformacionRespuesta(info, enUso);
+        }).collect(Collectors.toList());
+    }
+
     public Backup_Informacion obtenerPorCodigo(Long codigo) {
         return repository.findById(codigo)
                 .orElseThrow(() -> new RuntimeException("Informacion de backup no encontrada"));

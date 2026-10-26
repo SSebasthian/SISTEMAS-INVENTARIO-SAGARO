@@ -177,6 +177,14 @@ export class AsigEquipoComponent {
   categoriaSeleccionada: number | null = null;
   softwareSeleccionadosParaAgregar: any[] = [];
 
+  modoEditarObligatorio: boolean = false;
+  backupsAsignadosEquipo: any[] = [];
+  backupsOriginalesEquipo: any[] = [];
+
+  correosAsignadosEquipo: any[] = [];
+
+
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<AsigEquipoComponent>,
@@ -200,6 +208,7 @@ export class AsigEquipoComponent {
       let obs = this.equipo.observaciones || '';
       this.observacionesOriginal = obs.replace(/^ASIGNACION:\s*/, '');
       this.cargarDetalleEquipo(this.equipo.serial);
+      this.cargarBackupsAsignadosEquipo(this.equipo.serial);
     }
 
     this.cargarEmpleados();
@@ -413,6 +422,21 @@ export class AsigEquipoComponent {
       },
     });
   }
+
+  cargarBackupsAsignadosEquipo(serial: string): void {
+    this.registrarAsignacionesService.obtenerBackupsPorSerial(serial).subscribe({
+      next: (backups) => {
+        // Solo los que NO son de correo (correo === null)
+        this.backupsAsignadosEquipo = backups.filter(b => b.correo == null);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al cargar backups asignados:', err);
+        this.backupsAsignadosEquipo = [];
+      }
+    });
+  }
+
 
   // ==================== FILTROS Y SELECCIoN ====================
 
@@ -1801,6 +1825,86 @@ export class AsigEquipoComponent {
     this.mostrarClaveAdicional = !this.mostrarClaveAdicional;
   }
 
+  activarEdicionObligatorio(): void {
+    this.modoEditarObligatorio = true;
+
+    // Convertir los backups asignados al formato que usa el panel
+    const convertidos = this.backupsAsignadosEquipo.map(b => {
+      const bi = b.backupInformacion || {};
+      return {
+        numero: b.numero,
+        backupCodigo: bi.software?.codigo || null,
+        backupInformacionCodigo: bi.codigo || null,
+        programa: bi.software?.nombre || '',
+        nombre: bi.nombre || '',
+        frecuencia: bi.frecuencia || '',
+        dia: bi.dia || null,
+        hora: bi.hora || null,
+        ubicaciones: bi.ubicacion ? bi.ubicacion.split(';') : [''],
+        ubicacionesExcluidas: bi.ubicacionExcluida ? bi.ubicacionExcluida.split(';') : [''],
+      };
+    });
+
+    this.backupsSeleccionados = [...convertidos];
+    this.backupsOriginalesEquipo = JSON.parse(JSON.stringify(convertidos));
+    this.mostrarFormularioBackup = convertidos.length === 0;
+    this.cdr.detectChanges();
+  }
+
+
+  cancelarEdicionObligatorio(): void {
+    this.modoEditarObligatorio = false;
+    this.backupsSeleccionados = [];
+    this.backupsOriginalesEquipo = [];
+    this.mostrarFormularioBackup = true;
+    this.panelActivo = false;
+    this.cdr.detectChanges();
+  }
+
+  async guardarEdicionObligatorio(): Promise<void> {
+    if (!this.equipo.asignacionId) {
+      this.notificacionSnackbarService.error('Error', 'No se encontró la asignación del equipo');
+      return;
+    }
+
+    const originales = this.backupsOriginalesEquipo;
+    const actuales = this.backupsSeleccionados;
+
+    // Backups que YA NO están (eliminar de BD)
+    const numerosActuales = actuales.filter(b => b.numero).map(b => b.numero);
+    const eliminados = originales.filter(b => b.numero && !numerosActuales.includes(b.numero));
+
+    // Backups NUEVOS (agregar a BD)
+    const nuevos = actuales.filter(b => !b.numero && b.backupInformacionCodigo);
+
+    try {
+      for (const elim of eliminados) {
+        await firstValueFrom(
+          this.registrarAsignacionesService.desactivarBackupAsignado(elim.numero)
+        );
+      }
+
+      for (const nuevo of nuevos) {
+        await firstValueFrom(
+          this.registrarAsignacionesService.asignarBackupAEquipo(
+            this.equipo.serial,
+            nuevo.backupInformacionCodigo,
+            this.equipo.asignacionId
+          )
+        );
+      }
+
+      this.notificacionSnackbarService.success('Éxito', 'Backups actualizados correctamente');
+      this.modoEditarObligatorio = false;
+      this.backupsSeleccionados = [];
+      this.backupsOriginalesEquipo = [];
+      this.cargarBackupsAsignadosEquipo(this.equipo.serial);
+    } catch (err) {
+      console.error('Error al guardar backups:', err);
+      this.notificacionSnackbarService.error('Error', 'No se pudieron guardar los cambios');
+    }
+  }
+
   // ==================== MODAL CREAR NOMBRE BACKUP ====================
 
   abrirModalBackup(): void {
@@ -1936,23 +2040,37 @@ export class AsigEquipoComponent {
       } else {
         this.inicializarPanelAntivirus();
       }
+
+
     } else if (tipo === 'backup') {
       if (this.backupList.length === 0) {
         this.cargarBackups();
       }
+
+      // 🔥 Si el equipo ya está asignado → cargar SIEMPRE desde BD
+      if (this.yaAsignada) {
+        this.cargarBackupsDelEquipoParaPanel();
+        return;
+      }
+
+      // CASO NUEVA ASIGNACIÓN: usar memoria
       if (
         this.softwareSeleccionado.backups &&
         this.softwareSeleccionado.backups.length > 0
       ) {
         this.backupsSeleccionados = [...this.softwareSeleccionado.backups];
         this.mostrarFormularioBackup = false;
+        this.panelTitulo = 'Agregar Backup';
       } else {
         this.backupsSeleccionados = [];
         this.mostrarFormularioBackup = true;
+        this.panelTitulo = 'Agregar Backup';
       }
       this.backupFormData = this.resetBackupFormData();
       this.backupInformacionList = [];
-      this.panelTitulo = 'Agregar Backup';
+
+
+
     } else if (tipo === 'correo') {
       if (this.correosList.length === 0) this.cargarCorreos();
       if (this.backupList.length === 0) this.cargarBackups();
@@ -2989,6 +3107,74 @@ export class AsigEquipoComponent {
     });
   }
 
+
+
+  private async cargarBackupsDelEquipoParaPanel(): Promise<void> {
+    try {
+      // 1. Consultar BD fresca
+      const backupsActivos: any[] = await firstValueFrom(
+        this.registrarAsignacionesService.obtenerBackupsPorSerial(this.equipo.serial)
+      );
+
+      // console.log(' Backups activos del equipo:', backupsActivos);
+
+      // 2. Filtrar solo los de EQUIPO (correo === null)
+      const soloEquipo = (backupsActivos || []).filter((b: any) => b.correo == null);
+
+      // 3. Mapear al formato que usa la UI
+      this.backupsSeleccionados = soloEquipo.map((reg: any) => {
+        const info = reg.backupInformacion || {};
+        const software = info.software || {};
+
+        return {
+          numero: reg.numero,
+          backupInformacionCodigo: info.codigo ?? null,
+          backupCodigo: software.codigo ?? null,
+          programa: software.nombre || 'Sin programa',
+          nombre: info.nombre || '',
+          frecuencia: info.frecuencia || '',
+          dia: info.dia ?? null,
+          hora: info.hora || null,
+          ubicaciones: info.ubicacion
+            ? info.ubicacion.split(';').filter((u: string) => u.trim() !== '')
+            : [],
+          ubicacionesExcluidas: info.ubicacionExcluida
+            ? info.ubicacionExcluida.split(';').filter((u: string) => u.trim() !== '')
+            : [],
+        };
+      });
+
+      // 4. Guardar copia de originales
+      this.backupsOriginalesEquipo = JSON.parse(JSON.stringify(this.backupsSeleccionados));
+
+      // 5. Mostrar LISTA (no formulario) si hay datos
+      this.mostrarFormularioBackup = this.backupsSeleccionados.length === 0;
+      this.panelTitulo = 'Backups del Equipo';
+
+      // 6. Limpiar estado de edición
+      this.backupFormData = this.resetBackupFormData();
+      this.configuracionSeleccionada = null;
+      this.editandoBackupIndex = null;
+
+      this.cdr.detectChanges();
+
+    } catch (error: any) {
+      console.error('Error cargando backups del equipo:', error);
+      console.error('Status:', error?.status);
+      console.error('Message:', error?.message);
+      console.error('Error body:', error?.error);
+      console.error('URL:', error?.url);
+
+      this.notificacionSnackbarService.error(
+        'Error',
+        `No se pudieron cargar los backups del equipo: ${error?.message || 'Error desconocido'}`
+      );
+      this.backupsSeleccionados = [];
+      this.mostrarFormularioBackup = true;
+      this.panelTitulo = 'Agregar Backup';
+      this.cdr.detectChanges();
+    }
+  }
 }
 
 

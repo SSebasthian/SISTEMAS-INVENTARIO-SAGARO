@@ -82,4 +82,16 @@ public class EquipoDeComputo_BackupController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PutMapping("/{id}/backup-informacion/{backupInformacionCodigo}")
+    public ResponseEntity<?> actualizarBackupAsignado(
+            @PathVariable Long id,
+            @PathVariable Long backupInformacionCodigo) {
+        try {
+            EquipoDeComputo_Backup eb = service.actualizarBackupAsignado(id, backupInformacionCodigo);
+            return ResponseEntity.ok(eb);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

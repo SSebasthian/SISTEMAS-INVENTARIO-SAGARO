@@ -72,6 +72,16 @@ public class EquipoDeComputo_BackupService {
             repository.save(eb);
         }
     }
+
+
+    @Transactional
+    public EquipoDeComputo_Backup actualizarBackupAsignado(Long id, Long backupInformacionCodigo) {
+        EquipoDeComputo_Backup eb = obtenerPorId(id);
+        Backup_Informacion backupInfo = backupInformacionService.obtenerPorCodigo(backupInformacionCodigo);
+        eb.setBackupInformacion(backupInfo);
+        return repository.save(eb);
+    }
+
 }
 
 

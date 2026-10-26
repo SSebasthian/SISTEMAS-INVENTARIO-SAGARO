@@ -17,6 +17,7 @@ public interface Backup_InformacionRepository extends JpaRepository<Backup_Infor
     // Filtrar por backup y tipo
     List<Backup_Informacion> findBySoftwareCodigoAndTipoAndActivoTrue(Long softwareCodigo, String tipo);
 
+    List<Backup_Informacion> findByTipoAndActivoTrue(String tipo);
 
 
     // Busqueda exacta por todos los campos (incluyendo tipo y hora)

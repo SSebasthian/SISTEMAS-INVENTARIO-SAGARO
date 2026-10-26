@@ -42,6 +42,10 @@ public class Backup_InformacionController {
         return service.listarPorSoftwareYTipo(softwareCodigo, tipo);
     }
 
+    @GetMapping("/tipo/{tipo}")
+    public List<Backup_InformacionRespuesta> listarPorTipo(@PathVariable String tipo) {
+        return service.listarPorTipo(tipo);
+    }
 
 
     @GetMapping("/{codigo}")
