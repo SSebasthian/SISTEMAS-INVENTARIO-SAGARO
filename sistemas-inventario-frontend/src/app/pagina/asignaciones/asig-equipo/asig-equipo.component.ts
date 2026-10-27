@@ -1376,6 +1376,7 @@ export class AsigEquipoComponent {
     this.editandoBackupIndex = index;
     this.backupFormData.backupCodigo = backup.backupCodigo;
     this.backupFormData.nombre = backup.nombre;
+    this.backupFormData.programa = backup.programa || '';
     this.backupFormData.frecuencia = backup.frecuencia;
     this.backupFormData.dia = backup.dia;
     this.backupFormData.hora = backup.hora;
@@ -1390,6 +1391,13 @@ export class AsigEquipoComponent {
     this.notificacionSnackbarService.info('Editando backup', `Editando "${backup.nombre}"`);
     this.cdr.detectChanges();
   }
+
+  get configuracionSeleccionadaNoEstaEnLista(): boolean {
+    if (!this.configuracionSeleccionada) return false;
+    const codigo = this.configuracionSeleccionada.codigo;
+    return !this.configuracionesBackup.some(c => Number(c.codigo) === Number(codigo));
+  }
+
 
   // ==================== ACCIONES PRINCIPALES ====================
 
@@ -3817,6 +3825,9 @@ export class AsigEquipoComponent {
     this.backupFormData = this.resetBackupFormData();
     this.cdr.detectChanges();
   }
+
+
+
 
 }
 
