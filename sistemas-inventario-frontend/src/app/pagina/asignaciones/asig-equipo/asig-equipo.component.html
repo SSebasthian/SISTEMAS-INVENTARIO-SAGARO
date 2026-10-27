@@ -924,18 +924,18 @@
                                                 </select>
                                             </div>
 
-                                            <div class="campo-panel">
+                                           <div class="campo-panel">
                                                 <label>NOMBRE BACKUP</label>
 
-                                                <!-- Modo edicion de equipo asignado: input readonly con el nombre actual -->
-                                                <input *ngIf="yaAsignada && modoEditarObligatorio"
+                                                <!-- Si es equipo asignado editando, O si es nueva asignación editando un backup de la lista: INPUT -->
+                                                <input *ngIf="(yaAsignada && modoEditarObligatorio) || (!yaAsignada && editandoBackupIndex !== null)"
                                                     type="text"
                                                     [value]="backupFormData.nombre || (configuracionSeleccionada?.nombre || '')"
                                                     readonly
                                                     class="input-readonly input-bloqueado" />
 
-                                                <!-- Nueva asignacion: select normal -->
-                                                <select *ngIf="!yaAsignada || !modoEditarObligatorio"
+                                                <!-- Si es nueva asignación creando un backup desde cero: SELECT -->
+                                                <select *ngIf="!yaAsignada && editandoBackupIndex === null"
                                                     [(ngModel)]="configuracionSeleccionada"
                                                     (ngModelChange)="seleccionarConfiguracionBackup($event)"
                                                     [disabled]="(yaAsignada && bloquearCorreo) || backupDisabled">
