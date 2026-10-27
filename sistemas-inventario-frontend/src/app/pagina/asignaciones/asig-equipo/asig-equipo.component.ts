@@ -442,7 +442,7 @@ export class AsigEquipoComponent {
   }
 
 
-  // Carga los correos asignados al EMPLEADO (vía asignaciones_recursos)
+  // Carga los correos asignados al EMPLEADO (via asignaciones_recursos)
   cargarCorreosAsignadosEquipo(serial: string): void {
     const cedula = this.equipo?.empleadoCedula || this.equipo?.asignadoCedula;
     if (!cedula) {
@@ -455,12 +455,12 @@ export class AsigEquipoComponent {
         console.log('🔍 Recursos del empleado (RAW):', recursos);
 
         const correos = (recursos || [])
-          // 🔥 Nueva propiedad: recursoNombre
+          //  Nueva propiedad: recursoNombre
           .filter((r: any) => r.recursoNombre === 'CORREO' && r.activo === true)
           .map((r: any) => ({
             numeroRecurso: r.numero,
             correoCodigo: Number(r.recursoCodigoAsignado),
-            // 🔥 Nueva propiedad: descripcionRecurso
+            //  Nueva propiedad: descripcionRecurso
             direccion: r.descripcionRecurso || 'Correo Asignado',
             fechaAsignacion: r.fechaAsignacion,
             observaciones: r.observaciones,
@@ -471,7 +471,7 @@ export class AsigEquipoComponent {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('❌ Error al cargar correos asignados:', err);
+        console.error('Error al cargar correos asignados:', err);
         this.correosAsignadosEquipo = [];
       }
     });
@@ -510,7 +510,7 @@ export class AsigEquipoComponent {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('❌ Error al cargar backups de correos:', err);
+        console.error('Error al cargar backups de correos:', err);
         this.backupsCorreosAsignadosEquipo = [];
       }
     });
@@ -1179,6 +1179,100 @@ export class AsigEquipoComponent {
     });
   }
 
+
+
+
+   async eliminarCorreoAsignado(index: number): Promise<void> {
+    const correoAEliminar = this.correosFormulario[index];
+    if (!correoAEliminar) return;
+
+    // Si es una nueva asignación (el equipo aún no se ha guardado), solo quitamos de la lista
+    if (!this.yaAsignada) {
+      this.correosFormulario.splice(index, 1);
+      this.cdr.detectChanges();
+      return;
+    }
+
+    try {
+      // 1. Buscar el recurso asignado (recurso_asignado)
+      const correoAsignado = this.correosAsignadosEquipo.find(
+        c => Number(c.correoCodigo) === Number(correoAEliminar.correoCodigo)
+      );
+
+      if (!correoAsignado || !correoAsignado.numeroRecurso) {
+        this.notificacionSnackbarService.warning('Advertencia', 'No se encontró el registro del correo en la base de datos.');
+        this.correosFormulario.splice(index, 1);
+        this.cdr.detectChanges();
+        return;
+      }
+
+      // 2. Buscar el backup asociado en la BD para obtener su 'numero' real
+      //    Si ya está en memoria, usamos ese. Si no, consultamos a la BD.
+      let backupParaDesactivar = this.backupsCorreosAsignadosEquipo.find(
+        b => Number(b.correoCodigo) === Number(correoAEliminar.correoCodigo) && b.numero && b.numero > 0
+      );
+
+      // Si no tenemos el número (porque se agregó en esta sesión y no se recargó la lista),
+      // consultamos la BD para obtener el registro real de equipodecomputo_backup
+      if (!backupParaDesactivar) {
+        const backupsDelEquipo = await firstValueFrom(
+          this.registrarAsignacionesService.obtenerBackupsPorSerial(this.equipo.serial)
+        );
+        const backupDesdeBD = (backupsDelEquipo || []).find(
+          (b: any) => b.correo && Number(b.correo.codigo) === Number(correoAEliminar.correoCodigo)
+        );
+        
+        if (backupDesdeBD) {
+          backupParaDesactivar = {
+            numero: backupDesdeBD.numero,
+            correoCodigo: Number(backupDesdeBD.correo.codigo),
+          } as any;
+        }
+      }
+
+      // 3. Desactivar el backup en equipodecomputo_backup
+      if (backupParaDesactivar && backupParaDesactivar.numero) {
+        await firstValueFrom(
+          this.registrarAsignacionesService.desactivarBackupAsignado(backupParaDesactivar.numero)
+        );
+        
+        // Lo quitamos de la lista visual de backups
+        this.backupsCorreosAsignadosEquipo = this.backupsCorreosAsignadosEquipo.filter(
+          b => Number(b.correoCodigo) !== Number(correoAEliminar.correoCodigo)
+        );
+      }
+
+      // 4. Desactivar el recurso asignado (recurso_asignado)
+      await firstValueFrom(
+        this.registrarAsignacionesService.devolverRecurso(
+          correoAsignado.numeroRecurso,
+          {
+            fechaDevolucion: new Date().toISOString().split('T')[0],
+            observaciones: 'DEVUELTO DESDE EDICION DEL EQUIPO'
+          }
+        )
+      );
+
+      // 5. Quitamos de las listas visuales
+      this.correosFormulario.splice(index, 1);
+      this.correosAsignadosEquipo = this.correosAsignadosEquipo.filter(
+        c => Number(c.correoCodigo) !== Number(correoAEliminar.correoCodigo)
+      );
+
+      // 6. Recargamos la lista de correos disponibles
+      this.cargarCorreos();
+
+      this.notificacionSnackbarService.success('Exito', 'Correo y su backup eliminados correctamente.');
+      this.cdr.detectChanges();
+
+    } catch (error: any) {
+      console.error('Error al eliminar correo:', error);
+      this.notificacionSnackbarService.error('Error', error.error?.error || 'No se pudo eliminar el correo.');
+    }
+  }
+
+
+
   private limpiarEstadoCorreo(): void {
     this.editandoCorreo = false;
     this.bloquearCorreo = false;
@@ -1820,6 +1914,7 @@ export class AsigEquipoComponent {
 
   // ==================== AUXILIARES ====================
 
+  
   actualizarNombreBackup(): void {
     const codigo =
       this.backupFormData.backupCodigo !== null && this.backupFormData.backupCodigo !== undefined
@@ -1835,17 +1930,33 @@ export class AsigEquipoComponent {
         .listarPorSoftwareYTipo(codigo, tipo)
         .subscribe({
           next: (data) => {
-            this.configuracionesBackup = data.filter((c) => c.activo === true);
+            // FILTRAMOS: 
+            // 1. Que este activo
+            // 2. Que NO este en uso por un equipo (enUso === false)
+            // 3. Que NO este asignado a un correo actualmente
+            const backupsOcupadosPorCorreos = this.backupsCorreosAsignadosEquipo.map(
+              b => Number(b.backupInformacionCodigo)
+            );
+
+            this.configuracionesBackup = data.filter((c) => 
+              c.activo === true && 
+              c.enUso === false && 
+              !backupsOcupadosPorCorreos.includes(Number(c.codigo))
+            );
+
             this.backupNombresList = [...this.configuracionesBackup];
+            
+            // Si el usuario estaba editando un backup que ya está en uso, lo quitamos
             if (this.configuracionSeleccionada) {
               const existe = this.configuracionesBackup.some(
                 (c) => c.codigo === this.configuracionSeleccionada.codigo
               );
-              if (!existe || this.configuracionSeleccionada.enUso) {
+              if (!existe) {
                 this.configuracionSeleccionada = null;
                 this.limpiarCamposBackup();
               }
             }
+            
             if (this.mostrarModalBackup) {
               this.filtrarNombresBackup();
             }
@@ -1864,6 +1975,7 @@ export class AsigEquipoComponent {
       this.configuracionSeleccionada = null;
     }
   }
+
 
   seleccionarConfiguracionBackup(config: any): void {
     if (config === null) {
@@ -2377,9 +2489,81 @@ export class AsigEquipoComponent {
     this.modoUbicacion = 'normales';
   }
 
-  guardarPanel(): void {
+
+  // ==================== GUARDAR CORREO NUEVO DESDE EDICION ====================
+
+  async guardarCorreoNuevoEnEdicion(item: any): Promise<void> {
+    const cedula = this.equipo.empleadoCedula || this.equipo.asignadoCedula;
+    if (!cedula || !this.equipo.asignacionId) {
+      throw new Error('No hay cedula de empleado o ID de asignacion activa.');
+    }
+
+    // 1. Guardar el recurso asignado (recurso_asignado)
+    const payloadRecurso = {
+      empleadoCedula: cedula,
+      tipo: 'CORREO',
+      recursoTipoId: 1, // Ajusta este ID si es diferente en tu BD
+      recursoId: Number(item.correoCodigo),
+      fechaAsignacion: new Date().toISOString().split('T')[0],
+      observaciones: 'ASIGNACION DE CORREO DESDE EDICION'
+    };
+
+    // Usamos firstValueFrom para manejar la respuesta de la asignación
+    const respAsignacion = await firstValueFrom(
+      this.registrarAsignacionesService.asignarRecurso(payloadRecurso)
+    );
+
+    // Guardamos en memoria el ID del recurso recien creado
+    this.correosAsignadosEquipo.push({
+      numeroRecurso: respAsignacion.numero,
+      correoCodigo: Number(item.correoCodigo),
+      direccion: item.direccion || 'Correo Asignado',
+      fechaAsignacion: respAsignacion.fechaAsignacion,
+      observaciones: respAsignacion.observaciones
+    });
+
+    // 2. Si tiene backup, guardarlo en equipodecomputo_backup
+    if (item.realizarBackup && item.backup) {
+      const backupInfoCodigo = item.backup.backupInformacionCodigo;
+
+      if (!backupInfoCodigo) {
+        throw new Error('El correo tiene backup pero no tiene un código de información de backup válido.');
+      }
+
+      // Aqui pasamos el asignacionConsecutivo activo y el correoCodigo
+      await firstValueFrom(
+        this.registrarAsignacionesService.asignarBackupAEquipo(
+          this.equipo.serial,
+          Number(backupInfoCodigo),
+          Number(this.equipo.asignacionId),
+          Number(item.correoCodigo) // Enviamos el correoCodigo
+        )
+      );
+
+      // Guardamos en memoria el backup para que se rendericen los chips
+      const programa = this.backupList.find(b => b.codigo === item.backup.backupCodigo);
+      this.backupsCorreosAsignadosEquipo.push({
+        numero: 0, // Se actualizará si es necesario, pero no es vital para el render
+        correoCodigo: Number(item.correoCodigo),
+        correoDireccion: item.direccion,
+        backupInformacionCodigo: backupInfoCodigo,
+        backupCodigo: item.backup.backupCodigo,
+        programa: programa?.nombre || item.backup.programa || 'Backup',
+        nombre: item.backup.nombre,
+        frecuencia: item.backup.frecuencia,
+        dia: item.backup.dia,
+        hora: item.backup.hora,
+        ubicaciones: item.backup.ubicaciones || [],
+        ubicacionesExcluidas: item.backup.ubicacionesExcluidas || []
+      });
+    }
+  }
+
+
+
+  async guardarPanel(): Promise<void> {
     if (this.panelTipo === 'correo') {
-      // ⚠️ IMPORTANTE: no usar Number() porque Number(null) === 0
+      // IMPORTANTE: no usar Number() porque Number(null) === 0
       // y eso confunde "no selecciono nada" con "selecciono NO APLICA (codigo 0)"
       const codigoRaw = this.panelCorreo.correoCodigo;
       const esNoAplica = codigoRaw !== null
@@ -2429,6 +2613,55 @@ export class AsigEquipoComponent {
       }
 
       // CASO 3: guardar correos reales
+      if (codigoRaw !== null && codigoRaw !== undefined && codigoRaw !== '' && !esNoAplica) {
+        const yaEsta = this.correosFormulario.some(c => Number(c.correoCodigo) === Number(codigoRaw));
+        if (!yaEsta) {
+          const correo = this.correosList.find(c => Number(c.codigo) === Number(codigoRaw));
+          if (correo) {
+            this.correosFormulario.push({
+              correoCodigo: correo.codigo,
+              direccion: correo.direccion,
+              realizarBackup: this.panelCorreo.realizarBackup,
+              backup: this.panelCorreo.realizarBackup ? { ...this.backupFormData, tipo: 'CORREO' } : null,
+            });
+            this.panelCorreo = { correoCodigo: null, realizarBackup: false };
+          }
+        }
+      }
+
+      // CASO 4: GUARDAR EN BD (SI ESTAMOS EDITANDO UN EQUIPO)
+     if (this.yaAsignada) {
+        const correosNuevos = this.correosFormulario.filter(c =>
+          !this.correosAsignadosEquipo.some(ca => Number(ca.correoCodigo) === Number(c.correoCodigo))
+        );
+
+        if (correosNuevos.length > 0) {
+          this.cdr.detectChanges();
+
+          try {
+            // Ejecutamos el guardado en cadena para cada correo nuevo
+            for (const item of correosNuevos) {
+              await this.guardarCorreoNuevoEnEdicion(item);
+            }
+
+            this.softwareSeleccionado.correos = [...this.correosFormulario];
+            this.cdr.detectChanges();
+            
+            this.notificacionSnackbarService.success('Exito', 'Correo(s) agregado(s) y asignado(s) correctamente.');
+            
+            // 🔥 CLAVE: Cerramos el panel inmediatamente despues de guardar
+            this.cerrarPanel();
+            return; 
+            
+          } catch (error: any) {
+            console.error('Error al asignar nuevos correos:', error);
+            this.notificacionSnackbarService.error('Error', error.message || 'No se pudieron asignar los correos.');
+            return; // Si hay error, dejamos el panel abierto para que corrija
+          }
+        }
+      }
+
+      // Si no hay correos nuevos que guardar, solo actualizamos y cerramos
       this.softwareSeleccionado.correos = [...this.correosFormulario];
       this.cdr.detectChanges();
       this.notificacionSnackbarService.success('Exito', 'Correos guardados');
@@ -2436,7 +2669,6 @@ export class AsigEquipoComponent {
       return;
     }
 
-    this.mostrarAyudaCorreo = false;
 
     if (this.panelTipo === 'antivirus') {
       const codigo = Number(this.panelData.antivirusCodigo);
@@ -2471,11 +2703,6 @@ export class AsigEquipoComponent {
 
       this.cdr.detectChanges();
       this.cerrarPanel();
-
-
-
-
-
 
 
     } else if (this.panelTipo === 'backup') {
@@ -3311,7 +3538,7 @@ export class AsigEquipoComponent {
 
       this.cdr.detectChanges();
     } catch (error) {
-      console.error('❌ Error al agregar software:', error);
+      console.error('Error al agregar software:', error);
       this.notificacionSnackbarService.error('Error', 'No se pudo agregar el software');
     }
   }

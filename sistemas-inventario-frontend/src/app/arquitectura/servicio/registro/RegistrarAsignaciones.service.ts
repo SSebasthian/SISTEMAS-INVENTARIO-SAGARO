@@ -119,17 +119,19 @@ export class RegistrarAsignacionesService {
   asignarBackupAEquipo(
     serial: string,
     backupInformacionCodigo: number,
-    asignacionConsecutivo: number
+    asignacionConsecutivo: number,
+    correoCodigo?: number | null
   ): Observable<any> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('serial', serial)
       .set('backupInformacionCodigo', backupInformacionCodigo.toString())
       .set('asignacionConsecutivo', asignacionConsecutivo.toString());
-    return this.http.post(
-      `${this.apiUrlConsultarAsignaciones}/equipos-backup-informacion`,
-      null,
-      { params }
-    );
+
+    if (correoCodigo !== undefined && correoCodigo !== null) {
+      params = params.set('correoCodigo', correoCodigo.toString());
+    }
+
+    return this.http.post(`${this.apiUrlConsultarAsignaciones}/equipos-backup-informacion`, null, { params });
   }
 
 
