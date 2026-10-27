@@ -1,5 +1,6 @@
 package com.sistemas_inventario_backend.controladores;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.RecursoAsignadoRespuesta;
 import com.sistemas_inventario_backend.entidades.RecursoAsignado;
 import com.sistemas_inventario_backend.servicios.RecursoAsignadoService;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +51,8 @@ public class RecursoAsignadoController {
     @GetMapping("/empleado/{cedula}")
     public ResponseEntity<?> listarPorEmpleado(@PathVariable String cedula) {
         try {
-            List<RecursoAsignado> lista = service.listarActivasPorEmpleado(cedula);
+            // Ahora devuelve List<RecursoAsignadoRespuesta>
+            List<RecursoAsignadoRespuesta> lista = service.listarActivasPorEmpleado(cedula);
             return ResponseEntity.ok(lista);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

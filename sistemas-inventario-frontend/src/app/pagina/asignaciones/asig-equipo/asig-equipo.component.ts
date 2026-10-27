@@ -446,33 +446,28 @@ export class AsigEquipoComponent {
   cargarCorreosAsignadosEquipo(serial: string): void {
     const cedula = this.equipo?.empleadoCedula || this.equipo?.asignadoCedula;
     if (!cedula) {
-      console.warn('⚠️ No hay cedula de empleado en equipo para cargar correos');
       this.correosAsignadosEquipo = [];
       return;
     }
 
     this.registrarAsignacionesService.listarRecursosPorEmpleado(cedula).subscribe({
       next: (recursos) => {
+        console.log('🔍 Recursos del empleado (RAW):', recursos);
 
-        // En recurso_asignado:
-        // - recurso_codigo      = 1 → tipo CORREO
-        // - recurso_codigo_asignado = código del correo en correoscorporativos
-        // - activo = 1
         const correos = (recursos || [])
-          .filter((r: any) => {
-            const tipoCodigo = Number(r.recursoCodigo ?? r.recurso_codigo ?? r.recurso?.codigo);
-            const activo = r.activo === true || Number(r.activo) === 1;
-            return tipoCodigo === 1 && activo;
-          })
+          // 🔥 Nueva propiedad: recursoNombre
+          .filter((r: any) => r.recursoNombre === 'CORREO' && r.activo === true)
           .map((r: any) => ({
             numeroRecurso: r.numero,
-            correoCodigo: Number(r.recursoCodigoAsignado ?? r.recurso_codigo_asignado),
-            direccion: r.recurso?.direccion || r.descripcionRecurso || r.recursoDireccion || '',
-            fechaAsignacion: r.fechaAsignacion ?? r.fecha_asignacion,
+            correoCodigo: Number(r.recursoCodigoAsignado),
+            // 🔥 Nueva propiedad: descripcionRecurso
+            direccion: r.descripcionRecurso || 'Correo Asignado',
+            fechaAsignacion: r.fechaAsignacion,
             observaciones: r.observaciones,
           }));
 
         this.correosAsignadosEquipo = correos;
+        console.log('📧 correosAsignadosEquipo mapeados:', this.correosAsignadosEquipo);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -1202,9 +1197,12 @@ export class AsigEquipoComponent {
       this.notificacionSnackbarService.warning('Error', 'El correo no tiene informacion de backup');
       return;
     }
+
     this.editandoCorreo = true;
     this.bloquearCorreo = true;
     this.indiceCorreoEditando = index;
+
+    // 1. Asignamos los datos al formulario
     this.panelCorreo = {
       correoCodigo: item.correoCodigo,
       realizarBackup: true,
@@ -1218,33 +1216,40 @@ export class AsigEquipoComponent {
       dia: item.backup.dia || null,
       hora: item.backup.hora || null,
       ubicaciones: item.backup.ubicaciones?.length ? [...item.backup.ubicaciones] : [''],
-      ubicacionesExcluidas: item.backup.ubicacionesExcluidas?.length
-        ? [...item.backup.ubicacionesExcluidas]
-        : [''],
+      ubicacionesExcluidas: item.backup.ubicacionesExcluidas?.length ? [...item.backup.ubicacionesExcluidas] : [''],
     };
+
+    // 2. La clave: Forzamos que la configuracion exista en la lista del <select>
     if (item.backup.backupInformacionCodigo) {
-      const config = this.configuracionesBackup.find(
-        (c) => c.codigo === item.backup.backupInformacionCodigo
-      );
-      if (config) {
-        this.configuracionSeleccionada = config;
+      const configParaSelect = {
+        codigo: item.backup.backupInformacionCodigo,
+        nombre: item.backup.nombre,
+        frecuencia: item.backup.frecuencia,
+        dia: item.backup.dia,
+        hora: item.backup.hora,
+        ubicacion: item.backup.ubicaciones?.join(';') || '',
+        ubicacionExcluida: item.backup.ubicacionesExcluidas?.join(';') || '',
+        enUso: false // Lo forzamos a false para que no lo oculte
+      };
+
+      // Si ya esta en la lista (de una apertura anterior), lo actualizamos
+      const existeIdx = this.configuracionesBackup.findIndex(c => c.codigo === configParaSelect.codigo);
+      if (existeIdx !== -1) {
+        this.configuracionesBackup[existeIdx] = configParaSelect;
       } else {
-        this.configuracionSeleccionada = {
-          codigo: item.backup.backupInformacionCodigo,
-          nombre: item.backup.nombre,
-          frecuencia: item.backup.frecuencia,
-          dia: item.backup.dia,
-          hora: item.backup.hora,
-          ubicacion: item.backup.ubicaciones.join(';'),
-          ubicacionExcluida: item.backup.ubicacionesExcluidas.join(';'),
-        };
+        // Si no esta, lo agregamos a la lista
+        this.configuracionesBackup.push(configParaSelect);
       }
+
+      this.configuracionSeleccionada = configParaSelect;
     } else {
       this.configuracionSeleccionada = null;
     }
+
     this.cdr.detectChanges();
     this.notificacionSnackbarService.info('Editando correo', `Editando "${item.direccion}"`);
   }
+
 
   volverCorreo(): void {
     this.panelCorreo = { correoCodigo: null, realizarBackup: false };
@@ -2250,15 +2255,45 @@ export class AsigEquipoComponent {
     } else if (tipo === 'correo') {
       if (this.correosList.length === 0) this.cargarCorreos();
       if (this.backupList.length === 0) this.cargarBackups();
-      if (this.softwareSeleccionado.correos?.length) {
-        this.correosFormulario = [...this.softwareSeleccionado.correos];
+
+      if (this.yaAsignada) {
+        // Mapeamos los correosAsignadosEquipo al formulario con su backup
+        this.correosFormulario = this.correosAsignadosEquipo.map((correo: any) => {
+          const backupAsociado = this.getBackupDeCorreo(correo.correoCodigo);
+
+
+          return {
+            correoCodigo: correo.correoCodigo,
+            direccion: correo.direccion,
+            realizarBackup: !!backupAsociado,
+            backup: backupAsociado ? {
+              backupInformacionCodigo: backupAsociado.backupInformacionCodigo,
+              backupCodigo: backupAsociado.backupCodigo,
+              programa: backupAsociado.programa,
+              nombre: backupAsociado.nombre,
+              frecuencia: backupAsociado.frecuencia,
+              dia: backupAsociado.dia,
+              hora: backupAsociado.hora,
+              ubicaciones: backupAsociado.ubicaciones,
+              ubicacionesExcluidas: backupAsociado.ubicacionesExcluidas,
+              tipo: 'CORREO'
+            } : null
+          };
+        });
       } else {
-        this.correosFormulario = [];
+        if (this.softwareSeleccionado.correos?.length) {
+          this.correosFormulario = [...this.softwareSeleccionado.correos];
+        } else {
+          this.correosFormulario = [];
+        }
       }
+
       this.panelCorreo = { correoCodigo: null, realizarBackup: false };
       this.backupFormData = this.resetBackupFormData();
       this.modoUbicacion = 'normales';
       this.panelTitulo = 'Administrar Correos';
+
+
     } else if (tipo === 'office') {
       if (this.officeList.length === 0) {
         this.consultarSoftwareService.listarPorTipo(3).subscribe({
@@ -2345,14 +2380,14 @@ export class AsigEquipoComponent {
   guardarPanel(): void {
     if (this.panelTipo === 'correo') {
       // ⚠️ IMPORTANTE: no usar Number() porque Number(null) === 0
-      // y eso confunde "no seleccionó nada" con "seleccionó NO APLICA (codigo 0)"
+      // y eso confunde "no selecciono nada" con "selecciono NO APLICA (codigo 0)"
       const codigoRaw = this.panelCorreo.correoCodigo;
       const esNoAplica = codigoRaw !== null
         && codigoRaw !== undefined
         && codigoRaw !== ''
         && Number(codigoRaw) === 0;
 
-      // CASO 1: NO APLICA (solo si REALMENTE seleccionó la opcion 0)
+      // CASO 1: NO APLICA (solo si REALMENTE selecciono la opcion 0)
       if (esNoAplica) {
         this.correosFormulario = [{ correoCodigo: 0, direccion: 'NO APLICA', realizarBackup: false, backup: null }];
         this.panelCorreo.correoCodigo = null;

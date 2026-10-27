@@ -344,7 +344,10 @@
                                     <!-- Correo (solo lectura) -->
                                     <div class="software-card"
                                         [class.seleccionado]="yaAsignada ? correosAsignadosEquipo.length > 0 : softwareSeleccionado.correos?.length > 0"
-                                        [class.label-error]="!yaAsignada && errorCorreo">
+                                        [class.label-error]="!yaAsignada && errorCorreo"
+                                        [style.cursor]="yaAsignada && modoEditarObligatorio ? 'pointer' : 'default'"
+                                        (click)="yaAsignada && modoEditarObligatorio && abrirPanel('correo')">
+
 
                                         <div class="software-card-header">
                                             <div class="software-icon-asignado">
@@ -912,10 +915,11 @@
                                             <div class="campo-panel">
                                                 <label>PROGRAMA BACKUP</label>
                                                 <select [(ngModel)]="backupFormData.backupCodigo"
-                                                    (change)="onProgramaBackupChange()">
-                                                    <option *ngFor="let prog of backupProgramasConNoAplica"
-                                                        [ngValue]="prog.codigo">
-                                                        {{ prog.nombre }}
+                                                    (change)="actualizarNombreBackup()"
+                                                    [disabled]="yaAsignada && bloquearCorreo">
+                                                    <option [value]="null" disabled selected></option>
+                                                    <option *ngFor="let b of backupProgramasSinNoAplica" [value]="b.codigo">
+                                                        {{ b.nombre }}
                                                     </option>
                                                 </select>
                                             </div>
@@ -924,13 +928,16 @@
                                                 <label>NOMBRE BACKUP</label>
                                                 <select [(ngModel)]="configuracionSeleccionada"
                                                     (ngModelChange)="seleccionarConfiguracionBackup($event)"
-                                                    [disabled]="programaSeleccionadoEsNoAplica">
+                                                    [disabled]="(yaAsignada && bloquearCorreo) || backupDisabled">
                                                     <option [ngValue]="null"></option>
-                                                    <option *ngFor="let c of backupsDisponibles" [ngValue]="c">
-                                                        {{ c.nombre }}
-                                                    </option>
+                                                    <ng-container *ngFor="let c of configuracionesBackup">
+                                                        <!-- Permitir que el seleccionado se vea aunque esté en uso, si estamos bloqueados -->
+                                                        <option *ngIf="!c.enUso || yaAsignada" [ngValue]="c">
+                                                            {{ c.nombre }}
+                                                        </option>
+                                                    </ng-container>
                                                     <option [value]="-1" [disabled]="true">───────────────</option>
-                                                    <option [ngValue]="null">CREAR NUEVO</option>
+                                                    <option [ngValue]="null" *ngIf="!yaAsignada">CREAR NUEVO</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -1118,10 +1125,20 @@
                                             </div>
                                         </div>
                                         <!-- AGREGAR (change) -->
-                                        <select [(ngModel)]="panelCorreo.correoCodigo" (change)="onCorreoChange()">
+                                        <select [(ngModel)]="panelCorreo.correoCodigo" (change)="onCorreoChange()"
+                                            [disabled]="yaAsignada && bloquearCorreo">
                                             <option [ngValue]="null" disabled selected></option>
-                                            <option *ngFor="let c of correosFiltrados" [ngValue]="c.codigo">{{
-                                                c.direccion }}</option>
+                                            
+                                            <!-- OPCION PARA MODO EDICION: Muestra el correo actual si no está en la lista de disponibles -->
+                                            <option *ngIf="yaAsignada && bloquearCorreo && panelCorreo.correoCodigo" 
+                                                    [ngValue]="panelCorreo.correoCodigo">
+                                                {{ correosAsignadosEquipo[0]?.direccion }}
+                                            </option>
+
+                                            <!-- Opciones normales (disponibles) -->
+                                            <option *ngFor="let c of correosFiltrados" [ngValue]="c.codigo">
+                                                {{ c.direccion }}
+                                            </option>
                                         </select>
                                     </div>
 
@@ -1132,10 +1149,10 @@
                                             <div class="campo-panel">
                                                 <label>PROGRAMA BACKUP</label>
                                                 <select [(ngModel)]="backupFormData.backupCodigo"
-                                                    (change)="actualizarNombreBackup()">
+                                                    (change)="actualizarNombreBackup()"
+                                                    [disabled]="yaAsignada && bloquearCorreo">
                                                     <option [value]="null" disabled selected></option>
-                                                    <option *ngFor="let b of backupProgramasSinNoAplica"
-                                                        [value]="b.codigo">
+                                                    <option *ngFor="let b of backupProgramasSinNoAplica" [value]="b.codigo">
                                                         {{ b.nombre }}
                                                     </option>
                                                 </select>
@@ -1144,15 +1161,15 @@
                                                 <label>NOMBRE BACKUP</label>
                                                 <select [(ngModel)]="configuracionSeleccionada"
                                                     (ngModelChange)="seleccionarConfiguracionBackup($event)"
-                                                    [disabled]="backupDisabled">
+                                                    [disabled]="(yaAsignada && bloquearCorreo) || backupDisabled">
                                                     <option [ngValue]="null"></option>
                                                     <ng-container *ngFor="let c of configuracionesBackup">
-                                                        <option *ngIf="!c.enUso" [ngValue]="c">
+                                                        <option *ngIf="!c.enUso || yaAsignada" [ngValue]="c">
                                                             {{ c.nombre }}
                                                         </option>
                                                     </ng-container>
                                                     <option [value]="-1" [disabled]="true">───────────────</option>
-                                                    <option [ngValue]="null">CREAR NUEVO</option>
+                                                    <option [ngValue]="null" *ngIf="!yaAsignada">CREAR NUEVO</option>
                                                 </select>
                                             </div>
                                         </div>

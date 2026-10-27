@@ -1,12 +1,16 @@
 package com.sistemas_inventario_backend.servicios;
 
+import com.sistemas_inventario_backend.DTOs.Respuesta.RecursoAsignadoRespuesta;
 import com.sistemas_inventario_backend.entidades.*;
 import com.sistemas_inventario_backend.repositorios.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -23,11 +27,11 @@ public class RecursoAsignadoService {
     /**
      * Asigna un recurso corporativo a un empleado.
      *
-     * @param cedula        Cedula del empleado
-     * @param nombreRecurso Nombre del tipo de recurso ("TELEFONO", "CORREO", "CUENTA")
-     * @param recursoCodigoAsignado     Codigo del recurso específico (Long convertido a String)
-     * @param fecha         Fecha de asignacion (si es null, se usa hoy)
-     * @param observaciones Observaciones de la asignación
+     * @param cedula                Cedula del empleado
+     * @param nombreRecurso         Nombre del tipo de recurso ("TELEFONO", "CORREO", "CUENTA")
+     * @param recursoCodigoAsignado Codigo del recurso específico (Long convertido a String)
+     * @param fecha                 Fecha de asignacion (si es null, se usa hoy)
+     * @param observaciones         Observaciones de la asignación
      * @return RecursoAsignado guardado
      */
     @Transactional
@@ -93,7 +97,7 @@ public class RecursoAsignadoService {
     /**
      * Marca una asignacion como devuelta.
      *
-     * @param asignacionId   ID de la asignacion
+     * @param asignacionId    ID de la asignacion
      * @param fechaDevolucion Fecha de devolucion (si null, hoy)
      * @param observaciones   Observaciones de la devolucion
      */
@@ -110,12 +114,47 @@ public class RecursoAsignadoService {
     }
 
     /**
-     * Lista todas las asignaciones activas de un empleado.
-     *
-     * @param cedula Cedula del empleado
-     * @return Lista de asignaciones activas
+     * Lista todas las asignaciones activas de un empleado con descripciones resueltas.
      */
-    public List<RecursoAsignado> listarActivasPorEmpleado(String cedula) {
-        return asignacionRepo.findByEmpleadoCedulaAndActivoTrue(cedula);
+    public List<RecursoAsignadoRespuesta> listarActivasPorEmpleado(String cedula) {
+        List<RecursoAsignado> asignaciones = asignacionRepo.findByEmpleadoCedulaAndActivoTrue(cedula);
+
+        return asignaciones.stream().map(a -> {
+            RecursoAsignadoRespuesta dto = new RecursoAsignadoRespuesta();
+            dto.setNumero(a.getNumero());
+            dto.setEmpleadoCedula(a.getEmpleado().getCedula());
+            dto.setRecursoCodigo(a.getRecurso().getCodigo());
+            dto.setRecursoNombre(a.getRecurso().getNombre());
+            dto.setRecursoTipoCodigo(a.getRecursoTipo().getCodigo());
+            dto.setRecursoCodigoAsignado(a.getRecursoCodigoAsignado());
+            dto.setFechaAsignacion(a.getFechaAsignacion());
+            dto.setFechaDevolucion(a.getFechaDevolucion());
+            dto.setObservaciones(a.getObservaciones());
+            dto.setActivo(a.getActivo());
+
+            // RESOLVER LA DIRECCION REAL SEGUN EL TIPO DE RECURSO
+            if ("CORREO".equalsIgnoreCase(a.getRecurso().getNombre())) {
+                correoRepo.findById(Long.valueOf(a.getRecursoCodigoAsignado()))
+                        .ifPresent(correo -> dto.setDescripcionRecurso(correo.getDireccion()));
+            } else if ("TELEFONO".equalsIgnoreCase(a.getRecurso().getNombre())) {
+                telefonoRepo.findById(Long.valueOf(a.getRecursoCodigoAsignado()))
+                        .ifPresent(tel -> dto.setDescripcionRecurso(tel.getNumero()));
+                //  ajusta el getter del teléfono si es distinto (puede ser getLinea, getNumero, etc.)
+            } else if ("CUENTA".equalsIgnoreCase(a.getRecurso().getNombre())) {
+                cuentaRepo.findById(Long.valueOf(a.getRecursoCodigoAsignado()))
+                        .ifPresent(cuenta -> {
+                            String plataforma = cuenta.getPlataforma() != null
+                                    ? cuenta.getPlataforma().getDescripcion()
+                                    : "SIN PLATAFORMA";
+                            String usuario = cuenta.getUsuario() != null
+                                    ? cuenta.getUsuario()
+                                    : "SIN USUARIO";
+
+                            dto.setDescripcionRecurso(usuario + " - " + plataforma);
+                        });
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 }
