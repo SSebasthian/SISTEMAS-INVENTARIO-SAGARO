@@ -452,7 +452,7 @@ export class AsigEquipoComponent {
 
     this.registrarAsignacionesService.listarRecursosPorEmpleado(cedula).subscribe({
       next: (recursos) => {
-        console.log('🔍 Recursos del empleado (RAW):', recursos);
+        console.log('Recursos del empleado (RAW):', recursos);
 
         const correos = (recursos || [])
           //  Nueva propiedad: recursoNombre
@@ -1182,7 +1182,7 @@ export class AsigEquipoComponent {
 
 
 
-   async eliminarCorreoAsignado(index: number): Promise<void> {
+  async eliminarCorreoAsignado(index: number): Promise<void> {
     const correoAEliminar = this.correosFormulario[index];
     if (!correoAEliminar) return;
 
@@ -1207,7 +1207,7 @@ export class AsigEquipoComponent {
       }
 
       // 2. Buscar el backup asociado en la BD para obtener su 'numero' real
-      //    Si ya está en memoria, usamos ese. Si no, consultamos a la BD.
+      //    Si ya esta en memoria, usamos ese. Si no, consultamos a la BD.
       let backupParaDesactivar = this.backupsCorreosAsignadosEquipo.find(
         b => Number(b.correoCodigo) === Number(correoAEliminar.correoCodigo) && b.numero && b.numero > 0
       );
@@ -1221,7 +1221,7 @@ export class AsigEquipoComponent {
         const backupDesdeBD = (backupsDelEquipo || []).find(
           (b: any) => b.correo && Number(b.correo.codigo) === Number(correoAEliminar.correoCodigo)
         );
-        
+
         if (backupDesdeBD) {
           backupParaDesactivar = {
             numero: backupDesdeBD.numero,
@@ -1235,7 +1235,7 @@ export class AsigEquipoComponent {
         await firstValueFrom(
           this.registrarAsignacionesService.desactivarBackupAsignado(backupParaDesactivar.numero)
         );
-        
+
         // Lo quitamos de la lista visual de backups
         this.backupsCorreosAsignadosEquipo = this.backupsCorreosAsignadosEquipo.filter(
           b => Number(b.correoCodigo) !== Number(correoAEliminar.correoCodigo)
@@ -1914,7 +1914,7 @@ export class AsigEquipoComponent {
 
   // ==================== AUXILIARES ====================
 
-  
+
   actualizarNombreBackup(): void {
     const codigo =
       this.backupFormData.backupCodigo !== null && this.backupFormData.backupCodigo !== undefined
@@ -1938,15 +1938,15 @@ export class AsigEquipoComponent {
               b => Number(b.backupInformacionCodigo)
             );
 
-            this.configuracionesBackup = data.filter((c) => 
-              c.activo === true && 
-              c.enUso === false && 
+            this.configuracionesBackup = data.filter((c) =>
+              c.activo === true &&
+              c.enUso === false &&
               !backupsOcupadosPorCorreos.includes(Number(c.codigo))
             );
 
             this.backupNombresList = [...this.configuracionesBackup];
-            
-            // Si el usuario estaba editando un backup que ya está en uso, lo quitamos
+
+            // Si el usuario estaba editando un backup que ya esta en uso, lo quitamos
             if (this.configuracionSeleccionada) {
               const existe = this.configuracionesBackup.some(
                 (c) => c.codigo === this.configuracionSeleccionada.codigo
@@ -1956,7 +1956,7 @@ export class AsigEquipoComponent {
                 this.limpiarCamposBackup();
               }
             }
-            
+
             if (this.mostrarModalBackup) {
               this.filtrarNombresBackup();
             }
@@ -2197,6 +2197,75 @@ export class AsigEquipoComponent {
       );
     }
   }
+
+
+  private async guardarEdicionAntivirusAsignado(): Promise<void> {
+    const codigo = Number(this.panelData.antivirusCodigo);
+    const politicaCodigo = Number(this.panelData.politicaCodigo);
+
+    if (!codigo) {
+      this.notificacionSnackbarService.warning('Campos incompletos', 'Seleccione un antivirus');
+      return;
+    }
+
+    // Si es "SIN PROTECCION" (codigo 1), forzar política 1
+    const politicaFinal = codigo === 1 ? 1 : politicaCodigo;
+
+    if (!politicaFinal) {
+      this.notificacionSnackbarService.warning('Campos incompletos', 'Seleccione una política');
+      return;
+    }
+
+    const antivirusActual = this.getSoftwarePorTipoPrimero('ANTIVIRUS');
+
+    console.log('Antivirus actual:', antivirusActual);
+    console.log('Nuevo antivirus:', { codigo, politicaFinal });
+
+    // Si es el mismo antivirus y misma política → no hacer nada
+    if (antivirusActual &&
+      Number(antivirusActual.softwareCodigo) === codigo &&
+      Number(antivirusActual.politicaCodigo) === politicaFinal) {
+      this.notificacionSnackbarService.info('Sin cambios', 'El antivirus y la política son los mismos');
+      this.cerrarPanel();
+      return;
+    }
+
+    try {
+      // 1. Desactivar el antivirus anterior
+      if (antivirusActual) {
+        await firstValueFrom(
+          this.consultarAsignacionesService.desactivarSoftwareEquipo(antivirusActual.numero)
+        );
+        console.log('Antivirus anterior desactivado, numero:', antivirusActual.numero);
+      }
+
+      // 2. Asignar el nuevo antivirus (o reasignar el mismo con nueva política)
+      await firstValueFrom(
+        this.registrarAsignacionesService.asignarSoftwareAEquipo(
+          this.equipo.serial,
+          codigo,
+          this.equipo.asignacionId,
+          politicaFinal
+        )
+      );
+      console.log('Antivirus asignado:', { codigo, politicaFinal });
+
+      // 3. Recargar software asignado
+      await this.cargarSoftwareAsignado(this.equipo.serial);
+
+      this.notificacionSnackbarService.success('Éxito', 'Antivirus actualizado correctamente');
+      this.cerrarPanel();
+      this.cdr.detectChanges();
+
+    } catch (err: any) {
+      console.error('❌ Error actualizando antivirus:', err);
+      this.notificacionSnackbarService.error(
+        'Error',
+        err?.error?.error || err?.message || 'No se pudo actualizar el antivirus'
+      );
+    }
+  }
+
 
   // ==================== MODAL CREAR NOMBRE BACKUP ====================
 
@@ -2449,10 +2518,54 @@ export class AsigEquipoComponent {
   }
 
   private inicializarPanelAntivirus(): void {
+    // Si el equipo YA esta asignado, cargar el antivirus actual desde softwareAsignadoList
+    if (this.yaAsignada) {
+      const antivirusActual = this.getSoftwarePorTipoPrimero('ANTIVIRUS');
+
+      if (antivirusActual) {
+        this.panelData.antivirusCodigo = antivirusActual.softwareCodigo || null;
+        this.panelData.politicaCodigo = antivirusActual.politicaCodigo || null;
+
+        console.log('Antivirus actual:', {
+          softwareCodigo: antivirusActual.softwareCodigo,
+          politicaCodigo: antivirusActual.politicaCodigo,
+          nombre: antivirusActual.nombreSoftware,
+        });
+
+        // Cargar las políticas del antivirus actual
+        if (this.panelData.antivirusCodigo) {
+          this.consultarAntivirusPoliticaService
+            .listarPorSoftware(this.panelData.antivirusCodigo)
+            .subscribe({
+              next: (data) => {
+                this.politicasList = data;
+                this.panelData.politicaCodigo = antivirusActual.politicaCodigo || null;
+                this.cdr.detectChanges();
+              },
+              error: () => {
+                this.politicasList = [];
+              },
+            });
+        }
+
+        this.panelTitulo = 'Editar Antivirus';
+        this.cdr.detectChanges();
+        return;
+      }
+
+      // No tiene antivirus asignado
+      this.panelData.antivirusCodigo = null;
+      this.panelData.politicaCodigo = null;
+      this.politicasList = [];
+      this.panelTitulo = 'Agregar Antivirus';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Flujo original para NUEVA asignación
     const actual = this.softwareSeleccionado.antivirus;
     if (actual) {
       this.panelData.antivirusCodigo = actual.antivirusCodigo || null;
-      // Si es "SIN PROTECCION", forzar politica 1
       if (actual.antivirusCodigo === 1) {
         this.panelData.politicaCodigo = 1;
       } else {
@@ -2527,7 +2640,7 @@ export class AsigEquipoComponent {
       const backupInfoCodigo = item.backup.backupInformacionCodigo;
 
       if (!backupInfoCodigo) {
-        throw new Error('El correo tiene backup pero no tiene un código de información de backup válido.');
+        throw new Error('El correo tiene backup pero no tiene un código de información de backup valido.');
       }
 
       // Aqui pasamos el asignacionConsecutivo activo y el correoCodigo
@@ -2543,7 +2656,7 @@ export class AsigEquipoComponent {
       // Guardamos en memoria el backup para que se rendericen los chips
       const programa = this.backupList.find(b => b.codigo === item.backup.backupCodigo);
       this.backupsCorreosAsignadosEquipo.push({
-        numero: 0, // Se actualizará si es necesario, pero no es vital para el render
+        numero: 0, // Se actualizara si es necesario, pero no es vital para el render
         correoCodigo: Number(item.correoCodigo),
         correoDireccion: item.direccion,
         backupInformacionCodigo: backupInfoCodigo,
@@ -2630,7 +2743,7 @@ export class AsigEquipoComponent {
       }
 
       // CASO 4: GUARDAR EN BD (SI ESTAMOS EDITANDO UN EQUIPO)
-     if (this.yaAsignada) {
+      if (this.yaAsignada) {
         const correosNuevos = this.correosFormulario.filter(c =>
           !this.correosAsignadosEquipo.some(ca => Number(ca.correoCodigo) === Number(c.correoCodigo))
         );
@@ -2646,13 +2759,13 @@ export class AsigEquipoComponent {
 
             this.softwareSeleccionado.correos = [...this.correosFormulario];
             this.cdr.detectChanges();
-            
+
             this.notificacionSnackbarService.success('Exito', 'Correo(s) agregado(s) y asignado(s) correctamente.');
-            
-            // 🔥 CLAVE: Cerramos el panel inmediatamente despues de guardar
+
+            // CLAVE: Cerramos el panel inmediatamente despues de guardar
             this.cerrarPanel();
-            return; 
-            
+            return;
+
           } catch (error: any) {
             console.error('Error al asignar nuevos correos:', error);
             this.notificacionSnackbarService.error('Error', error.message || 'No se pudieron asignar los correos.');
@@ -2671,6 +2784,13 @@ export class AsigEquipoComponent {
 
 
     if (this.panelTipo === 'antivirus') {
+
+      // Si el equipo ya esta asignado → persistir en BD
+      if (this.yaAsignada) {
+        this.guardarEdicionAntivirusAsignado();
+        return;
+      }
+
       const codigo = Number(this.panelData.antivirusCodigo);
 
       // Si no hay antivirus seleccionado (null, undefined o 0), lo dejamos como null

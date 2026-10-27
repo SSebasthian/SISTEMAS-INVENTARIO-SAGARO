@@ -264,7 +264,9 @@
 
                                     <div class="software-card"
                                         [class.seleccionado]="yaAsignada ? tieneSoftwareTipo('ANTIVIRUS') : softwareSeleccionado.antivirus"
-                                        [class.label-error]="!yaAsignada && errorAntivirus">
+                                        [class.label-error]="!yaAsignada && errorAntivirus"
+                                        [style.cursor]="yaAsignada && modoEditarObligatorio ? 'pointer' : 'default'"
+                                        (click)="yaAsignada && modoEditarObligatorio && abrirPanel('antivirus')">
 
                                         <div class="software-card-header">
 
