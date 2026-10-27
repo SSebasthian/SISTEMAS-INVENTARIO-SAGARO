@@ -46,6 +46,7 @@ public class EquipoDeComputo_BackupService {
 
     @Transactional
     public EquipoDeComputo_Backup guardarOReactivarBackup(
+
             String serial,
             Long backupInformacionCodigo,
             Long asignacionConsecutivo,
@@ -62,8 +63,7 @@ public class EquipoDeComputo_BackupService {
 
         // ¿Ya existe un registro (activo o inactivo) para esta combinacion?
         Optional<EquipoDeComputo_Backup> existente =
-                repository.findFirstBySerialAndBackupInformacionCodigoAndAsignacionConsecutivo(
-                        serial, backupInformacionCodigo, asignacionConsecutivo);
+                repository.buscarExistente(serial, backupInformacionCodigo, asignacionConsecutivo, correoCodigo);
 
         if (existente.isPresent()) {
             // Reactivar

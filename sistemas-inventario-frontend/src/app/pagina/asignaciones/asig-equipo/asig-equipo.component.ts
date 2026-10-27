@@ -183,6 +183,7 @@ export class AsigEquipoComponent {
   backupsOriginalesEquipo: any[] = [];
 
   correosAsignadosEquipo: any[] = [];
+  backupsCorreosAsignadosEquipo: any[] = [];
 
 
 
@@ -210,6 +211,8 @@ export class AsigEquipoComponent {
       this.observacionesOriginal = obs.replace(/^ASIGNACION:\s*/, '');
       this.cargarDetalleEquipo(this.equipo.serial);
       this.cargarBackupsAsignadosEquipo(this.equipo.serial);
+      this.cargarCorreosAsignadosEquipo(this.equipo.serial);
+      this.cargarBackupsCorreosAsignados(this.equipo.serial);
     }
 
     this.cargarEmpleados();
@@ -321,6 +324,7 @@ export class AsigEquipoComponent {
     });
   }
 
+
   cargarSoftwareTiposActivos(): void {
     this.consultarSoftwareTipoService.listarActivos().subscribe({
       next: (data) => {
@@ -382,7 +386,6 @@ export class AsigEquipoComponent {
         this.softwareAsignadoList = software;
         const backupSoftware = software.find((s) => s.tipoCodigo === 2);
         this.softwareSeleccionadoBackup = backupSoftware || null;
-        // console.log('Software asignado:', this.softwareAsignadoList);
 
         if (this.yaAsignada) {
           // Recorrer todos los tipos activos
@@ -437,6 +440,94 @@ export class AsigEquipoComponent {
       }
     });
   }
+
+
+  // Carga los correos asignados al EMPLEADO (vía asignaciones_recursos)
+  cargarCorreosAsignadosEquipo(serial: string): void {
+    const cedula = this.equipo?.empleadoCedula || this.equipo?.asignadoCedula;
+    if (!cedula) {
+      console.warn('⚠️ No hay cedula de empleado en equipo para cargar correos');
+      this.correosAsignadosEquipo = [];
+      return;
+    }
+
+    this.registrarAsignacionesService.listarRecursosPorEmpleado(cedula).subscribe({
+      next: (recursos) => {
+
+        // En recurso_asignado:
+        // - recurso_codigo      = 1 → tipo CORREO
+        // - recurso_codigo_asignado = código del correo en correoscorporativos
+        // - activo = 1
+        const correos = (recursos || [])
+          .filter((r: any) => {
+            const tipoCodigo = Number(r.recursoCodigo ?? r.recurso_codigo ?? r.recurso?.codigo);
+            const activo = r.activo === true || Number(r.activo) === 1;
+            return tipoCodigo === 1 && activo;
+          })
+          .map((r: any) => ({
+            numeroRecurso: r.numero,
+            correoCodigo: Number(r.recursoCodigoAsignado ?? r.recurso_codigo_asignado),
+            direccion: r.recurso?.direccion || r.descripcionRecurso || r.recursoDireccion || '',
+            fechaAsignacion: r.fechaAsignacion ?? r.fecha_asignacion,
+            observaciones: r.observaciones,
+          }));
+
+        this.correosAsignadosEquipo = correos;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('❌ Error al cargar correos asignados:', err);
+        this.correosAsignadosEquipo = [];
+      }
+    });
+  }
+
+
+  // Carga los backups de los correos asignados al equipo (correo != null)
+  cargarBackupsCorreosAsignados(serial: string): void {
+    this.registrarAsignacionesService.obtenerBackupsPorSerial(serial).subscribe({
+      next: (backups) => {
+        const soloCorreos = (backups || []).filter((b: any) => b.correo != null);
+
+        this.backupsCorreosAsignadosEquipo = soloCorreos.map((reg: any) => {
+          const info = reg.backupInformacion || {};
+          const software = info.software || {};
+          return {
+            numero: reg.numero,
+            correoCodigo: Number(reg.correo?.codigo),
+            correoDireccion: reg.correo?.direccion || '',
+            backupInformacionCodigo: info.codigo ?? null,
+            backupCodigo: software.codigo ?? null,
+            programa: software.nombre || 'Sin programa',
+            nombre: info.nombre || '',
+            frecuencia: info.frecuencia || '',
+            dia: info.dia ?? null,
+            hora: info.hora || null,
+            ubicaciones: info.ubicacion
+              ? info.ubicacion.split(';').filter((u: string) => u.trim() !== '')
+              : [],
+            ubicacionesExcluidas: info.ubicacionExcluida
+              ? info.ubicacionExcluida.split(';').filter((u: string) => u.trim() !== '')
+              : [],
+          };
+        });
+
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('❌ Error al cargar backups de correos:', err);
+        this.backupsCorreosAsignadosEquipo = [];
+      }
+    });
+  }
+
+  getBackupDeCorreo(correoCodigo: number): any | null {
+    if (!correoCodigo) return null;
+    return this.backupsCorreosAsignadosEquipo.find(
+      (b: any) => Number(b.correoCodigo) === Number(correoCodigo)
+    ) || null;
+  }
+
 
 
   // ==================== FILTROS Y SELECCIoN ====================
@@ -604,7 +695,6 @@ export class AsigEquipoComponent {
   }
 
   onCorreoChange(): void {
-    // console.log('correo cambiado a:', this.panelCorreo.correoCodigo);
     if (this.esCorreoNoAplica) {
       this.panelCorreo.realizarBackup = false;
     }
@@ -627,17 +717,14 @@ export class AsigEquipoComponent {
   }
 
   agregarCorreo(): void {
-    if (!this.panelCorreo.correoCodigo) return;
-    const correo = this.correosList.find(
-      (c) => c.codigo == this.panelCorreo.correoCodigo
-    );
+    const codigoRaw = this.panelCorreo.correoCodigo;
+    if (codigoRaw === null || codigoRaw === undefined || codigoRaw === '') return;
+    const correo = this.correosList.find(c => Number(c.codigo) === Number(codigoRaw));
     if (!correo) return;
-    const existe = this.correosFormulario.some(
-      (x) => x.correoCodigo == this.panelCorreo.correoCodigo
-    );
+    const existe = this.correosFormulario.some(c => Number(c.correoCodigo) === Number(codigoRaw));
     if (existe) return;
     this.correosFormulario.push({
-      correoCodigo: this.panelCorreo.correoCodigo,
+      correoCodigo: correo.codigo,
       direccion: correo.direccion,
       realizarBackup: this.panelCorreo.realizarBackup,
       backup: this.panelCorreo.realizarBackup ? { ...this.backupFormData } : null,
@@ -867,12 +954,18 @@ export class AsigEquipoComponent {
   // ==================== GUARDAR BACKUP CORREO ====================
 
   guardarBackupCorreo(): void {
-    if (!this.panelCorreo.correoCodigo) {
+    // 1. Validar que haya un correo seleccionado (no confundir con NO APLICA = 0)
+    const codigoCorreoRaw = this.panelCorreo.correoCodigo;
+    const sinCorreoSeleccionado =
+      codigoCorreoRaw === null ||
+      codigoCorreoRaw === undefined ||
+      codigoCorreoRaw === '';
+    if (sinCorreoSeleccionado) {
       this.notificacionSnackbarService.warning('Correo requerido', 'Seleccione un correo.');
       return;
     }
 
-    // NO APLICA
+    // 2. Caso NO APLICA del PROGRAMA de backup (codigo 0)
     if (this.backupFormData.backupCodigo === 0 || this.backupFormData.backupCodigo === '0') {
       this.consultarBackupInformacionService.obtenerPorCodigo(0).subscribe({
         next: (backupInfo) => {
@@ -881,9 +974,10 @@ export class AsigEquipoComponent {
             return;
           }
           const correo = this.correosList.find(
-            (c) => c.codigo === Number(this.panelCorreo.correoCodigo)
+            (c) => c.codigo === Number(codigoCorreoRaw)
           );
           if (!correo) return;
+
           const correoGuardar = {
             correoCodigo: correo.codigo,
             direccion: correo.direccion,
@@ -902,8 +996,10 @@ export class AsigEquipoComponent {
               ubicacionesExcluidas: backupInfo.ubicacionExcluida
                 ? backupInfo.ubicacionExcluida.split(';').filter((u: string) => u.trim() !== '')
                 : [],
+              tipo: 'CORREO',
             },
           };
+
           if (this.editandoCorreo && this.indiceCorreoEditando !== null) {
             this.correosFormulario[this.indiceCorreoEditando] = correoGuardar;
             this.notificacionSnackbarService.success('Exito', 'Correo actualizado correctamente.');
@@ -994,6 +1090,7 @@ export class AsigEquipoComponent {
       };
       this.registroBackupInformacionService.actualizar(idBackupExistente, updatePayload).subscribe({
         next: () => {
+
           const correoGuardar = {
             correoCodigo: correo.codigo,
             direccion: correo.direccion,
@@ -1010,8 +1107,10 @@ export class AsigEquipoComponent {
               ubicacionesExcluidas: [...this.backupFormData.ubicacionesExcluidas].filter(
                 (u: string) => u.trim() !== ''
               ),
+              tipo: 'CORREO',
             },
           };
+
           if (this.editandoCorreo && this.indiceCorreoEditando !== null) {
             this.correosFormulario[this.indiceCorreoEditando] = correoGuardar;
           } else {
@@ -1053,6 +1152,7 @@ export class AsigEquipoComponent {
     };
     this.registroBackupInformacionService.guardar(infoPayload).subscribe({
       next: (respuesta) => {
+
         const correoGuardar = {
           correoCodigo: correo.codigo,
           direccion: correo.direccion,
@@ -1069,8 +1169,10 @@ export class AsigEquipoComponent {
             ubicacionesExcluidas: [...this.backupFormData.ubicacionesExcluidas].filter(
               (u: string) => u.trim() !== ''
             ),
+            tipo: 'CORREO',
           },
         };
+
         this.correosFormulario.push(correoGuardar);
         this.notificacionSnackbarService.success('Exito', 'Correo agregado con backup.');
         this.limpiarEstadoCorreo();
@@ -1311,6 +1413,14 @@ export class AsigEquipoComponent {
       return;
     }
 
+
+    // SINCRONIZACION DEFENSIVA: si hay correos en el formulario pero no se copiaron,
+    // los copiamos ahora para no perderlos en el payload.
+    if (this.correosFormulario.length > 0) {
+      this.softwareSeleccionado.correos = [...this.correosFormulario];
+    }
+
+
     const correosConBackup: any[] = [];
     if (this.softwareSeleccionado.correos && this.softwareSeleccionado.correos.length > 0) {
       for (const item of this.softwareSeleccionado.correos) {
@@ -1386,7 +1496,6 @@ export class AsigEquipoComponent {
       s.politicaCodigo != null &&
       Number(s.politicaCodigo) >= 0
     );
-
 
 
     const asignacionPayload = {
@@ -1893,8 +2002,6 @@ export class AsigEquipoComponent {
       return true;
     });
 
-    // console.log('Eliminar:', eliminados.map(e => e.numero));
-    // console.log('Crear:', nuevos.map(n => n.backupInformacionCodigo));
 
     try {
       // Desactivar eliminados
@@ -1902,7 +2009,6 @@ export class AsigEquipoComponent {
         await firstValueFrom(
           this.registrarAsignacionesService.desactivarBackupAsignado(elim.numero)
         );
-        // console.log('Desactivado:', elim.numero);
       }
 
       // Crear nuevos vinculos en equipodecomputo_backup
@@ -1913,7 +2019,6 @@ export class AsigEquipoComponent {
           asignacionConsecutivo: Number(this.equipo.asignacionId),
           correoCodigo: null,
         };
-        // console.log('POST equipodecomputo_backup:', payload);
 
         await firstValueFrom(
           this.registrarAsignacionesService.asignarBackupAEquipo(
@@ -1922,7 +2027,6 @@ export class AsigEquipoComponent {
             payload.asignacionConsecutivo
           )
         );
-        // console.log('Creado vinculo para backupInformacionCodigo:', nuevo.backupInformacionCodigo);
       }
 
       // 3. Actualizar copia de "originales" con lo que quedo en BD
@@ -2119,7 +2223,7 @@ export class AsigEquipoComponent {
         this.cargarBackups();
       }
 
-      // 🔥 Si el equipo ya esta asignado → cargar SIEMPRE desde BD
+      //Si el equipo ya esta asignado → cargar SIEMPRE desde BD
       if (this.yaAsignada) {
         this.cargarBackupsDelEquipoParaPanel();
         return;
@@ -2240,11 +2344,16 @@ export class AsigEquipoComponent {
 
   guardarPanel(): void {
     if (this.panelTipo === 'correo') {
-      const codigoSeleccionado = Number(this.panelCorreo.correoCodigo);
+      // ⚠️ IMPORTANTE: no usar Number() porque Number(null) === 0
+      // y eso confunde "no seleccionó nada" con "seleccionó NO APLICA (codigo 0)"
+      const codigoRaw = this.panelCorreo.correoCodigo;
+      const esNoAplica = codigoRaw !== null
+        && codigoRaw !== undefined
+        && codigoRaw !== ''
+        && Number(codigoRaw) === 0;
 
-      // CASO 1: NO APLICA
-      if (codigoSeleccionado === 0) {
-        // Agregamos un elemento especial a la lista
+      // CASO 1: NO APLICA (solo si REALMENTE seleccionó la opcion 0)
+      if (esNoAplica) {
         this.correosFormulario = [{ correoCodigo: 0, direccion: 'NO APLICA', realizarBackup: false, backup: null }];
         this.panelCorreo.correoCodigo = null;
         this.panelCorreo.realizarBackup = false;
@@ -2255,8 +2364,8 @@ export class AsigEquipoComponent {
         return;
       }
 
-      // CASO 2: lista vacia y no se selecciono NO APLICA
-      if (this.correosFormulario.length === 0) {
+      // CASO 2: no hay correos en la lista y tampoco hay uno pendiente en el select
+      if (this.correosFormulario.length === 0 && (codigoRaw === null || codigoRaw === undefined || codigoRaw === '')) {
         this.notificacionSnackbarService.warning(
           'Agregue en lista',
           'Debe agregar al menos un correo o seleccionar NO APLICA'
@@ -2266,7 +2375,25 @@ export class AsigEquipoComponent {
         return;
       }
 
-      // CASO 3: guardar correos reales (filtramos el 0 por si acaso)
+      if (codigoRaw !== null && codigoRaw !== undefined && codigoRaw !== '' && !esNoAplica) {
+        const yaEsta = this.correosFormulario.some(c => Number(c.correoCodigo) === Number(codigoRaw));
+        if (!yaEsta) {
+          const correo = this.correosList.find(c => Number(c.codigo) === Number(codigoRaw));
+          if (correo) {
+            this.correosFormulario.push({
+              correoCodigo: correo.codigo,
+              direccion: correo.direccion,
+              realizarBackup: this.panelCorreo.realizarBackup,
+              backup: this.panelCorreo.realizarBackup
+                ? { ...this.backupFormData, tipo: 'CORREO' }
+                : null,
+            });
+            this.panelCorreo = { correoCodigo: null, realizarBackup: false };
+          }
+        }
+      }
+
+      // CASO 3: guardar correos reales
       this.softwareSeleccionado.correos = [...this.correosFormulario];
       this.cdr.detectChanges();
       this.notificacionSnackbarService.success('Exito', 'Correos guardados');
@@ -3196,7 +3323,6 @@ export class AsigEquipoComponent {
         this.registrarAsignacionesService.obtenerBackupsPorSerial(this.equipo.serial)
       );
 
-      // console.log(' Backups activos del equipo:', backupsActivos);
 
       // 2. Filtrar solo los de EQUIPO (correo === null)
       const soloEquipo = (backupsActivos || []).filter((b: any) => b.correo == null);

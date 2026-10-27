@@ -121,18 +121,24 @@ public class EquipoDeComputo_AsignacionService {
                 // 1. Verificar si ya existe una configuracion igual
                 Backup_Informacion existente = null;
                 try {
+                    List<String> ubis = bd.getUbicaciones() != null ? bd.getUbicaciones() : java.util.Collections.emptyList();
+                    List<String> ubisExc = bd.getUbicacionesExcluidas() != null ? bd.getUbicacionesExcluidas() : java.util.Collections.emptyList();
+
                     existente = backupInformacionService.buscarPorCriterios(
                             bd.getNombre(),
                             bd.getFrecuencia(),
-                            String.join(";", bd.getUbicaciones()),
-                            String.join(";", bd.getUbicacionesExcluidas()),
+                            ubis.isEmpty() ? null : String.join(";", ubis),
+                            ubisExc.isEmpty() ? null : String.join(";", ubisExc),
                             bd.getDia(),
-                            bd.getHora() != null ? java.time.LocalTime.parse(bd.getHora()) : null,
+                            bd.getHora() != null && !bd.getHora().isEmpty()
+                                    ? java.time.LocalTime.parse(bd.getHora())
+                                    : null,
                             bd.getBackupCodigo(),
-                            bd.getTipo()  // "CORREO"
+                            bd.getTipo()
                     );
+                    System.out.println("buscarPorCriterios → encontrado=" + (existente != null ? existente.getCodigo() : "null"));
                 } catch (Exception e) {
-                    // Si falla la busqueda, no importa, se creara uno nuevo
+                    System.out.println("Error buscando backup existente (se creara nuevo): " + e.getMessage());
                 }
 
                 Long backupInfoCodigo;
@@ -156,6 +162,7 @@ public class EquipoDeComputo_AsignacionService {
                     }
                     Backup_Informacion nueva = backupInformacionService.guardar(backupInfo);
                     backupInfoCodigo = nueva.getCodigo();
+                    System.out.println("backup_informacion creado codigo=" + backupInfoCodigo + ", tipo=" + bd.getTipo());
                 }
 
                 // Guardar relacion en equipodecomputo_backup (reutiliza el codigo)

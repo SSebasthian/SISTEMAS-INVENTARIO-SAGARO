@@ -250,10 +250,9 @@
                                         <mat-icon>layers</mat-icon>
                                         <label>SOFTWARE OBLIGATORIO</label>
 
-                                        <a *ngIf="yaAsignada && !modoEditarObligatorio" 
-                                            class="btn-editar-titulo" 
+                                        <a *ngIf="yaAsignada && !modoEditarObligatorio" class="btn-editar-titulo"
                                             (click)="activarEdicionObligatorio()">
-                                                <mat-icon>edit</mat-icon>
+                                            <mat-icon>edit</mat-icon>
                                         </a>
                                         <span *ngIf="modoEditarObligatorio" class="badge-edicion">(Editando)</span>
                                     </div>
@@ -303,7 +302,7 @@
 
 
                                     <!-- Backup (solo lectura) -->
-                              <div class="software-card"
+                                    <div class="software-card"
                                         [class.seleccionado]="yaAsignada ? backupsAsignadosEquipo.length > 0 : softwareSeleccionado.backup"
                                         [class.label-error]="!yaAsignada && errorBackup"
                                         [style.cursor]="yaAsignada && modoEditarObligatorio ? 'pointer' : 'default'"
@@ -327,8 +326,7 @@
                                             <div class="software-info-asignado">
                                                 <div class="software-nombre">
                                                     <ng-container *ngIf="yaAsignada">
-                                                        {{ (getSoftwarePorTipoPrimero('BACKUP')?.nombreSoftware || 'Sin Backup')
-                                                        | titlecase }}
+                                                        {{ (getSoftwarePorTipoPrimero('BACKUP')?.nombreSoftware || 'Sin Backup') | titlecase }}
                                                     </ng-container>
                                                     <ng-container *ngIf="!yaAsignada">
                                                         {{ softwareSeleccionado.backupGeneral?.nombre
@@ -351,10 +349,7 @@
                                         <div class="software-card-header">
                                             <div class="software-icon-asignado">
                                                 <ng-container *ngIf="yaAsignada">
-                                                    <img *ngIf="getSoftwarePorTipoPrimero('CORREO')?.rutaImagen"
-                                                        [src]="getSoftwarePorTipoPrimero('CORREO')?.rutaImagen"
-                                                        alt="Correo" class="software-icono-asignado" />
-                                                    <mat-icon *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.rutaImagen">mail_outline</mat-icon>
+                                                    <mat-icon>mail_outline</mat-icon>
                                                 </ng-container>
                                                 <ng-container *ngIf="!yaAsignada">
                                                     <mat-icon [class.label-error]="errorCorreo">mail_outline</mat-icon>
@@ -363,48 +358,37 @@
 
                                             <div class="software-info-asignado">
                                                 <div class="software-nombre">
-                                                    <!-- Caso equipo ya asignado -->
                                                     <ng-container *ngIf="yaAsignada">
                                                         <ng-container
-                                                            *ngIf="getSoftwarePorTipoPrimero('CORREO')?.nombreSoftware as nombre">
-                                                            {{ nombre | titlecase }}
+                                                            *ngIf="correosAsignadosEquipo.length > 0; else sinCorreoAsignado">
+                                                            {{ correosAsignadosEquipo.length }}
+                                                            {{ correosAsignadosEquipo.length === 1 ? 'Correo' :
+                                                            'Correos' }}
                                                         </ng-container>
-                                                        <ng-container
-                                                            *ngIf="!getSoftwarePorTipoPrimero('CORREO')?.nombreSoftware">
+                                                        <ng-template #sinCorreoAsignado>
                                                             Sin Correo
-                                                        </ng-container>
+                                                        </ng-template>
                                                     </ng-container>
 
-                                                    <!-- Caso nueva asignacion -->
                                                     <ng-container *ngIf="!yaAsignada">
                                                         <ng-container
                                                             *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
-                                                            <!-- Si es NO APLICA -->
                                                             <ng-container
                                                                 *ngIf="softwareSeleccionado.correos[0]?.correoCodigo === 0; else correoNormal">
                                                                 NO APLICA
                                                             </ng-container>
-                                                            <!-- Si es un correo real -->
                                                             <ng-template #correoNormal>
-                                                                <ng-container
-                                                                    *ngIf="softwareSeleccionado.correos[0]?.direccion as direccion">
-                                                                    {{ direccion.split('@')[1]?.split('.')[0] |
-                                                                    titlecase }}
-                                                                </ng-container>
-                                                                <span *ngIf="softwareSeleccionado.correos.length > 1"
-                                                                    class="mas-correos">
-                                                                    +{{ softwareSeleccionado.correos.length - 1 }} mas
-                                                                </span>
+                                                                {{ softwareSeleccionado.correos.length }}
+                                                                {{ softwareSeleccionado.correos.length === 1 ? 'correo'
+                                                                : 'correos' }}
                                                             </ng-template>
                                                         </ng-container>
-                                                        <!-- Template alternativo cuando la lista esta vacia -->
                                                         <ng-template #sinCorreo>
                                                             Correo <span *ngIf="errorCorreo">*</span>
                                                         </ng-template>
                                                     </ng-container>
                                                 </div>
 
-                                                <!-- Badge con cantidad de correos (solo en modo nueva asignacion) -->
                                                 <div class="software-estado"
                                                     *ngIf="!yaAsignada && softwareSeleccionado.correos?.length > 0 && !(softwareSeleccionado.correos.length === 1 && softwareSeleccionado.correos[0]?.correoCodigo === 0)">
                                                     <span class="badge asignado">{{ softwareSeleccionado.correos.length
@@ -772,7 +756,7 @@
 
 
                                         <!-- Correo -->
-                                        <div class="software-card"
+                                       <div class="software-card"
                                             [class.seleccionado]="softwareSeleccionado.correos?.length > 0"
                                             [class.label-error]="errorCorreo">
                                             <div class="software-card-header" (click)="abrirPanel('correo')">
@@ -781,29 +765,23 @@
                                                 </div>
                                                 <div class="software-info">
                                                     <div class="software-nombre">
-                                                        <ng-container
-                                                            *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
-                                                            <!-- Extraer el dominio del primer correo -->
-                                                            <ng-container
-                                                                *ngIf="softwareSeleccionado.correos[0]?.direccion as direccion">
-                                                                {{ direccion.split('@')[1]?.split('.')[0] | titlecase }}
+                                                        <ng-container *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
+
+                                                            <!-- NO APLICA -->
+                                                            <ng-container *ngIf="softwareSeleccionado.correos[0]?.correoCodigo === 0; else correoNormal">
+                                                                NO APLICA
                                                             </ng-container>
-                                                            <!-- Si hay mas correos, mostrar "+X mas" -->
-                                                            <span *ngIf="softwareSeleccionado.correos.length > 1"
-                                                                class="mas-correos">
-                                                                +{{ softwareSeleccionado.correos.length - 1 }} mas
-                                                            </span>
+
+                                                            <!-- Cantidad de correos -->
+                                                            <ng-template #correoNormal>
+                                                                {{ softwareSeleccionado.correos.length }}
+                                                                {{ softwareSeleccionado.correos.length === 1 ? 'Correo' : 'Correos' }}
+                                                            </ng-template>
+
                                                         </ng-container>
                                                         <ng-template #sinCorreo>Correo
                                                             <span *ngIf="errorCorreo">*</span>
                                                         </ng-template>
-                                                    </div>
-                                                    <!-- Badge con cantidad de correos -->
-                                                    <div class="software-estado"
-                                                        *ngIf="softwareSeleccionado.correos?.length > 0">
-                                                        <span class="badge asignado">{{
-                                                            softwareSeleccionado.correos.length
-                                                            }} correo(s)</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1140,8 +1118,8 @@
                                             </div>
                                         </div>
                                         <!-- AGREGAR (change) -->
-                                        <select [(ngModel)]="panelCorreo.correoCodigo" ...>
-                                            <option tion [ngValue]="null" disabled selected></option>
+                                        <select [(ngModel)]="panelCorreo.correoCodigo" (change)="onCorreoChange()">
+                                            <option [ngValue]="null" disabled selected></option>
                                             <option *ngFor="let c of correosFiltrados" [ngValue]="c.codigo">{{
                                                 c.direccion }}</option>
                                         </select>
