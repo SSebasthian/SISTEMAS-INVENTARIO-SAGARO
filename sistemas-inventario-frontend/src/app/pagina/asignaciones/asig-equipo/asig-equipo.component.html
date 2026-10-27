@@ -249,12 +249,6 @@
                                     <div class="detalle-campo">
                                         <mat-icon>layers</mat-icon>
                                         <label>SOFTWARE OBLIGATORIO</label>
-
-                                        <a *ngIf="yaAsignada && !modoEditarObligatorio" class="btn-editar-titulo"
-                                            (click)="activarEdicionObligatorio()">
-                                            <mat-icon>edit</mat-icon>
-                                        </a>
-                                        <span *ngIf="modoEditarObligatorio" class="badge-edicion">(Editando)</span>
                                     </div>
                                 </div>
 
@@ -265,8 +259,8 @@
                                     <div class="software-card"
                                         [class.seleccionado]="yaAsignada ? tieneSoftwareTipo('ANTIVIRUS') : softwareSeleccionado.antivirus"
                                         [class.label-error]="!yaAsignada && errorAntivirus"
-                                        [style.cursor]="yaAsignada && modoEditarObligatorio ? 'pointer' : 'default'"
-                                        (click)="yaAsignada && modoEditarObligatorio && abrirPanel('antivirus')">
+                                        [style.cursor]="yaAsignada ? 'pointer' : 'default'"
+                                        (click)="yaAsignada && abrirPanel('antivirus')">
 
                                         <div class="software-card-header">
 
@@ -875,6 +869,7 @@
                         </mat-icon>
 
                         <h3>{{ panelTitulo }}</h3>
+
                     </div>
 
                     <div class="panel-body">
@@ -887,7 +882,8 @@
                                     <div class="campo-panel">
                                         <label>ANTIVIRUS</label>
                                         <select [(ngModel)]="panelData.antivirusCodigo"
-                                            (change)="cargarPoliticasPorAntivirus(panelData.antivirusCodigo)">
+                                            (change)="cargarPoliticasPorAntivirus(panelData.antivirusCodigo)"
+                                            [disabled]="yaAsignada && !modoEditarObligatorio">
                                             <option [value]="null" disabled selected></option>
                                             <option *ngFor="let av of antivirusList" [value]="av.codigo">
                                                 {{ av.nombre }}
@@ -898,7 +894,7 @@
                                     <div class="campo-panel">
                                         <label>POLITICA</label>
                                         <select [(ngModel)]="panelData.politicaCodigo"
-                                            [disabled]="!panelData.antivirusCodigo || panelData.antivirusCodigo == 1">
+                                            [disabled]="(yaAsignada && !modoEditarObligatorio) || !panelData.antivirusCodigo || panelData.antivirusCodigo == 1">
                                             <option [value]="null" disabled selected></option>
                                             <option *ngFor="let pol of politicasList" [value]="pol.codigo">
                                                 {{ pol.politica }}
@@ -1361,19 +1357,22 @@
                     <div class="panel-footer"
                         *ngIf="!(panelTipo === 'correo' && panelCorreo.realizarBackup && panelCorreo.correoCodigo)">
 
-                        <button class="btn-panel-cancelar" (click)="cerrarPanel()">Cancelar</button>
+                        <button class="btn-panel-cancelar"
+                            (click)="(yaAsignada && !modoEditarObligatorio && (panelTipo === 'antivirus' || panelTipo === 'backup' || panelTipo === 'correo')) ? cerrarPanel() : cerrarPanel()">
+                            {{ (yaAsignada && !modoEditarObligatorio && (panelTipo === 'antivirus' || panelTipo === 'backup' || panelTipo === 'correo')) ? 'Cerrar' : 'Cancelar' }}
+                        </button>
 
                         <!-- Caso especial: panel de backup -->
                         <ng-container *ngIf="panelTipo === 'backup'; else normalGuardar">
                             <!-- Modo formulario (agregando un nuevo backup) -->
                             <button *ngIf="mostrarFormularioBackup || backupsSeleccionados.length === 0"
                                 class="btn-panel-guardar" (click)="agregarBackupALista()" [disabled]="backupDisabled">
-                                Guardar Backup
+                                <mat-icon>save</mat-icon> Guardar Backup
                             </button>
                             <!-- Modo resumen (ya hay backups guardados) -->
                             <button *ngIf="!mostrarFormularioBackup && backupsSeleccionados.length > 0"
                                 class="btn-panel-guardar" (click)="guardarPanel()">
-                                Guardar
+                                <mat-icon>save</mat-icon> Guardar
                             </button>
                         </ng-container>
 
@@ -1391,19 +1390,27 @@
                             <!-- Para SOFTWARE OPCIONAL cuando es NUEVA ASIGNACION -->
                             <ng-container *ngIf="panelTipo === 'softwareOpcional' && !yaAsignada">
                                 <button class="btn-panel-guardar" (click)="guardarPanel()">
-                                    Guardar
+                                    <mat-icon>save</mat-icon> Guardar
                                 </button>
                             </ng-container>
 
+
+                            <!-- En equipo asignado (antivirus/backup/correo) sin editar: boton Editar -->
+                            <button *ngIf="yaAsignada && !modoEditarObligatorio && (panelTipo === 'antivirus' || panelTipo === 'backup' || panelTipo === 'correo')"
+                                class="btn-panel-guardar" (click)="activarEdicionPanel()">
+                                <mat-icon>edit</mat-icon> Editar
+                            </button>
+
+
                             <!-- Boton Guardar para ANTIVIRUS, OFFICE, etc. (NO correo, NO softwareOpcional) -->
-                            <button *ngIf="panelTipo !== 'correo' && panelTipo !== 'softwareOpcional'"
+                            <button *ngIf="(panelTipo !== 'correo' && panelTipo !== 'softwareOpcional') && (!yaAsignada || modoEditarObligatorio || (panelTipo !== 'antivirus' && panelTipo !== 'backup' && panelTipo !== 'correo'))"
                                 class="btn-panel-guardar" (click)="guardarPanel()">
-                                Guardar
+                                <mat-icon>save</mat-icon> Guardar
                             </button>
 
                             <!-- Boton Guardar para CORREO -->
                             <button *ngIf="panelTipo === 'correo'" class="btn-panel-guardar" (click)="guardarPanel()">
-                                Guardar
+                                <mat-icon>save</mat-icon> Guardar
                             </button>
 
                         </ng-template>

@@ -187,6 +187,8 @@ export class AsigEquipoComponent {
 
 
 
+
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<AsigEquipoComponent>,
@@ -1186,7 +1188,7 @@ export class AsigEquipoComponent {
     const correoAEliminar = this.correosFormulario[index];
     if (!correoAEliminar) return;
 
-    // Si es una nueva asignación (el equipo aún no se ha guardado), solo quitamos de la lista
+    // Si es una nueva asignacion (el equipo aún no se ha guardado), solo quitamos de la lista
     if (!this.yaAsignada) {
       this.correosFormulario.splice(index, 1);
       this.cdr.detectChanges();
@@ -1200,7 +1202,7 @@ export class AsigEquipoComponent {
       );
 
       if (!correoAsignado || !correoAsignado.numeroRecurso) {
-        this.notificacionSnackbarService.warning('Advertencia', 'No se encontró el registro del correo en la base de datos.');
+        this.notificacionSnackbarService.warning('Advertencia', 'No se encontro el registro del correo en la base de datos.');
         this.correosFormulario.splice(index, 1);
         this.cdr.detectChanges();
         return;
@@ -1212,7 +1214,7 @@ export class AsigEquipoComponent {
         b => Number(b.correoCodigo) === Number(correoAEliminar.correoCodigo) && b.numero && b.numero > 0
       );
 
-      // Si no tenemos el número (porque se agregó en esta sesión y no se recargó la lista),
+      // Si no tenemos el número (porque se agrego en esta sesion y no se recargo la lista),
       // consultamos la BD para obtener el registro real de equipodecomputo_backup
       if (!backupParaDesactivar) {
         const backupsDelEquipo = await firstValueFrom(
@@ -2387,6 +2389,13 @@ export class AsigEquipoComponent {
     this.panelActivo = true;
     this.panelTipo = tipo;
 
+
+    // Si el equipo ya esta asignado, abrir en solo lectura
+    if (this.yaAsignada) {
+      this.modoEditarObligatorio = false;
+    }
+
+
     if (tipo === 'antivirus') {
       if (this.antivirusList.length === 0) {
         this.consultarSoftwareService.listarPorTipo(1).subscribe({
@@ -2562,7 +2571,7 @@ export class AsigEquipoComponent {
       return;
     }
 
-    // Flujo original para NUEVA asignación
+    // Flujo original para NUEVA asignacion
     const actual = this.softwareSeleccionado.antivirus;
     if (actual) {
       this.panelData.antivirusCodigo = actual.antivirusCodigo || null;
@@ -2586,6 +2595,7 @@ export class AsigEquipoComponent {
   cerrarPanel(): void {
     this.panelActivo = false;
     this.panelTipo = '';
+    this.modoEditarObligatorio = false;
     this.panelTipoOpcionalCodigo = null;
     this.panelSeleccionesTemporales = [];
     this.panelData = { antivirusCodigo: null, politicaCodigo: null };
@@ -2621,7 +2631,7 @@ export class AsigEquipoComponent {
       observaciones: 'ASIGNACION DE CORREO DESDE EDICION'
     };
 
-    // Usamos firstValueFrom para manejar la respuesta de la asignación
+    // Usamos firstValueFrom para manejar la respuesta de la asignacion
     const respAsignacion = await firstValueFrom(
       this.registrarAsignacionesService.asignarRecurso(payloadRecurso)
     );
@@ -2640,7 +2650,7 @@ export class AsigEquipoComponent {
       const backupInfoCodigo = item.backup.backupInformacionCodigo;
 
       if (!backupInfoCodigo) {
-        throw new Error('El correo tiene backup pero no tiene un código de información de backup valido.');
+        throw new Error('El correo tiene backup pero no tiene un codigo de informacion de backup valido.');
       }
 
       // Aqui pasamos el asignacionConsecutivo activo y el correoCodigo
@@ -3763,6 +3773,51 @@ export class AsigEquipoComponent {
       this.cdr.detectChanges();
     }
   }
+
+
+  /**
+   * Activa el modo edicion dentro del panel (revela Cancelar/Guardar y habilita controles).
+   * Solo aplica cuando el equipo ya está asignado.
+   */
+
+  activarEdicionPanel(): void {
+    this.modoEditarObligatorio = true;
+    this.cdr.detectChanges();
+  }
+
+
+  /**
+ * Cancela la edicion dentro del panel: vuelve a solo lectura y recarga datos desde BD.
+ */
+  cancelarEdicionPanel(): void {
+    this.modoEditarObligatorio = false;
+
+    if (this.panelTipo === 'antivirus') {
+      this.cargarSoftwareAsignado(this.equipo.serial);
+    } else if (this.panelTipo === 'backup') {
+      this.cargarBackupsDelEquipoParaPanel();
+    } else if (this.panelTipo === 'correo') {
+      this.cargarCorreosAsignadosEquipo(this.equipo.serial);
+      this.cargarBackupsCorreosAsignados(this.equipo.serial);
+      setTimeout(() => {
+        this.correosFormulario = this.correosAsignadosEquipo.map((correo: any) => {
+          const backupAsociado = this.getBackupDeCorreo(correo.correoCodigo);
+          return {
+            correoCodigo: correo.correoCodigo,
+            direccion: correo.direccion,
+            realizarBackup: !!backupAsociado,
+            backup: backupAsociado ? { ...backupAsociado, tipo: 'CORREO' } : null,
+          };
+        });
+        this.cdr.detectChanges();
+      }, 300);
+    }
+
+    this.panelCorreo = { correoCodigo: null, realizarBackup: false };
+    this.backupFormData = this.resetBackupFormData();
+    this.cdr.detectChanges();
+  }
+
 }
 
 
