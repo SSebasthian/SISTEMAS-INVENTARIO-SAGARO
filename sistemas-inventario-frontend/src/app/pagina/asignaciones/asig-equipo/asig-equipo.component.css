@@ -963,6 +963,7 @@
 
 .btn-panel-cancelar,
 .btn-panel-guardar,
+.btn-panel-guardarsinbackup,
 .btn-panel-volver {
     padding: 8px 20px;
     border-radius: 10px;
@@ -987,8 +988,14 @@
     color: white;
     padding: 5px 10px;
 }
+.btn-panel-guardarsinbackup{
+     background: #ff7f30;
+    color: white;
+    padding: 5px 10px;
+}
 
-.btn-panel-guardar mat-icon{
+.btn-panel-guardar mat-icon,
+.btn-panel-guardarsinbackup mat-icon {
     font-size: 15px;
     width: 15px;
     height: 15px;
@@ -1519,9 +1526,11 @@
 .btn-devolver:hover,
 .btn-confirmar-devolver:hover,
 .btn-panel-guardar:hover,
+.btn-panel-guardarsinbackup:hover,
 .btn-panel-volver:hover {
     transform: translateY(-2px);
 }
+
 
 
 .error-mensaje {

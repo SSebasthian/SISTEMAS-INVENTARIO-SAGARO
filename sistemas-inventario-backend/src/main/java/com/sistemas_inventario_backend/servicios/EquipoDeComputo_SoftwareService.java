@@ -157,4 +157,18 @@ public class EquipoDeComputo_SoftwareService {
     }
 
 
+    @Transactional
+    public void desactivarSoftwareBackup(String serial) {
+        // Buscamos los softwares activos de tipo 2 (Backup) para este equipo
+        List<EquipoDeComputo_Software> backupsActivos = repository
+                .findByEquipoSerialAndActivoTrueAndSoftwareTipoCodigo(serial, 2L);
+
+        // Los desactivamos
+        for (EquipoDeComputo_Software es : backupsActivos) {
+            es.setActivo(false);
+            repository.save(es);
+        }
+    }
+
+
 }

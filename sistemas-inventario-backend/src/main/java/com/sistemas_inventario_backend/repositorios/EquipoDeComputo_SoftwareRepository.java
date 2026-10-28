@@ -10,4 +10,8 @@ public interface EquipoDeComputo_SoftwareRepository extends JpaRepository<Equipo
     List<EquipoDeComputo_Software> findByAsignacionConsecutivo(Long asignacionConsecutivo);
     List<EquipoDeComputo_Software> findByEquipoSerial(String serial);
 
+
+    // Busca softwares activos de un serial, filtrando por el tipo de software (ej. 2 para backups)
+    List<EquipoDeComputo_Software> findByEquipoSerialAndActivoTrueAndSoftwareTipoCodigo(String serial, Long tipoCodigo);
+
 }

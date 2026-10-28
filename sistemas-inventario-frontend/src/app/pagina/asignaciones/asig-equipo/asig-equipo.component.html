@@ -374,7 +374,7 @@
                                                             *ngIf="softwareSeleccionado.correos?.length > 0; else sinCorreo">
                                                             <ng-container
                                                                 *ngIf="softwareSeleccionado.correos[0]?.correoCodigo === 0; else correoNormal">
-                                                                NO APLICA
+                                                                No Aplica
                                                             </ng-container>
                                                             <ng-template #correoNormal>
                                                                 {{ softwareSeleccionado.correos.length }}
@@ -731,7 +731,8 @@
                                         </div>
 
                                         <!-- Backup -->
-                                        <div class="software-card" [class.seleccionado]="softwareSeleccionado.backup"
+                                        <div class="software-card" 
+                                            [class.seleccionado]="softwareSeleccionado.backup || softwareSeleccionado.backupGeneral?.nombre === 'Sin Backup'" 
                                             [class.label-error]="errorBackup">
                                             <div class="software-header" (click)="abrirPanel('backup')">
                                                 <div class="software-icon">
@@ -768,7 +769,7 @@
 
                                                             <!-- NO APLICA -->
                                                             <ng-container *ngIf="softwareSeleccionado.correos[0]?.correoCodigo === 0; else correoNormal">
-                                                                NO APLICA
+                                                                No Aplica
                                                             </ng-container>
 
                                                             <!-- Cantidad de correos -->
@@ -905,8 +906,7 @@
 
                                 <!-- BACKUP -->
                                 <ng-container *ngSwitchCase="'backup'">
-                                    <div *ngIf="backupsSeleccionados.length === 0 || mostrarFormularioBackup"
-                                        class="formulario-backup">
+                                    <div *ngIf="mostrarFormularioBackup && (!yaAsignada || modoEditarObligatorio)" class="formulario-backup">
 
                                         <div class="fila-doble">
 
@@ -914,10 +914,8 @@
                                                 <label>PROGRAMA BACKUP</label>
                                                 <select [(ngModel)]="backupFormData.backupCodigo"
                                                     (change)="actualizarNombreBackup()"
-                                                    [disabled]="(yaAsignada && bloquearCorreo) 
-                                                                        || (yaAsignada && modoEditarObligatorio) 
-                                                                        || (!yaAsignada && editandoBackupIndex !== null)">                                                   
-                                                                        <option [value]="null" disabled selected></option>
+                                                    [disabled]="(yaAsignada && bloquearCorreo) || (yaAsignada && modoEditarObligatorio && editandoBackupIndex !== null) || (!yaAsignada && editandoBackupIndex !== null)">                                                   
+                                                    <option [value]="null" disabled selected></option>
                                                     <option *ngFor="let b of backupProgramasSinNoAplica" [value]="b.codigo">
                                                         {{ b.nombre }}
                                                     </option>
@@ -927,18 +925,26 @@
                                            <div class="campo-panel">
                                                 <label>NOMBRE BACKUP</label>
 
-                                                <!-- Si es equipo asignado editando, O si es nueva asignación editando un backup de la lista: INPUT -->
-                                                <input *ngIf="(yaAsignada && modoEditarObligatorio) || (!yaAsignada && editandoBackupIndex !== null)"
+                                                <!-- 1. MODO LECTURA (Input readonly) - Para ver el nombre actual sin poder tocarlo -->
+                                                <input *ngIf="yaAsignada && !modoEditarObligatorio"
                                                     type="text"
                                                     [value]="backupFormData.nombre || (configuracionSeleccionada?.nombre || '')"
                                                     readonly
                                                     class="input-readonly input-bloqueado" />
 
-                                                <!-- Si es nueva asignación creando un backup desde cero: SELECT -->
-                                                <select *ngIf="!yaAsignada && editandoBackupIndex === null"
+                                                <!-- 2. MODO EDICION DE UN BACKUP EXISTENTE (Input readonly) - Para no cambiarle el nombre a uno ya guardado -->
+                                                <input *ngIf="(yaAsignada && modoEditarObligatorio && editandoBackupIndex !== null) || (!yaAsignada && editandoBackupIndex !== null)"
+                                                    type="text"
+                                                    [value]="backupFormData.nombre || (configuracionSeleccionada?.nombre || '')"
+                                                    readonly
+                                                    class="input-readonly input-bloqueado" />
+
+                                                <!-- 3. AGREGANDO UN BACKUP NUEVO (Select normal) - Aquí sí puedes elegir o crear uno nuevo -->
+                                                <select *ngIf="(!yaAsignada && editandoBackupIndex === null) || (yaAsignada && modoEditarObligatorio && editandoBackupIndex === null)"
                                                     [(ngModel)]="configuracionSeleccionada"
                                                     (ngModelChange)="seleccionarConfiguracionBackup($event)"
                                                     [disabled]="(yaAsignada && bloquearCorreo) || backupDisabled">
+                                                    
                                                     <option [ngValue]="null"></option>
                                                     <ng-container *ngFor="let c of configuracionesBackup">
                                                         <option *ngIf="!c.enUso || yaAsignada" [ngValue]="c">
@@ -946,7 +952,7 @@
                                                         </option>
                                                     </ng-container>
                                                     <option [value]="-1" [disabled]="true">───────────────</option>
-                                                    <option [ngValue]="null" *ngIf="!yaAsignada">CREAR NUEVO</option>
+                                                    <option [ngValue]="null">CREAR NUEVO</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -1049,8 +1055,7 @@
                                     <!-- ============================================= -->
                                     <!-- LISTA DE BACKUPS SELECCIONADOS                -->
                                     <!-- ============================================= -->
-                                    <div *ngIf="!mostrarFormularioBackup && backupsSeleccionados.length > 0"
-                                        class="contenedor-backups">
+                                    <div *ngIf="!mostrarFormularioBackup" class="contenedor-backups">
 
                                         <div class="agregar-otro-backup" *ngIf="!yaAsignada || modoEditarObligatorio">
                                             <a class="btn-agregar-backup-texto" (click)="mostrarFormularioParaAgregarOtro()">
@@ -1062,6 +1067,24 @@
 
                                         <h4>Backups configurados ({{ backupsSeleccionados.length }})</h4>
 
+
+                                        <div class="backup-agregado-card" *ngIf="yaAsignada && backupsSeleccionados.length === 0">
+                                            <div class="backup-agregado-header">
+                                                <!-- Icono de nube (puedes usar 'cloud_upload' o 'backup') -->
+                                                <mat-icon>cloud_upload</mat-icon> 
+                                                
+                                                <div class="backup-agregado-info">
+                                                    <strong>SIN BACKUP</strong>
+                                                    <div class="backup-agregado-backup">
+                                                        <div class="backup-info">
+                                                            <span class="backup-chip" style="background: transparent; color: #777; padding-left: 0;">
+                                                                <mat-icon>list</mat-icon> Sin backup
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <div class="backup-agregado-card"
                                             *ngFor="let bk of backupsSeleccionados; let i = index">
@@ -1374,23 +1397,36 @@
 
                         <!-- Caso especial: panel de backup -->
                         <ng-container *ngIf="panelTipo === 'backup'; else normalGuardar">
-                            <!-- Modo formulario (agregando un nuevo backup) -->
-                            <button *ngIf="mostrarFormularioBackup || backupsSeleccionados.length === 0"
-                                class="btn-panel-guardar" (click)="agregarBackupALista()" [disabled]="backupDisabled">
-                                <mat-icon>save</mat-icon> Guardar Backup
-                            </button>
-                            <!-- Modo resumen (ya hay backups guardados) -->
-                            <!-- Editar: solo en equipo asignado + backup + modo lectura -->
-                            <button *ngIf="yaAsignada && !modoEditarObligatorio && panelTipo === 'backup'"
+    
+                            <!-- 1. BotOn Editar (solo en equipo asignado en modo lectura) -->
+                            <button *ngIf="yaAsignada && !modoEditarObligatorio"
                                 class="btn-panel-guardar" (click)="activarEdicionPanel()">
                                 <mat-icon>edit</mat-icon> Editar
                             </button>
 
-                            <!-- Guardar: solo en nueva asignacion o en modo edicion -->
-                            <button *ngIf="(!yaAsignada || modoEditarObligatorio) && !mostrarFormularioBackup && backupsSeleccionados.length > 0"
-                                class="btn-panel-guardar" (click)="guardarPanel()">
-                                <mat-icon>save</mat-icon> Guardar
-                            </button>
+                            <!-- 2. Botones de guardado (solo en nueva asignaciOn o en modo ediciOn) -->
+                            <ng-container *ngIf="!yaAsignada || modoEditarObligatorio">
+                                
+                                <!-- Guardar Backup -->
+                                <button *ngIf="(mostrarFormularioBackup || backupsSeleccionados.length === 0) && (backupFormData.backupCodigo || backupFormData.nombre)"
+    class="btn-panel-guardar" (click)="agregarBackupALista()" [disabled]="backupDisabled">
+    <mat-icon>save</mat-icon> Guardar Backup
+</button>
+
+                                <!-- Guardar sin backup -->
+                                <button *ngIf="mostrarFormularioBackup && backupsSeleccionados.length === 0 && !backupFormData.backupCodigo && !backupFormData.nombre"
+    class="btn-panel-guardarsinbackup" 
+    (click)="guardarSinBackup()">
+    <mat-icon>block</mat-icon> Sin Backup
+</button>
+
+                                <!-- Guardar (cuando ya hay backups seleccionados) -->
+                                <button *ngIf="!mostrarFormularioBackup && backupsSeleccionados.length > 0"
+                                    class="btn-panel-guardar" (click)="guardarPanel()">
+                                    <mat-icon>save</mat-icon> Guardar
+                                </button>
+                                
+                            </ng-container>
                         </ng-container>
 
                         <!-- Caso normal (antivirus, correo, office, etc.) -->
