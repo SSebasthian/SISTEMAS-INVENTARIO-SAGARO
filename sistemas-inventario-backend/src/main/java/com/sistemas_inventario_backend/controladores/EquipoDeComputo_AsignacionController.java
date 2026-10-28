@@ -138,14 +138,6 @@ public class EquipoDeComputo_AsignacionController {
     }
 
 
-    @PatchMapping("/serial/{serial}/desactivar-backups")
-    public ResponseEntity<?> desactivarBackups(@PathVariable String serial) {
-        try {
-            service.desactivarSoftwareBackup(serial);
-            return ResponseEntity.ok(Map.of("mensaje", "Softwares de backup desactivados correctamente"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
+
 
 }

@@ -949,7 +949,7 @@ export class AsigEquipoComponent {
     // Si el backup tenia un programa asociado y ya esta guardado en la BD
     if (removido.backupCodigo && this.yaAsignada) {
       try {
-        // Opcion A: Si solo quieres desactivar el software de ESE backup especifico
+        // Si solo quieres desactivar el software de ESE backup especifico
         const softwareInstalado = this.softwareAsignadoList.find(
           s => s.softwareCodigo === removido.backupCodigo && s.tipoCodigo === 2
         );
@@ -962,10 +962,6 @@ export class AsigEquipoComponent {
           this.softwareAsignadoList = this.softwareAsignadoList.filter(s => s.numero !== softwareInstalado.numero);
         }
 
-        // Opcion B (Recomendada): Desactivar TODOS los softwares de backup del equipo
-        // await firstValueFrom(
-        //   this.consultarAsignacionesService.desactivarSoftwareBackup(this.equipo.serial)
-        // );
 
       } catch (error) {
         console.error('Error al desactivar el software de backup:', error);
@@ -2175,124 +2171,124 @@ export class AsigEquipoComponent {
   }
 
   async guardarEdicionObligatorio(): Promise<void> {
-  if (!this.equipo.asignacionId) {
-    this.notificacionSnackbarService.error('Error', 'No se encontro la asignacion del equipo');
-    return;
-  }
-
-  const originales = this.backupsOriginalesEquipo || [];
-  const actuales = this.backupsSeleccionados || [];
-
-  // 1. Backups que YA NO estan → desactivar
-  const numerosActuales = actuales
-    .filter(b => b.numero != null)
-    .map(b => Number(b.numero));
-
-  const eliminados = originales.filter(
-    b => b.numero != null && !numerosActuales.includes(Number(b.numero))
-  );
-
-  // 2. Backups NUEVOS → crear vinculo
-  const nuevos = actuales.filter(b => {
-    if (b.esNoAplica) return false;
-    if (!b.backupInformacionCodigo) return false;
-    if (b.numero != null) return false;
-    return true;
-  });
-
-  try {
-    // Desactivar eliminados
-    for (const elim of eliminados) {
-      await firstValueFrom(
-        this.registrarAsignacionesService.desactivarBackupAsignado(elim.numero)
-      );
+    if (!this.equipo.asignacionId) {
+      this.notificacionSnackbarService.error('Error', 'No se encontro la asignacion del equipo');
+      return;
     }
 
-    // Crear nuevos vinculos y AGREGAR EL SOFTWARE
-    for (const nuevo of nuevos) {
-      // 👇 NUEVO: Asignar el programa de backup a la tabla equipodecomputo_software
-      if (nuevo.backupCodigo) {
-        try {
-          await firstValueFrom(
-            this.registrarAsignacionesService.asignarSoftwareAEquipo(
-              this.equipo.serial,
-              Number(nuevo.backupCodigo),
-              Number(this.equipo.asignacionId),
-              null // politica nula (es un backup, no un antivirus)
-            )
-          );
-        } catch (error) {
-          console.error('Error al asignar software de backup:', error);
-        }
-      }
+    const originales = this.backupsOriginalesEquipo || [];
+    const actuales = this.backupsSeleccionados || [];
 
-      // Crear el vinculo en equipodecomputo_backup
-      const payload = {
-        serial: this.equipo.serial,
-        backupInformacionCodigo: Number(nuevo.backupInformacionCodigo),
-        asignacionConsecutivo: Number(this.equipo.asignacionId),
-        correoCodigo: null,
-      };
+    // 1. Backups que YA NO estan → desactivar
+    const numerosActuales = actuales
+      .filter(b => b.numero != null)
+      .map(b => Number(b.numero));
 
-      await firstValueFrom(
-        this.registrarAsignacionesService.asignarBackupAEquipo(
-          payload.serial,
-          payload.backupInformacionCodigo,
-          payload.asignacionConsecutivo
-        )
-      );
-    }
-
-    // 3. Actualizar copia de "originales"
-    const recargados: any[] = await firstValueFrom(
-      this.registrarAsignacionesService.obtenerBackupsPorSerial(this.equipo.serial)
+    const eliminados = originales.filter(
+      b => b.numero != null && !numerosActuales.includes(Number(b.numero))
     );
-    const soloEquipo = (recargados || []).filter((b: any) => !b.correo);
 
-    this.backupsOriginalesEquipo = soloEquipo.map((reg: any) => {
-      const info = reg.backupInformacion || {};
-      const software = info.software || {};
-      return {
-        numero: reg.numero,
-        backupInformacionCodigo: info.codigo ?? null,
-        backupCodigo: software.codigo ?? null,
-        programa: software.nombre || 'Sin programa',
-        nombre: info.nombre || '',
-        frecuencia: info.frecuencia || '',
-        dia: info.dia ?? null,
-        hora: info.hora || null,
-        ubicaciones: info.ubicacion
-          ? info.ubicacion.split(';').filter((u: string) => u.trim() !== '')
-          : [],
-        ubicacionesExcluidas: info.ubicacionExcluida
-          ? info.ubicacionExcluida.split(';').filter((u: string) => u.trim() !== '')
-          : [],
-      };
+    // 2. Backups NUEVOS → crear vinculo
+    const nuevos = actuales.filter(b => {
+      if (b.esNoAplica) return false;
+      if (!b.backupInformacionCodigo) return false;
+      if (b.numero != null) return false;
+      return true;
     });
 
-    this.backupsAsignadosEquipo = soloEquipo;
+    try {
+      // Desactivar eliminados
+      for (const elim of eliminados) {
+        await firstValueFrom(
+          this.registrarAsignacionesService.desactivarBackupAsignado(elim.numero)
+        );
+      }
 
-    this.notificacionSnackbarService.success('Exito', 'Backups guardados correctamente');
+      // Crear nuevos vinculos y AGREGAR EL SOFTWARE
+      for (const nuevo of nuevos) {
+        // NUEVO: Asignar el programa de backup a la tabla equipodecomputo_software
+        if (nuevo.backupCodigo) {
+          try {
+            await firstValueFrom(
+              this.registrarAsignacionesService.asignarSoftwareAEquipo(
+                this.equipo.serial,
+                Number(nuevo.backupCodigo),
+                Number(this.equipo.asignacionId),
+                null // politica nula (es un backup, no un antivirus)
+              )
+            );
+          } catch (error) {
+            console.error('Error al asignar software de backup:', error);
+          }
+        }
 
-    // Limpiar estado
-    this.modoEditarObligatorio = false;
-    this.backupsSeleccionados = [];
-    this.backupsOriginalesEquipo = [];
-    this.mostrarFormularioBackup = true;
-    
-    // 👇 NUEVO: Recargar software para que se refleje en la UI el nuevo programa instalado
-    this.cargarSoftwareAsignado(this.equipo.serial);
-    
-    this.cerrarPanel();
-    this.cdr.detectChanges();
+        // Crear el vinculo en equipodecomputo_backup
+        const payload = {
+          serial: this.equipo.serial,
+          backupInformacionCodigo: Number(nuevo.backupInformacionCodigo),
+          asignacionConsecutivo: Number(this.equipo.asignacionId),
+          correoCodigo: null,
+        };
 
-  } catch (err: any) {
-    console.error('Error al guardar backups:', err);
-    this.notificacionSnackbarService.error(
-      'Error',
-      err?.error?.error || err?.message || 'No se pudieron guardar los backups'
-    );
-  }
+        await firstValueFrom(
+          this.registrarAsignacionesService.asignarBackupAEquipo(
+            payload.serial,
+            payload.backupInformacionCodigo,
+            payload.asignacionConsecutivo
+          )
+        );
+      }
+
+      // 3. Actualizar copia de "originales"
+      const recargados: any[] = await firstValueFrom(
+        this.registrarAsignacionesService.obtenerBackupsPorSerial(this.equipo.serial)
+      );
+      const soloEquipo = (recargados || []).filter((b: any) => !b.correo);
+
+      this.backupsOriginalesEquipo = soloEquipo.map((reg: any) => {
+        const info = reg.backupInformacion || {};
+        const software = info.software || {};
+        return {
+          numero: reg.numero,
+          backupInformacionCodigo: info.codigo ?? null,
+          backupCodigo: software.codigo ?? null,
+          programa: software.nombre || 'Sin programa',
+          nombre: info.nombre || '',
+          frecuencia: info.frecuencia || '',
+          dia: info.dia ?? null,
+          hora: info.hora || null,
+          ubicaciones: info.ubicacion
+            ? info.ubicacion.split(';').filter((u: string) => u.trim() !== '')
+            : [],
+          ubicacionesExcluidas: info.ubicacionExcluida
+            ? info.ubicacionExcluida.split(';').filter((u: string) => u.trim() !== '')
+            : [],
+        };
+      });
+
+      this.backupsAsignadosEquipo = soloEquipo;
+
+      this.notificacionSnackbarService.success('Exito', 'Backups guardados correctamente');
+
+      // Limpiar estado
+      this.modoEditarObligatorio = false;
+      this.backupsSeleccionados = [];
+      this.backupsOriginalesEquipo = [];
+      this.mostrarFormularioBackup = true;
+
+      // Recargar software para que se refleje en la UI el nuevo programa instalado
+      this.cargarSoftwareAsignado(this.equipo.serial);
+
+      this.cerrarPanel();
+      this.cdr.detectChanges();
+
+    } catch (err: any) {
+      console.error('Error al guardar backups:', err);
+      this.notificacionSnackbarService.error(
+        'Error',
+        err?.error?.error || err?.message || 'No se pudieron guardar los backups'
+      );
+    }
   }
 
 
@@ -2542,11 +2538,13 @@ export class AsigEquipoComponent {
       if (this.correosList.length === 0) this.cargarCorreos();
       if (this.backupList.length === 0) this.cargarBackups();
 
+      // Forzamos que abra en modo lectura
+      this.modoEditarObligatorio = false;
+
       if (this.yaAsignada) {
         // Mapeamos los correosAsignadosEquipo al formulario con su backup
         this.correosFormulario = this.correosAsignadosEquipo.map((correo: any) => {
           const backupAsociado = this.getBackupDeCorreo(correo.correoCodigo);
-
 
           return {
             correoCodigo: correo.correoCodigo,
@@ -2567,6 +2565,7 @@ export class AsigEquipoComponent {
           };
         });
       } else {
+        // Nueva asignación
         if (this.softwareSeleccionado.correos?.length) {
           this.correosFormulario = [...this.softwareSeleccionado.correos];
         } else {
@@ -2574,10 +2573,12 @@ export class AsigEquipoComponent {
         }
       }
 
+      // Limpiamos los formularios de agregar
       this.panelCorreo = { correoCodigo: null, realizarBackup: false };
       this.backupFormData = this.resetBackupFormData();
       this.modoUbicacion = 'normales';
       this.panelTitulo = 'Administrar Correos';
+
 
 
     } else if (tipo === 'office') {
