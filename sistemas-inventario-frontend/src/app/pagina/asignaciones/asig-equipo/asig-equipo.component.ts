@@ -981,234 +981,484 @@ export class AsigEquipoComponent {
   // ==================== GUARDAR BACKUP CORREO ====================
 
   guardarBackupCorreo(): void {
-    // 1. Validar que haya un correo seleccionado (no confundir con NO APLICA = 0)
+    // 1. Validar que haya un correo seleccionado
     const codigoCorreoRaw = this.panelCorreo.correoCodigo;
-    const sinCorreoSeleccionado =
+
+    if (
       codigoCorreoRaw === null ||
       codigoCorreoRaw === undefined ||
-      codigoCorreoRaw === '';
-    if (sinCorreoSeleccionado) {
-      this.notificacionSnackbarService.warning('Correo requerido', 'Seleccione un correo.');
+      codigoCorreoRaw === ''
+    ) {
+      this.notificacionSnackbarService.warning(
+        'Correo requerido',
+        'Seleccione un correo.'
+      );
       return;
     }
 
-    // 2. Caso NO APLICA del PROGRAMA de backup (codigo 0)
-    if (this.backupFormData.backupCodigo === 0 || this.backupFormData.backupCodigo === '0') {
-      this.consultarBackupInformacionService.obtenerPorCodigo(0).subscribe({
-        next: (backupInfo) => {
-          if (!backupInfo) {
-            this.notificacionSnackbarService.error('Error', 'No se encontro la configuracion NO APLICA');
-            return;
-          }
-          const correo = this.correosList.find(
-            (c) => c.codigo === Number(codigoCorreoRaw)
-          );
-          if (!correo) return;
+    const codigoCorreo = Number(codigoCorreoRaw);
 
-          const correoGuardar = {
-            correoCodigo: correo.codigo,
-            direccion: correo.direccion,
-            realizarBackup: false,
-            backup: {
-              backupInformacionCodigo: 0,
-              backupCodigo: 0,
-              programa: 'NO APLICA',
-              nombre: backupInfo.nombre || 'NO APLICA',
-              frecuencia: backupInfo.frecuencia || 'NO APLICA',
-              dia: backupInfo.dia || null,
-              hora: backupInfo.hora || null,
-              ubicaciones: backupInfo.ubicacion
-                ? backupInfo.ubicacion.split(';').filter((u: string) => u.trim() !== '')
-                : [],
-              ubicacionesExcluidas: backupInfo.ubicacionExcluida
-                ? backupInfo.ubicacionExcluida.split(';').filter((u: string) => u.trim() !== '')
-                : [],
-              tipo: 'CORREO',
-            },
-          };
+    // Buscamos en los correos disponibles
+    let correo = this.correosList.find(
+      (c) => Number(c.codigo) === codigoCorreo
+    );
 
-          if (this.editandoCorreo && this.indiceCorreoEditando !== null) {
-            this.correosFormulario[this.indiceCorreoEditando] = correoGuardar;
-            this.notificacionSnackbarService.success('Exito', 'Correo actualizado correctamente.');
-          } else {
-            const yaExiste = this.correosFormulario.some(
-              (c) => c.correoCodigo === correoGuardar.correoCodigo
-            );
-            if (yaExiste) {
-              this.notificacionSnackbarService.warning('Duplicado', 'El correo ya fue agregado.');
+    // Si no esta, buscamos en los correos que YA estan asignados al equipo
+    if (!correo) {
+      const correoAsignado = this.correosAsignadosEquipo.find(
+        (c: any) => Number(c.correoCodigo) === codigoCorreo
+      );
+
+      if (correoAsignado) {
+        correo = {
+          codigo: correoAsignado.correoCodigo,
+          direccion: correoAsignado.direccion
+        } as any;
+      }
+    }
+
+    // Si de plano no existe, ahi si mostramos el error
+    if (!correo) {
+      this.notificacionSnackbarService.error(
+        'Error',
+        'No se encontro el correo seleccionado.'
+      );
+      return;
+    }
+
+    // 2. Caso NO APLICA
+    if (
+      this.backupFormData.backupCodigo === 0 ||
+      this.backupFormData.backupCodigo === '0'
+    ) {
+      this.consultarBackupInformacionService
+        .obtenerPorCodigo(0)
+        .subscribe({
+          next: (backupInfo) => {
+            if (!backupInfo) {
+              this.notificacionSnackbarService.error(
+                'Error',
+                'No se encontro la configuracion NO APLICA.'
+              );
               return;
             }
-            this.correosFormulario.push(correoGuardar);
-            this.notificacionSnackbarService.success('Exito', 'Correo agregado con NO APLICA.');
-          }
-          this.limpiarEstadoCorreo();
-        },
-        error: (err) => {
-          console.error('Error al obtener backup_informacion codigo 0:', err);
-          this.notificacionSnackbarService.error('Error', 'No se pudo obtener la configuracion NO APLICA');
-        },
-      });
+
+            const correoGuardar = {
+              correoCodigo: correo.codigo,
+              direccion: correo.direccion,
+              realizarBackup: false,
+              backup: {
+                backupInformacionCodigo: 0,
+                backupCodigo: 0,
+                programa: 'NO APLICA',
+                nombre: backupInfo.nombre || 'NO APLICA',
+                frecuencia: backupInfo.frecuencia || 'NO APLICA',
+                dia: backupInfo.dia || null,
+                hora: backupInfo.hora || null,
+                ubicaciones: backupInfo.ubicacion
+                  ? backupInfo.ubicacion
+                    .split(';')
+                    .filter((u: string) => u.trim() !== '')
+                  : [],
+                ubicacionesExcluidas: backupInfo.ubicacionExcluida
+                  ? backupInfo.ubicacionExcluida
+                    .split(';')
+                    .filter((u: string) => u.trim() !== '')
+                  : [],
+                tipo: 'CORREO',
+              },
+            };
+
+            const indice = this.correosFormulario.findIndex(
+              (c) => Number(c.correoCodigo) === codigoCorreo
+            );
+
+            if (indice !== -1) {
+              this.correosFormulario[indice] = correoGuardar;
+            } else {
+              this.correosFormulario.push(correoGuardar);
+            }
+
+            this.softwareSeleccionado.correos = [
+              ...this.correosFormulario,
+            ];
+
+            this.cdr.detectChanges();
+
+            this.notificacionSnackbarService.success(
+              'Exito',
+              'La configuracion NO APLICA se guardo en el formulario.'
+            );
+
+            this.limpiarEstadoCorreo();
+          },
+          error: (err) => {
+            console.error(
+              'Error al obtener backup_informacion codigo 0:',
+              err
+            );
+
+            this.notificacionSnackbarService.error(
+              'Error',
+              'No se pudo obtener la configuracion NO APLICA.'
+            );
+          },
+        });
+
       return;
     }
 
-    // BACKUPS NORMALES
-    if (this.backupFormData.backupCodigo === null || this.backupFormData.backupCodigo === undefined) {
-      this.notificacionSnackbarService.warning('Programa requerido', 'Seleccione un programa de backup.');
+    // 3. Validar el programa de backup
+    if (
+      this.backupFormData.backupCodigo === null ||
+      this.backupFormData.backupCodigo === undefined ||
+      this.backupFormData.backupCodigo === ''
+    ) {
+      this.notificacionSnackbarService.warning(
+        'Programa requerido',
+        'Seleccione un programa de backup.'
+      );
       return;
     }
+
+    // 4. Validar frecuencia
     if (!this.backupFormData.frecuencia) {
-      this.notificacionSnackbarService.warning('Frecuencia requerida', 'Seleccione una frecuencia.');
+      this.notificacionSnackbarService.warning(
+        'Frecuencia requerida',
+        'Seleccione una frecuencia.'
+      );
       return;
     }
+
     const frecuencia = this.backupFormData.frecuencia;
     const dia = this.backupFormData.dia;
+
     if (frecuencia !== 'DIARIO') {
       if (dia === null || dia === undefined || dia === '') {
-        this.notificacionSnackbarService.warning('Dia requerido', 'Debe ingresar un dia.');
+        this.notificacionSnackbarService.warning(
+          'Dia requerido',
+          'Debe ingresar un dia.'
+        );
         return;
       }
+
       const numDia = Number(dia);
+
       if (
         isNaN(numDia) ||
         numDia < 1 ||
         (frecuencia === 'SEMANAL' && numDia > 7) ||
         (frecuencia !== 'SEMANAL' && numDia > 30)
       ) {
-        this.notificacionSnackbarService.warning('Dia involido', 'Ingrese un dia volido.');
+        this.notificacionSnackbarService.warning(
+          'Dia invAlido',
+          'Ingrese un dia vAlido.'
+        );
         return;
       }
     } else {
       this.backupFormData.dia = null;
     }
 
-    const ubicaciones = this.backupFormData.ubicaciones.filter((u: string) => u.trim() !== '');
+    // 5. Validar ubicaciones
+    const ubicaciones = (this.backupFormData.ubicaciones || [])
+      .filter((u: string) => u.trim() !== '');
+
     if (ubicaciones.length === 0) {
-      this.notificacionSnackbarService.warning('Ubicacion requerida', 'Debe ingresar la ubicacion .PST.');
+      this.notificacionSnackbarService.warning(
+        'Ubicacion requerida',
+        'Debe ingresar al menos una ubicacion de backup.'
+      );
       return;
     }
 
-    const correo = this.correosList.find(
-      (c) => c.codigo === Number(this.panelCorreo.correoCodigo)
-    );
-    if (!correo) return;
+    const ubicacionesExcluidas = (
+      this.backupFormData.ubicacionesExcluidas || []
+    ).filter((u: string) => u.trim() !== '');
+
     const programa = this.backupList.find(
-      (b) => b.codigo === Number(this.backupFormData.backupCodigo)
+      (b) =>
+        Number(b.codigo) === Number(this.backupFormData.backupCodigo)
     );
 
+    // 6. Determinar si se estA actualizando una configuracion existente
     const idBackupExistente =
       this.backupFormData.backupInformacionCodigo ||
       this.configuracionSeleccionada?.codigo ||
       null;
-    const esEdicion = this.editandoCorreo || (idBackupExistente !== null && idBackupExistente !== 0);
 
-    if (esEdicion && idBackupExistente && idBackupExistente !== 0) {
+    const esEdicionExistente =
+      idBackupExistente !== null &&
+      idBackupExistente !== undefined &&
+      Number(idBackupExistente) !== 0;
+
+    // Construir el objeto que se guardarA en el formulario
+    const crearCorreoGuardar = (codigoBackupInfo: number | string) => ({
+      correoCodigo: correo.codigo,
+      direccion: correo.direccion,
+      realizarBackup: true,
+      backup: {
+        backupInformacionCodigo: codigoBackupInfo,
+        backupCodigo: Number(this.backupFormData.backupCodigo),
+        programa: programa?.nombre || '',
+        nombre: this.backupFormData.nombre || 'BACKUP-CORREO',
+        frecuencia: this.backupFormData.frecuencia,
+        dia: this.backupFormData.dia,
+        hora: this.backupFormData.hora || null,
+        ubicaciones: [...ubicaciones],
+        ubicacionesExcluidas: [...ubicacionesExcluidas],
+        tipo: 'CORREO',
+      },
+    });
+
+    // Actualizar el correo en el formulario sin duplicarlo
+    const actualizarCorreoFormulario = (correoGuardar: any): void => {
+      const indice = this.correosFormulario.findIndex(
+        (c) => Number(c.correoCodigo) === codigoCorreo
+      );
+
+      if (indice !== -1) {
+        this.correosFormulario[indice] = correoGuardar;
+      } else {
+        this.correosFormulario.push(correoGuardar);
+      }
+
+      this.softwareSeleccionado.correos = [
+        ...this.correosFormulario,
+      ];
+
+      this.cdr.detectChanges();
+    };
+
+    // 7. ACTUALIZAR un backup que ya existe
+    if (esEdicionExistente) {
       const updatePayload = {
         nombre: this.backupFormData.nombre || 'BACKUP-CORREO',
         frecuencia: this.backupFormData.frecuencia,
         ubicacion: ubicaciones.join(';'),
-        ubicacionExcluida: this.backupFormData.ubicacionesExcluidas
-          .filter((u: string) => u.trim() !== '')
-          .join(';'),
+        ubicacionExcluida: ubicacionesExcluidas.join(';'),
         dia: this.backupFormData.dia || 0,
         hora: this.backupFormData.hora || '00:00:00',
-        software: { codigo: Number(this.backupFormData.backupCodigo) },
+        software: {
+          codigo: Number(this.backupFormData.backupCodigo),
+        },
         activo: true,
         tipo: 'CORREO',
       };
-      this.registroBackupInformacionService.actualizar(idBackupExistente, updatePayload).subscribe({
-        next: () => {
 
-          const correoGuardar = {
-            correoCodigo: correo.codigo,
-            direccion: correo.direccion,
-            realizarBackup: true,
-            backup: {
-              backupInformacionCodigo: idBackupExistente,
-              backupCodigo: Number(this.backupFormData.backupCodigo),
-              programa: programa?.nombre || '',
-              nombre: this.backupFormData.nombre || 'BACKUP-CORREO',
-              frecuencia: this.backupFormData.frecuencia,
-              dia: this.backupFormData.dia,
-              hora: this.backupFormData.hora || null,
-              ubicaciones: [...ubicaciones],
-              ubicacionesExcluidas: [...this.backupFormData.ubicacionesExcluidas].filter(
-                (u: string) => u.trim() !== ''
-              ),
-              tipo: 'CORREO',
-            },
-          };
+      this.registroBackupInformacionService
+        .actualizar(Number(idBackupExistente), updatePayload)
+        .subscribe({
+          next: async () => {
+            try {
+              //  Si el equipo ya esta asignado, nos aseguramos de que el vinculo exista
+              if (this.yaAsignada && this.equipo.asignacionId) {
+                // Verificamos si ya hay un backup en la BD para este correo
+                const backupsDelEquipo = await firstValueFrom(
+                  this.registrarAsignacionesService.obtenerBackupsPorSerial(this.equipo.serial)
+                );
 
-          if (this.editandoCorreo && this.indiceCorreoEditando !== null) {
-            this.correosFormulario[this.indiceCorreoEditando] = correoGuardar;
-          } else {
-            const idx = this.correosFormulario.findIndex(
-              (c) => c.backup?.backupInformacionCodigo === idBackupExistente
+                const backupVinculado = backupsDelEquipo.find(
+                  (b: any) => b.correo && Number(b.correo.codigo) === codigoCorreo
+                );
+
+                // Si no esta vinculado o el backupInformacionCodigo es diferente, lo asignamos
+                if (!backupVinculado || Number(backupVinculado.backupInformacion?.codigo) !== Number(idBackupExistente)) {
+                  // Si existia un vinculo anterior, lo desactivamos
+                  if (backupVinculado) {
+                    await firstValueFrom(
+                      this.registrarAsignacionesService.desactivarBackupAsignado(backupVinculado.numero)
+                    );
+                  }
+
+                  // Creamos el nuevo vinculo
+                  await firstValueFrom(
+                    this.registrarAsignacionesService.asignarBackupAEquipo(
+                      this.equipo.serial,
+                      Number(idBackupExistente),
+                      Number(this.equipo.asignacionId),
+                      codigoCorreo
+                    )
+                  );
+                }
+              }
+
+              const correoGuardar = crearCorreoGuardar(Number(idBackupExistente));
+              actualizarCorreoFormulario(correoGuardar);
+
+              // Actualizar la lista visual
+              if (this.yaAsignada) {
+                this.backupsCorreosAsignadosEquipo = this.backupsCorreosAsignadosEquipo.filter(
+                  (b: any) => Number(b.correoCodigo) !== codigoCorreo
+                );
+
+                this.backupsCorreosAsignadosEquipo.push({
+                  numero: 0,
+                  correoCodigo: codigoCorreo,
+                  correoDireccion: correo.direccion,
+                  backupInformacionCodigo: Number(idBackupExistente),
+                  backupCodigo: Number(this.backupFormData.backupCodigo),
+                  programa: programa?.nombre || 'Backup',
+                  nombre: this.backupFormData.nombre || 'BACKUP-CORREO',
+                  frecuencia: this.backupFormData.frecuencia,
+                  dia: this.backupFormData.dia,
+                  hora: this.backupFormData.hora || null,
+                  ubicaciones: [...ubicaciones],
+                  ubicacionesExcluidas: [...ubicacionesExcluidas],
+                });
+              }
+
+              this.notificacionSnackbarService.success('Exito', 'Backup de correo actualizado correctamente.');
+              this.limpiarEstadoCorreo();
+
+            } catch (err: any) {
+              console.error('Error al vincular backup actualizado:', err);
+              this.notificacionSnackbarService.error('Error', err.message || 'No se pudo vincular el backup al equipo.');
+            }
+          },
+          error: (err) => {
+            console.error('Error al actualizar backup de correo:', err);
+            this.notificacionSnackbarService.error(
+              'Error',
+              `No se pudo actualizar el backup: ${err?.error?.error || err?.message || 'Error desconocido'}`
             );
-            if (idx !== -1) this.correosFormulario[idx] = correoGuardar;
-            else this.correosFormulario.push(correoGuardar);
-          }
-          this.notificacionSnackbarService.success('Exito', 'Backup de correo ACTUALIZADO correctamente.');
-          this.limpiarEstadoCorreo();
-        },
-        error: (err) => {
-          console.error('Error al actualizar backup de correo:', err);
-          this.notificacionSnackbarService.error('Error', `No se pudo actualizar: ${err.error?.error || err.message}`);
-        },
-      });
+          },
+        });
       return;
     }
 
-    // NUEVO
-    const yaExiste = this.correosFormulario.some((c) => c.correoCodigo === correo.codigo);
-    if (yaExiste) {
-      this.notificacionSnackbarService.warning('Duplicado', 'El correo ya fue agregado.');
-      return;
+    // 8. CREAR un backup nuevo.
+    const yaExisteEnBD = this.correosAsignadosEquipo.some(
+      (c: any) => Number(c.correoCodigo) === codigoCorreo
+    );
+
+    // Validacion para nuevos correos en el formulario (para evitar duplicar en la misma sesion)
+    if (!yaExisteEnBD) {
+      const yaEstaEnFormulario = this.correosFormulario.some(
+        (c) => Number(c.correoCodigo) === codigoCorreo && c.realizarBackup
+      );
+      if (yaEstaEnFormulario && !this.editandoCorreo) {
+        this.notificacionSnackbarService.warning('Duplicado', 'El correo ya fue agregado.');
+        return;
+      }
     }
+
     const infoPayload = {
       nombre: this.backupFormData.nombre || 'BACKUP-CORREO',
       frecuencia: this.backupFormData.frecuencia,
       ubicacion: ubicaciones.join(';'),
-      ubicacionExcluida: this.backupFormData.ubicacionesExcluidas
-        .filter((u: string) => u.trim() !== '')
-        .join(';'),
+      ubicacionExcluida: ubicacionesExcluidas.join(';'),
       dia: this.backupFormData.dia || 0,
       hora: this.backupFormData.hora || '00:00:00',
-      software: { codigo: Number(this.backupFormData.backupCodigo) },
+      software: {
+        codigo: Number(this.backupFormData.backupCodigo),
+      },
       activo: true,
       tipo: 'CORREO',
     };
-    this.registroBackupInformacionService.guardar(infoPayload).subscribe({
-      next: (respuesta) => {
 
-        const correoGuardar = {
-          correoCodigo: correo.codigo,
-          direccion: correo.direccion,
-          realizarBackup: true,
-          backup: {
-            backupInformacionCodigo: respuesta.codigo || respuesta.id,
-            backupCodigo: Number(this.backupFormData.backupCodigo),
-            programa: programa?.nombre || '',
-            nombre: this.backupFormData.nombre || 'BACKUP-CORREO',
-            frecuencia: this.backupFormData.frecuencia,
-            dia: this.backupFormData.dia,
-            hora: this.backupFormData.hora || null,
-            ubicaciones: [...ubicaciones],
-            ubicacionesExcluidas: [...this.backupFormData.ubicacionesExcluidas].filter(
-              (u: string) => u.trim() !== ''
-            ),
-            tipo: 'CORREO',
-          },
-        };
+    this.registroBackupInformacionService
+      .guardar(infoPayload)
+      .subscribe({
+        next: async (respuesta) => {
+          try {
+            const codigoBackupInfo = respuesta?.codigo ?? respuesta?.id;
 
-        this.correosFormulario.push(correoGuardar);
-        this.notificacionSnackbarService.success('Exito', 'Correo agregado con backup.');
-        this.limpiarEstadoCorreo();
-      },
-      error: (err) => {
-        console.error('Error al crear backup de correo:', err);
-        this.notificacionSnackbarService.error('Error', 'No se pudo crear el backup de correo');
-      },
-    });
+            if (codigoBackupInfo === null || codigoBackupInfo === undefined) {
+              throw new Error('El servicio no devolvio el codigo de la configuracion del backup.');
+            }
+
+            // AQUi ESTA LA MAGIA: Solo asociar a equipodecomputo_backup si es un equipo ya asignado
+            if (this.yaAsignada) {
+              if (!this.equipo?.serial || !this.equipo?.asignacionId) {
+                throw new Error('No se encontro el serial del equipo o el ID de asignacion.');
+              }
+
+              // Creamos el vinculo del backup con el equipo y el correo
+              await firstValueFrom(
+                this.registrarAsignacionesService.asignarBackupAEquipo(
+                  this.equipo.serial,
+                  Number(codigoBackupInfo),
+                  Number(this.equipo.asignacionId),
+                  codigoCorreo
+                )
+              );
+
+              // Si el correo NO existia en la lista, significa que es nuevo y hay que asignar el recurso
+              if (!yaExisteEnBD) {
+                const payloadRecurso = {
+                  empleadoCedula: this.equipo.empleadoCedula || this.equipo.asignadoCedula,
+                  tipo: 'CORREO',
+                  recursoTipoId: 1,
+                  recursoId: codigoCorreo,
+                  fechaAsignacion: new Date().toISOString().split('T')[0],
+                  observaciones: 'ASIGNACION DE CORREO DESDE EDICION'
+                };
+
+                await firstValueFrom(
+                  this.registrarAsignacionesService.asignarRecurso(payloadRecurso)
+                );
+                // Agregamos a la lista en memoria para futuras ediciones
+                this.correosAsignadosEquipo.push({
+                  numeroRecurso: 0, // Se actualiza si recargas la pagina
+                  correoCodigo: codigoCorreo,
+                  direccion: correo.direccion,
+                  fechaAsignacion: new Date().toISOString().split('T')[0],
+                  observaciones: 'ASIGNACION DE CORREO DESDE EDICION'
+                });
+
+              }
+            }
+
+            const correoGuardar = crearCorreoGuardar(Number(codigoBackupInfo));
+            actualizarCorreoFormulario(correoGuardar);
+
+            // Reflejar el nuevo backup en la lista visual
+            if (this.yaAsignada) {
+              this.backupsCorreosAsignadosEquipo = this.backupsCorreosAsignadosEquipo.filter(
+                (b: any) => Number(b.correoCodigo) !== codigoCorreo
+              );
+
+              this.backupsCorreosAsignadosEquipo.push({
+                numero: 0,
+                correoCodigo: codigoCorreo,
+                correoDireccion: correo.direccion,
+                backupInformacionCodigo: Number(codigoBackupInfo),
+                backupCodigo: Number(this.backupFormData.backupCodigo),
+                programa: programa?.nombre || 'Backup',
+                nombre: this.backupFormData.nombre || 'BACKUP-CORREO',
+                frecuencia: this.backupFormData.frecuencia,
+                dia: this.backupFormData.dia,
+                hora: this.backupFormData.hora || null,
+                ubicaciones: [...ubicaciones],
+                ubicacionesExcluidas: [...ubicacionesExcluidas],
+              });
+            }
+
+            this.notificacionSnackbarService.success(
+              'Exito',
+              this.yaAsignada
+                ? 'Backup creado y asociado al correo del equipo.'
+                : 'Correo agregado con backup.'
+            );
+
+            this.limpiarEstadoCorreo();
+          } catch (err: any) {
+            console.error('Error al asociar el backup al correo:', err);
+            this.notificacionSnackbarService.error(
+              'Error',
+              err?.message || 'La configuracion se creo, pero no se pudo asociar al equipo y al correo.'
+            );
+          }
+        },
+        error: (err) => {
+          console.error('Error al crear backup de correo:', err);
+          this.notificacionSnackbarService.error(
+            'Error',
+            'No se pudo crear la configuracion del backup.'
+          );
+        },
+      });
   }
 
 
@@ -1234,13 +1484,13 @@ export class AsigEquipoComponent {
         console.error('Error al desactivar el software de backup:', error);
       }
 
-      // FORZAMOS la actualización visual INMEDIATA para que no muestre el anterior
+      // FORZAMOS la actualizacion visual INMEDIATA para que no muestre el anterior
       this.softwareAsignadoList = this.softwareAsignadoList.filter(s => s.tipoCodigo !== 2);
       this.backupsAsignadosEquipo = [];
 
       this.guardarEdicionObligatorio().then(() => {
         this.notificacionSnackbarService.success('Exito', 'Guardado como Sin Backup');
-        // Recargamos desde la BD para estar seguros de que quedó limpio
+        // Recargamos desde la BD para estar seguros de que quedo limpio
         this.cargarSoftwareAsignado(this.equipo.serial);
         this.cerrarPanel();
       }).catch((err) => {
@@ -1248,19 +1498,18 @@ export class AsigEquipoComponent {
       });
 
     } else {
-      // Si es Nueva Asignación, solo cerramos
+      // Si es Nueva Asignacion, solo cerramos
       this.notificacionSnackbarService.success('Exito', 'Configuracion Sin Backup guardada');
       this.cerrarPanel();
     }
   }
 
 
-
   async eliminarCorreoAsignado(index: number): Promise<void> {
     const correoAEliminar = this.correosFormulario[index];
     if (!correoAEliminar) return;
 
-    // Si es una nueva asignacion (el equipo aún no se ha guardado), solo quitamos de la lista
+    // Si es una nueva asignacion (el equipo aun no se ha guardado), solo quitamos de la lista
     if (!this.yaAsignada) {
       this.correosFormulario.splice(index, 1);
       this.cdr.detectChanges();
@@ -1286,7 +1535,7 @@ export class AsigEquipoComponent {
         b => Number(b.correoCodigo) === Number(correoAEliminar.correoCodigo) && b.numero && b.numero > 0
       );
 
-      // Si no tenemos el número (porque se agrego en esta sesion y no se recargo la lista),
+      // Si no tenemos el numero (porque se agrego en esta sesion y no se recargo la lista),
       // consultamos la BD para obtener el registro real de equipodecomputo_backup
       if (!backupParaDesactivar) {
         const backupsDelEquipo = await firstValueFrom(
@@ -1361,61 +1610,81 @@ export class AsigEquipoComponent {
   }
 
   editarBackupCorreo(item: any, index: number): void {
-    if (!item.backup) {
-      this.notificacionSnackbarService.warning('Error', 'El correo no tiene informacion de backup');
-      return;
-    }
+    if (!item) return;
 
     this.editandoCorreo = true;
-    this.bloquearCorreo = true;
     this.indiceCorreoEditando = index;
 
-    // 1. Asignamos los datos al formulario
+    // El correo puede no tener backup todavia.
+    const backup = item.backup || null;
+
+    // Solo bloqueamos si el correo YA TIENE un backup
+    this.bloquearCorreo = !!backup;
+
     this.panelCorreo = {
       correoCodigo: item.correoCodigo,
       realizarBackup: true,
     };
-    this.backupFormData = {
-      backupCodigo: item.backup.backupCodigo || null,
-      backupInformacionCodigo: item.backup.backupInformacionCodigo || null,
-      nombre: item.backup.nombre || '',
-      programa: item.backup.programa || '',
-      frecuencia: item.backup.frecuencia || '',
-      dia: item.backup.dia || null,
-      hora: item.backup.hora || null,
-      ubicaciones: item.backup.ubicaciones?.length ? [...item.backup.ubicaciones] : [''],
-      ubicacionesExcluidas: item.backup.ubicacionesExcluidas?.length ? [...item.backup.ubicacionesExcluidas] : [''],
-    };
 
-    // 2. La clave: Forzamos que la configuracion exista en la lista del <select>
-    if (item.backup.backupInformacionCodigo) {
+    // Si no existe backup, inicializamos el formulario vacio.
+    this.backupFormData = backup
+      ? {
+        backupCodigo: backup.backupCodigo ?? null,
+        backupInformacionCodigo:
+          backup.backupInformacionCodigo ?? null,
+        nombre: backup.nombre || '',
+        programa: backup.programa || '',
+        frecuencia: backup.frecuencia || '',
+        dia: backup.dia ?? null,
+        hora: backup.hora || null,
+        ubicaciones: backup.ubicaciones?.length
+          ? [...backup.ubicaciones]
+          : [''],
+        ubicacionesExcluidas: backup.ubicacionesExcluidas?.length
+          ? [...backup.ubicacionesExcluidas]
+          : [''],
+      }
+      : this.resetBackupFormData();
+
+    this.configuracionSeleccionada = null;
+
+    // Solo seleccionamos una configuracion si ya existe.
+    if (backup?.backupInformacionCodigo) {
       const configParaSelect = {
-        codigo: item.backup.backupInformacionCodigo,
-        nombre: item.backup.nombre,
-        frecuencia: item.backup.frecuencia,
-        dia: item.backup.dia,
-        hora: item.backup.hora,
-        ubicacion: item.backup.ubicaciones?.join(';') || '',
-        ubicacionExcluida: item.backup.ubicacionesExcluidas?.join(';') || '',
-        enUso: false // Lo forzamos a false para que no lo oculte
+        codigo: backup.backupInformacionCodigo,
+        nombre: backup.nombre,
+        frecuencia: backup.frecuencia,
+        dia: backup.dia,
+        hora: backup.hora,
+        ubicacion: backup.ubicaciones?.join(';') || '',
+        ubicacionExcluida:
+          backup.ubicacionesExcluidas?.join(';') || '',
+        enUso: false,
       };
 
-      // Si ya esta en la lista (de una apertura anterior), lo actualizamos
-      const existeIdx = this.configuracionesBackup.findIndex(c => c.codigo === configParaSelect.codigo);
+      const existeIdx = this.configuracionesBackup.findIndex(
+        c =>
+          Number(c.codigo) ===
+          Number(configParaSelect.codigo)
+      );
+
       if (existeIdx !== -1) {
         this.configuracionesBackup[existeIdx] = configParaSelect;
       } else {
-        // Si no esta, lo agregamos a la lista
         this.configuracionesBackup.push(configParaSelect);
       }
 
       this.configuracionSeleccionada = configParaSelect;
-    } else {
-      this.configuracionSeleccionada = null;
     }
 
     this.cdr.detectChanges();
-    this.notificacionSnackbarService.info('Editando correo', `Editando "${item.direccion}"`);
+
+    this.notificacionSnackbarService.info(
+      'Editando correo',
+      backup
+        ? `Editando "${item.direccion}"`
+        : `Agregue un backup para "${item.direccion}"`
+    );
   }
 
 
@@ -2346,7 +2615,7 @@ export class AsigEquipoComponent {
       // 3. Recargar software asignado
       await this.cargarSoftwareAsignado(this.equipo.serial);
 
-      this.notificacionSnackbarService.success('Éxito', 'Antivirus actualizado correctamente');
+      this.notificacionSnackbarService.success('Exito', 'Antivirus actualizado correctamente');
       this.cerrarPanel();
       this.cdr.detectChanges();
 
@@ -2565,7 +2834,7 @@ export class AsigEquipoComponent {
           };
         });
       } else {
-        // Nueva asignación
+        // Nueva asignacion
         if (this.softwareSeleccionado.correos?.length) {
           this.correosFormulario = [...this.softwareSeleccionado.correos];
         } else {
