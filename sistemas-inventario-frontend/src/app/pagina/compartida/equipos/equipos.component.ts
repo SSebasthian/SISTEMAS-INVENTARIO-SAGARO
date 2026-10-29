@@ -12,6 +12,8 @@ import { forkJoin } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AsigEquipoComponent } from '../../asignaciones/asig-equipo/asig-equipo.component';
 import { AreaLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/AreaRespuesta.interface';
+import { OpcEquipoVisualizarComponent } from '../../registro/opc-equipo-visualizar/opc-equipo-visualizar.component';
+
 
 
 
@@ -800,5 +802,30 @@ export class EquiposComponent implements OnInit {
 
   }
 
+
+
+
+
+  // 1. Abre el modal de visualizacion
+  abrirEditarEquipo(equipo: EquipoDeComputoLlamarDatos): void {
+    const dialogRef = this.dialog.open(OpcEquipoVisualizarComponent, {
+      width: '550px',
+      maxWidth: '550px',
+      maxHeight: '490px',
+      panelClass: 'modal-editar-equipo',
+      autoFocus: false,
+      data: { 
+        equipo: equipo,
+        recargarTabla: this.cargarEquipos.bind(this) // <--- Le pasamos la funcion de cambios realizados
+      } 
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Si devolvio 'guardado' (porque editaron), recargamos la tabla
+      if (result === 'guardado') {
+        this.cargarEquipos();
+      }
+    });
+  }
 }
 

@@ -221,7 +221,10 @@
                     </td>
 
                     <td class="serial">
-                        <span class="badge-serial">{{ equipo.serial }}</span>
+                        <span class="badge-serial clickable" (click)="abrirEditarEquipo(equipo)"
+                            title="Ver detalle del equipo">
+                            {{ equipo.serial }}
+                        </span>
                     </td>
 
                     <td class="ram">
@@ -290,15 +293,17 @@
                             <div class="tooltip-asignacion-container">
 
                                 <!-- ICONO DE ASIGNACION -->
-                                <mat-icon *ngIf="equipo.asignado" class="icono-asignado" (click)="abrirModalAsignacion(equipo)">person</mat-icon>
+                                <mat-icon *ngIf="equipo.asignado" class="icono-asignado"
+                                    (click)="abrirModalAsignacion(equipo)">person</mat-icon>
                                 <div *ngIf="equipo.asignado" class="tooltip-asignacion-content">
                                     <div class="tooltip-header">
-                                          <span>{{ equipo.asignadoArea }}</span>
-                                          <hr>
+                                        <span>{{ equipo.asignadoArea }}</span>
+                                        <hr>
                                         <span>{{ equipo.asignadoA }}</span>
                                     </div>
                                 </div>
-                                <mat-icon *ngIf="!equipo.asignado" class="icono-disponible" (click)="abrirModalAsignacion(equipo)">person_outline</mat-icon>
+                                <mat-icon *ngIf="!equipo.asignado" class="icono-disponible"
+                                    (click)="abrirModalAsignacion(equipo)">person_outline</mat-icon>
                                 <div *ngIf="!equipo.asignado" class="tooltip-asignacion-content tooltip-disponible">
                                     <div class="tooltip-header">
                                         <a>DISPONIBLE</a>

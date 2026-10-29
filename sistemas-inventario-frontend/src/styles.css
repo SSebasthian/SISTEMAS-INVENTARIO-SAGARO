@@ -25,3 +25,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     --mat-mdc-snack-bar-button-color: transparent;
   }
 }
+
+
+.modal-editar-equipo .mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 15px !important;
+  overflow: hidden; /* Para que el contenido respete el borde */
+}

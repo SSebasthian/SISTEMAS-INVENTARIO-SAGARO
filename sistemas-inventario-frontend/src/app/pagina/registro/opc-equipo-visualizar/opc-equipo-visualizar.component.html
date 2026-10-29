@@ -1,0 +1,197 @@
+<div class="contenedor-regEquipo">
+  <div class="contenido">
+    <div class="fila-de-tres">
+
+      <!-- Imagen -->
+      <div class="contenedor-imagen">
+        <div class="contenido-img">
+          <img *ngIf="imagenModelo" [src]="imagenModelo" class="imagen-modelo" alt="Imagen del modelo">
+          <mat-icon *ngIf="!imagenModelo" class="icono-img-prod">image</mat-icon>
+        </div>
+      </div>
+
+      <!-- TIPO DE EQUIPO (No se debe editar) -->
+      <div class="contenido-opcion">
+        <label>TIPO DE EQUIPO<br></label>
+        <input class="opcionForm" type="text" [value]="equipo.tipo?.descripcion" readonly>
+      </div>
+
+      <!-- SERIAL (No se debe editar) -->
+      <div class="contenido-opcion">
+        <label>SERIAL:<br></label>
+        <input class="opcionForm" type="text" [value]="equipo.serial" readonly
+          style="font-weight: bold; color: #1976d2;">
+      </div>
+
+      <!-- MARCA (No se debe editar) -->
+      <div class="contenido-opcion">
+        <label>MARCA<br></label>
+        <input class="opcionForm" type="text" [value]="equipo.marca?.descripcion" readonly>
+      </div>
+
+      <!-- MODELO (No se debe editar) -->
+      <div class="contenido-opcion">
+        <label>MODELO:<br></label>
+        <input class="opcionForm" type="text" [value]="equipo.modelo?.descripcion" readonly>
+      </div>
+
+      <!-- SO -->
+      <div class="contenido-opcion">
+        <label>SISTEMA OPERATIVO<br></label>
+        <select *ngIf="modoEdicion" class="opcionForm select" [(ngModel)]="equipoEdit.sistemaOperativo"
+          (change)="onSOChangeEdicion()" [compareWith]="compararPorCodigo">
+          <option [ngValue]="null"></option>
+          <option *ngFor="let so of sistemasOperativos" [ngValue]="so">{{ so.descripcion }}</option>
+        </select>
+        <input *ngIf="!modoEdicion" class="opcionForm" type="text" [value]="equipo.sistemaOperativo?.descripcion"
+          readonly>
+      </div>
+
+      <!-- VERSIoN SO -->
+      <div class="contenido-opcion">
+        <label>VERSION S.O.<br></label>
+        <select *ngIf="modoEdicion" class="opcionForm select" [(ngModel)]="equipoEdit.versionSO"
+          [compareWith]="compararPorCodigo">
+          <option [ngValue]="null"></option>
+          <option *ngFor="let v of versionesSO" [ngValue]="v">{{ v.descripcion }}</option>
+        </select>
+        <input *ngIf="!modoEdicion" class="opcionForm" type="text" [value]="equipo.versionSO?.descripcion" readonly>
+      </div>
+
+      <!-- BITS -->
+      <div class="contenido-opcion">
+        <label>BITS<br></label>
+        <select *ngIf="modoEdicion" class="opcionForm select" [(ngModel)]="equipoEdit.bits">
+          <option [ngValue]="32">32</option>
+          <option [ngValue]="64">64</option>
+        </select>
+        <input *ngIf="!modoEdicion" class="opcionForm" type="text" [value]="equipo.bits" readonly>
+      </div>
+
+      <!-- RAM -->
+      <div class="contenido-opcion">
+        <label>TAMAÑO RAM<br></label>
+        <div class="input-group">
+          <!-- En modo edición, permitimos escribir y formatear -->
+          <input *ngIf="modoEdicion" class="opcionForm" type="text" [(ngModel)]="equipoEdit.ram"
+            (input)="formatearRamEdicion()" (keydown)="soloNumerosEdicion($event)">
+
+          <!-- En modo visualización, solo leemos el valor -->
+          <input *ngIf="!modoEdicion" class="opcionForm" type="text" [(ngModel)]="equipoEdit.ram" readonly>
+        </div>
+      </div>
+
+      <!-- TIPO RAM -->
+      <div class="contenido-opcion">
+        <label>TIPO DE RAM<br></label>
+        <select *ngIf="modoEdicion" class="opcionForm select" [(ngModel)]="equipoEdit.tipoRam">
+          <option value="DDR2">DDR2</option>
+          <option value="DDR3">DDR3</option>
+          <option value="DDR4">DDR4</option>
+          <option value="DDR5">DDR5</option>
+        </select>
+        <input *ngIf="!modoEdicion" class="opcionForm" type="text" [value]="equipo.tipoRam" readonly>
+      </div>
+
+      <!-- PROCESADOR -->
+      <div class="contenido-opcion">
+        <label>PROCESADOR<br></label>
+        <input class="opcionForm" type="text" [(ngModel)]="equipoEdit.procesador" [readonly]="!modoEdicion">
+      </div>
+
+      <!-- DISCO -->
+      <div class="contenido-opcion">
+        <label>TAMAÑO DISCO<br></label>
+        <select *ngIf="modoEdicion" class="opcionForm select" [(ngModel)]="equipoEdit.disco">
+          <option value="125 GB">125 GB</option>
+          <option value="250 GB">250 GB</option>
+          <option value="500 GB">500 GB</option>
+          <option value="1 TB">1 TB</option>
+        </select>
+        <input *ngIf="!modoEdicion" class="opcionForm" type="text" [(ngModel)]="equipoEdit.disco" readonly>
+      </div>
+
+      <!-- TIPO DISCO -->
+      <div class="contenido-opcion">
+        <label>TIPO DE DISCO<br></label>
+        <select *ngIf="modoEdicion" class="opcionForm select" [(ngModel)]="equipoEdit.tipoDisco">
+          <option value="SSD">SSD</option>
+          <option value="HDD">HDD</option>
+          <option value="NVME">NVME</option>
+        </select>
+        <input *ngIf="!modoEdicion" class="opcionForm" type="text" [value]="equipo.tipoDisco" readonly>
+      </div>
+
+      <!-- PLACA -->
+      <div class="contenido-opcion">
+        <label>NUMERO DE PLACA<br></label>
+        <input class="opcionForm" type="text" [(ngModel)]="equipoEdit.plaqueta" [readonly]="!modoEdicion">
+      </div>
+
+      <!-- FACTURA -->
+      <div class="contenido-opcion">
+        <label>FACTURA<br></label>
+        <input class="opcionForm" type="text" [(ngModel)]="equipoEdit.facturaCompra" [readonly]="!modoEdicion">
+      </div>
+
+      <!-- FECHA -->
+      <div class="contenido-opcion">
+        <label>FECHA DE COMPRA<br></label>
+        <input *ngIf="modoEdicion" class="opcionForm" type="date" [(ngModel)]="equipoEdit.fechaCompra">
+        <input *ngIf="!modoEdicion" class="opcionForm" type="text"
+          [value]="(equipo.fechaCompra | date:'dd/MM/yyyy') || 'NO TIENE'" readonly>
+      </div>
+
+      <!-- ESTADO -->
+      <div class="contenido-opcion">
+        <label>ESTADO<br></label>
+        <!-- Si estamos editando, mostramos un select. Si no, un input readonly -->
+        <select *ngIf="modoEdicion" class="opcionForm select" [(ngModel)]="equipoEdit.estado">
+          <option value="BUEN ESTADO">BUEN ESTADO</option>
+          <option value="ESTADO REGULAR">ESTADO REGULAR</option>
+          <option value="ESTADO DEFICIENTE">ESTADO DEFICIENTE</option>
+          <option value="INOPERATIVO">INOPERATIVO</option>
+        </select>
+        <input *ngIf="!modoEdicion" class="opcionForm" type="text" [value]="equipo.estado" readonly
+          [style.color]="getEstadoColor(equipo.estado)" style="font-weight: bold;">
+      </div>
+
+      <!-- DESCRIPCIoN -->
+      <div class="contenido-opcion textarea">
+        <label for="descripcion">DESCRIPCION:<br></label>
+        <textarea [(ngModel)]="equipoEdit.descripcion" [readonly]="!modoEdicion"></textarea>
+      </div>
+
+
+
+      <div class="botones-registroeditar">
+
+        <!-- Boton Cerrar (SIEMPRE VISIBLE) -->
+        <div>
+          <input type="button" id="checkboxInput" (click)="cerrar()">
+          <label for="checkboxInput" class="bookmark">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+        </div>
+
+        <!-- Boton Editar (Solo en modo visualización) -->
+        <div *ngIf="puedeEditar && !modoEdicion" (click)="activarEdicion()">
+          <input id="checkboxInput2">
+          <label for="checkboxInput2" class="bookmark2">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+        </div>
+
+        <!-- Boton Guardar (Solo en modo edición) -->
+        <div *ngIf="modoEdicion" (click)="guardarCambios()">
+          <input id="checkboxInput4">
+          <label for="checkboxInput4" class="bookmark4">
+            <mat-icon>bookmark</mat-icon>
+          </label>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
