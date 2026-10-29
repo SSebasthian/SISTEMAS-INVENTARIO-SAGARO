@@ -263,3 +263,14 @@
     transform: translateY(4px);
     /* Efecto de "presionar" */
 }
+
+
+#mensaje-advertencia{
+    color: #d32f2f; 
+    font-size: 11px; 
+    margin-top: 4px; 
+    display: block;
+    width: 220px;
+    right: -35px;
+    position: absolute;
+}

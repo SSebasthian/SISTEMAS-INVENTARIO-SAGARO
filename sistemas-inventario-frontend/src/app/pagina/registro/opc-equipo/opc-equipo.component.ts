@@ -20,7 +20,7 @@ import { EquipoComputoRegistro } from './../../../arquitectura/interface/Registr
 import { EquipoDeComputoLlamarDatos } from '../../../arquitectura/interface/LlamarDatos/EquipoDeComputoRespuesta.interface';
 
 import { PermisoModuloService } from '../../../arquitectura/servicio/autenticacion/permiso-modulo.service';
-
+import { ConsultarAsignacionesService } from '../../../arquitectura/servicio/consulta/ConsultarAsignaciones.service';
 
 
 @Component({
@@ -31,7 +31,7 @@ import { PermisoModuloService } from '../../../arquitectura/servicio/autenticaci
 })
 export class OpcEquipoComponent implements OnInit {
 
-  // ID del catálogo "EQUIPO DE COMPUTO" en tu base de datos
+  // ID del catalogo "EQUIPO DE COMPUTO" en tu base de datos
 
   private readonly CATALOGO_EQUIPO_COMPUTO_ID = 1;
 
@@ -43,7 +43,7 @@ export class OpcEquipoComponent implements OnInit {
   sistemasOperativos: SOLlamarDatos[] = [];
   versionesSO: VersionSOLlamarDatos[] = [];
 
-  // Variables para guardar la selección actual del usuario
+  // Variables para guardar la seleccion actual del usuario
 
   serial: string = '';
   plaqueta: string = '';
@@ -87,7 +87,7 @@ export class OpcEquipoComponent implements OnInit {
   versionesFiltradas: VersionSOLlamarDatos[] = [];
   todasLasVersionesSo: VersionSOLlamarDatos[] = [];
 
-  // ========== MODO EDICIÓN ==========
+  // ========== MODO EDICIoN ==========
   modoEdicion: boolean = false;
   serialOriginal: string = '';
   equipoSeleccionado: any = null;
@@ -98,13 +98,16 @@ export class OpcEquipoComponent implements OnInit {
   resultadosBusquedaModal: EquipoDeComputoLlamarDatos[] = [];
   buscandoModal: boolean = false;
 
+  equipoEnUso: boolean = false;
+
 
   constructor(
     private registroCatalogoService: RegistroCatalogoService,
     private sanitizer: DomSanitizer,
     private notificacionSnackbarService: NotificacionSnackbarService,
     private registroEquipoService: RegistroEquipoService,
-    private permisoModuloService: PermisoModuloService
+    private permisoModuloService: PermisoModuloService,
+    private consultarAsignacionesService: ConsultarAsignacionesService
   ) { }
 
   // Propiedad computada para el permiso
@@ -112,19 +115,19 @@ export class OpcEquipoComponent implements OnInit {
     return this.permisoModuloService.puede('registro', 'editar');
   }
 
-  // Determina si debe mostrar el botón Editar
+  // Determina si debe mostrar el boton Editar
   get mostrarBotonEditar(): boolean {
-    // SOLO si tiene permiso Y no está editando
+    // SOLO si tiene permiso Y no esta editando
     if (this.puedeEditarRegistro && !this.modoEdicion) {
       return true;
     }
     return false;
   }
 
-  // Determina si debe mostrar el botón Limpiar
+  // Determina si debe mostrar el boton Limpiar
   get mostrarBotonLimpiar(): boolean {
     // Muestra Limpiar en dos casos:
-    // 1. Está en modo edición (cualquier usuario)
+    // 1. Esta en modo edicion (cualquier usuario)
     // 2. No tiene permiso de editar (siempre)
     if (this.modoEdicion || !this.puedeEditarRegistro) {
       return true;
@@ -149,7 +152,7 @@ export class OpcEquipoComponent implements OnInit {
       this.sistemasOperativos = data;
     });
 
-    // Cargar tipos y sistemas operativos del catálogo
+    // Cargar tipos y sistemas operativos del catalogo
     this.registroCatalogoService.getTiposPorCatalogo(catalogoId).subscribe(data => this.tipos = data);
     this.registroCatalogoService.getSistemasOperativosPorCatalogo(catalogoId).subscribe(data => this.sistemasOperativos = data);
   }
@@ -174,7 +177,7 @@ export class OpcEquipoComponent implements OnInit {
 
   // Al cambiar marca, carga modelos correspondientes
   onMarcaChange(): void {
-    // Si seleccionó "NUEVA MARCA"
+    // Si selecciono "NUEVA MARCA"
     if (this.marcaSeleccionada === ('new' as any)) {
       this.abrirModalMarca();
       this.marcaSeleccionada = null;
@@ -198,7 +201,7 @@ export class OpcEquipoComponent implements OnInit {
 
   // Cuando cambia el modelo, actualizar la imagen
   onModeloChange(): void {
-    // Si seleccionó "NUEVO MODELO"
+    // Si selecciono "NUEVO MODELO"
     if (this.modeloSeleccionado === ('new' as any)) {
       this.abrirModalModelo();
       this.modeloSeleccionado = null;
@@ -226,19 +229,19 @@ export class OpcEquipoComponent implements OnInit {
 
 
 
-  // Al cambiar versión SO
+  // Al cambiar version SO
   onVersionSOChange(): void {
-    // Si seleccionó "NUEVA VERSION"
+    // Si selecciono "NUEVA VERSION"
     if (this.versionSOSeleccionada === ('new' as any)) {
       this.abrirModalVersionSO();
       this.versionSOSeleccionada = null;
       return;
     }
 
-    // Aquí puedes agregar lógica adicional si es necesario
-    // Por ejemplo, validar o cargar algo cuando se selecciona una versión existente
+    // Aqui puedes agregar logica adicional si es necesario
+    // Por ejemplo, validar o cargar algo cuando se selecciona una version existente
     if (this.versionSOSeleccionada) {
-      console.log('Versión seleccionada:', this.versionSOSeleccionada);
+      console.log('Version seleccionada:', this.versionSOSeleccionada);
     }
   }
 
@@ -287,7 +290,7 @@ export class OpcEquipoComponent implements OnInit {
 
     if (marcaSeleccionada) {
       this.notificacionSnackbarService.info('Marca existente',
-        `La marca "${marcaSeleccionada.descripcion}" ya existe en ${this.tipoSeleccionado?.descripcion}. Se ha seleccionado automáticamente.`);
+        `La marca "${marcaSeleccionada.descripcion}" ya existe en ${this.tipoSeleccionado?.descripcion}. Se ha seleccionado automaticamente.`);
       this.marcaSeleccionada = marcaSeleccionada;
       this.cerrarModalMarca();
     }
@@ -392,7 +395,7 @@ export class OpcEquipoComponent implements OnInit {
 
     if (modeloSeleccionado) {
       this.notificacionSnackbarService.info('Modelo existente',
-        `El modelo "${modeloSeleccionado.descripcion}" ya existe. Se ha seleccionado automáticamente.`);
+        `El modelo "${modeloSeleccionado.descripcion}" ya existe. Se ha seleccionado automaticamente.`);
       this.modeloSeleccionado = modeloSeleccionado;
       this.cerrarModalModelo();
     }
@@ -494,8 +497,8 @@ export class OpcEquipoComponent implements OnInit {
     );
 
     if (versionSeleccionada) {
-      this.notificacionSnackbarService.info('Versión SO existente',
-        `La versión "${versionSeleccionada.descripcion}" ya existe. Se ha seleccionado automáticamente.`);
+      this.notificacionSnackbarService.info('Version SO existente',
+        `La version "${versionSeleccionada.descripcion}" ya existe. Se ha seleccionado automaticamente.`);
       this.versionSOSeleccionada = versionSeleccionada;  // ← CORREGIDO: versionSeleccionada
       this.cerrarModalVersionSO();
     }
@@ -505,7 +508,7 @@ export class OpcEquipoComponent implements OnInit {
   // Crear VersionSO
   crearVersionSO(): void {
     if (!this.nuevaVersionSODescripcion.trim()) {
-      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el nombre de la versión');
+      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese el nombre de la version');
       return;
     }
 
@@ -520,14 +523,14 @@ export class OpcEquipoComponent implements OnInit {
     );
 
     if (versionExistente) {
-      this.notificacionSnackbarService.info('Versión existente',
-        `La versión "${versionExistente.descripcion}" ya existe para ${this.soSeleccionado?.descripcion}.`);
+      this.notificacionSnackbarService.info('Version existente',
+        `La version "${versionExistente.descripcion}" ya existe para ${this.soSeleccionado?.descripcion}.`);
       this.versionSOSeleccionada = versionExistente;
       this.cerrarModalVersionSO();
       return;
     }
 
-    // Crear nueva versión en el backend
+    // Crear nueva version en el backend
     this.registroCatalogoService.crearVersionSO(
       this.nuevaVersionSODescripcion.toUpperCase(),
       this.soSeleccionado.codigo
@@ -536,14 +539,14 @@ export class OpcEquipoComponent implements OnInit {
         // Agregar a la lista de versiones
         this.versionesSO.push(nuevaVersion);
         this.versionesSO.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
-        // Seleccionar la nueva versión
+        // Seleccionar la nueva version
         this.versionSOSeleccionada = nuevaVersion;
-        this.notificacionSnackbarService.success('Versión creada',
-          `Versión "${nuevaVersion.descripcion}" creada exitosamente`);
+        this.notificacionSnackbarService.success('Version creada',
+          `Version "${nuevaVersion.descripcion}" creada exitosamente`);
         this.cerrarModalVersionSO();
       },
       error: (err) => {
-        const mensaje = err.error?.message || 'Error al crear la versión';
+        const mensaje = err.error?.message || 'Error al crear la version';
         this.notificacionSnackbarService.error('Error', mensaje);
       }
     });
@@ -569,15 +572,15 @@ export class OpcEquipoComponent implements OnInit {
       return; // Permitir estas teclas
     }
 
-    // Permitir solo dígitos (0-9)
+    // Permitir solo digitos (0-9)
     if (!/^[0-9]$/.test(tecla)) {
       event.preventDefault();
     }
   }
 
-  // Formatear: al escribir, muestra "número GB"
+  // Formatear: al escribir, muestra "numero GB"
   formatearRam(): void {
-    // Extraer solo números de lo que escribe
+    // Extraer solo numeros de lo que escribe
     const numeros = this.ram.replace(/[^0-9]/g, '');
 
     if (numeros && numeros !== '') {
@@ -608,15 +611,15 @@ export class OpcEquipoComponent implements OnInit {
       return; // Permitir estas teclas
     }
 
-    // Permitir solo dígitos (0-9)
+    // Permitir solo digitos (0-9)
     if (!/^[0-9]$/.test(tecla)) {
       event.preventDefault();
     }
   }
 
-  // Formatear disco: al escribir, muestra "número TB"
+  // Formatear disco: al escribir, muestra "numero TB"
   formatearDisco(): void {
-    // Extraer solo números de lo que escribe
+    // Extraer solo numeros de lo que escribe
     const numeros = this.disco.replace(/[^0-9]/g, '');
 
     if (numeros && numeros !== '') {
@@ -629,7 +632,7 @@ export class OpcEquipoComponent implements OnInit {
   }
 
 
-  // Convertir texto a mayúsculas mientras escribe
+  // Convertir texto a mayusculas mientras escribe
   convertirMayusculas(): void {
 
     this.nuevaMarcaDescripcion = this.nuevaMarcaDescripcion.toUpperCase();
@@ -655,14 +658,20 @@ export class OpcEquipoComponent implements OnInit {
 
   registrarEquipo(): void {
 
-    // Si está en modo edición, llamar a editarEquipo()
+
+    if (this.estado === 'INOPERATIVO' && this.equipoEnUso) {
+      this.notificacionSnackbarService.error('Accion bloqueada', 'El equipo esta en uso. No debe ser inactivado.');
+      return;
+    }
+
+    // Si esta en modo edicion, llamar a editarEquipo()
     if (this.modoEdicion) {
       this.editarEquipo();
       return;
     }
 
 
-    if (this.enviando) return; // Evitar envíos múltiples
+    if (this.enviando) return; // Evitar envios multiples
 
     // ========== VALIDACIONES DE CAMPOS OBLIGATORIOS ==========
 
@@ -772,17 +781,17 @@ export class OpcEquipoComponent implements OnInit {
 
     // ========== ASIGNAR VALORES OPCIONALES CON "NO TIENE" ==========
 
-    // Descripción - Si está vacío, poner "SIN DESCRIPCION"
+    // Descripcion - Si esta vacio, poner "SIN DESCRIPCION"
     const descripcionFinal = this.descripcion && this.descripcion.trim() !== '' ? this.descripcion : 'SIN DESCRIPCION';
 
 
-    // Plaqueta - Si está vacío, poner "NO TIENE"
+    // Plaqueta - Si esta vacio, poner "NO TIENE"
     const plaquetaFinal = this.plaqueta && this.plaqueta.trim() !== '' ? this.plaqueta : 'NO TIENE';
 
-    // Factura - Si está vacío, poner "NO TIENE"
+    // Factura - Si esta vacio, poner "NO TIENE"
     const facturaFinal = this.facturaCompra && this.facturaCompra.trim() !== '' ? this.facturaCompra : 'NO TIENE';
 
-    // Fecha Compra - Si está vacío, poner "NO TIENE"
+    // Fecha Compra - Si esta vacio, poner "NO TIENE"
     const fechaFinal = this.fechaCompra && this.fechaCompra.trim() !== '' ? this.fechaCompra : null;
 
 
@@ -848,7 +857,9 @@ export class OpcEquipoComponent implements OnInit {
     this.versionesSO = [];
     this.imagenModeloSeleccionado = '';
 
-    // Resetear modo edición
+    // Resetear modo edicion
+    this.modoEdicion = false;
+    this.equipoEnUso = false;
     this.modoEdicion = false;
     this.serialOriginal = '';
     // Recargar datos iniciales
@@ -902,6 +913,18 @@ export class OpcEquipoComponent implements OnInit {
   seleccionarEquipoDelModal(equipo: EquipoDeComputoLlamarDatos): void {
     this.modoEdicion = true;
     this.serialOriginal = equipo.serial;
+
+    // --- VALIDACION CON LA BASE DE DATOS ---
+    this.consultarAsignacionesService.verificarSiEquipoEstaEnUso(equipo.serial).subscribe({
+      next: (respuesta: any) => {
+        // El backend devuelve { serial, asignado }
+        this.equipoEnUso = respuesta?.asignado === true;
+      },
+      error: (err) => {
+        console.error('Error al verificar si esta en uso', err);
+        this.equipoEnUso = false;
+      }
+    });
 
     this.serial = equipo.serial;
     this.plaqueta = equipo.plaqueta || 'NO TIENE';
@@ -963,6 +986,14 @@ export class OpcEquipoComponent implements OnInit {
 
   // ========== EDITAR EQUIPO ==========
   editarEquipo(): void {
+
+
+    if (this.estado === 'INOPERATIVO' && this.equipoEnUso) {
+      this.notificacionSnackbarService.error('Accion bloqueada', 'El equipo esta en uso. No debe ser inactivado.');
+      return;
+    }
+
+
     if (this.enviando) return;
 
     // Validaciones similares a registrar
@@ -1022,7 +1053,7 @@ export class OpcEquipoComponent implements OnInit {
       'Todos los campos han sido restablecidos');
   }
 
-  // ========== MÉTODO PARA SANITIZAR IMÁGENES ==========
+  // ========== MÉTODO PARA SANITIZAR IMaGENES ==========
   imagenEquiposFiltrados(url: string | undefined): SafeResourceUrl {
     if (!url || url === '') {
       return '';
@@ -1031,6 +1062,17 @@ export class OpcEquipoComponent implements OnInit {
     let urlLimpia = url.split('&token=')[0];
     return this.sanitizer.bypassSecurityTrustResourceUrl(urlLimpia);
   }
+
+
+  onEstadoChange(): void {
+    if (this.estado === 'INOPERATIVO' && this.equipoEnUso) {
+      this.notificacionSnackbarService.warning(
+        'Equipo en uso',
+        'No se puede inactivar porque esta en uso.'
+      );
+    }
+  }
+
 
 }
 

@@ -15,7 +15,8 @@
 
         <div class="contenido-opcion">
           <label>TIPO DE EQUIPO<br></label>
-          <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo" (change)="onTipoChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">  <!-- [disabled]="modoEdicion" -->
+          <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo" (change)="onTipoChange()"
+            [compareWith]="compararPorCodigo" [disabled]="modoEdicion"> <!-- [disabled]="modoEdicion" -->
             <option [ngValue]="null"></option>
             <option *ngFor="let t of tipos" [ngValue]="t">{{ t.descripcion }}</option>
           </select>
@@ -23,12 +24,14 @@
 
         <div class="contenido-opcion">
           <label>SERIAL:<br></label>
-          <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial" (input)="serial = serial.toUpperCase()" [disabled]="modoEdicion">   
+          <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial"
+            (input)="serial = serial.toUpperCase()" [disabled]="modoEdicion">
         </div>
 
         <div class="contenido-opcion">
           <label>MARCA<br></label>
-          <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">  <!-- [disabled]="modoEdicion" -->
+          <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()"
+            [compareWith]="compararPorCodigo" [disabled]="modoEdicion"> <!-- [disabled]="modoEdicion" -->
             <option [ngValue]="null"></option>
             <option *ngFor="let m of marcas" [ngValue]="m">{{ m.descripcion }}</option>
             <!-- SOLO aparece NUEVA MARCA si hay un tipo seleccionado -->
@@ -41,7 +44,8 @@
 
         <div class="contenido-opcion">
           <label>MODELO:<br></label>
-          <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo" (change)="onModeloChange()" [compareWith]="compararPorCodigo" [disabled]="modoEdicion">  <!-- [disabled]="modoEdicion" -->
+          <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo" (change)="onModeloChange()"
+            [compareWith]="compararPorCodigo" [disabled]="modoEdicion"> <!-- [disabled]="modoEdicion" -->
             <option [ngValue]="null"></option>
             <option *ngFor="let mod of modelos" [ngValue]="mod">{{ mod.descripcion }}</option>
             <!-- SOLO aparece NUEVO MODELO si hay tipo Y marca seleccionados -->
@@ -54,7 +58,8 @@
 
         <div class="contenido-opcion">
           <label>SISTEMA OPERATIVO<br></label>
-          <select class="opcionForm select" [(ngModel)]="soSeleccionado" name="so" (change)="onSOChange()" [compareWith]="compararPorCodigo">
+          <select class="opcionForm select" [(ngModel)]="soSeleccionado" name="so" (change)="onSOChange()"
+            [compareWith]="compararPorCodigo">
             <option [ngValue]="null"></option>
             <option *ngFor="let so of sistemasOperativos" [ngValue]="so">{{ so.descripcion }}</option>
           </select>
@@ -104,7 +109,8 @@
 
         <div class="contenido-opcion">
           <label>PROCESADOR<br></label>
-          <input class="opcionForm" type="text" [(ngModel)]="procesador" name="procesador" (input)="procesador = procesador.toUpperCase()">
+          <input class="opcionForm" type="text" [(ngModel)]="procesador" name="procesador"
+            (input)="procesador = procesador.toUpperCase()">
         </div>
 
         <div class="contenido-opcion" *ngIf="tipoSeleccionado?.codigo !== 4">
@@ -140,7 +146,8 @@
 
         <div class="contenido-opcion">
           <label>NUMERO DE PLACA<br></label>
-          <input class="opcionForm" type="text" [(ngModel)]="plaqueta" name="plaqueta" (input)="plaqueta = plaqueta.toUpperCase()">
+          <input class="opcionForm" type="text" [(ngModel)]="plaqueta" name="plaqueta"
+            (input)="plaqueta = plaqueta.toUpperCase()">
         </div>
 
         <div class="contenido-opcion">
@@ -155,25 +162,25 @@
 
         <div class="contenido-opcion">
           <label>ESTADO<br></label>
-          <select class="opcionForm select" [(ngModel)]="estado" name="estado">
+          <select class="opcionForm select" [(ngModel)]="estado" name="estado" (change)="onEstadoChange()"
+            [style.border-color]="(estado === 'INOPERATIVO' && equipoEnUso) ? '#d32f2f' : '#ddd'">
             <option value=""></option>
-            <option value="BUEN ESTADO"
-              title="El equipo está funcionando correctamente, Es un equipo que todavía cumple su función de manera eficiente.">
-              BUEN ESTADO</option>
-            <option value="ESTADO REGULAR"
-              title="El equipo muestra algunos signos de desgaste o mal uso, pero aún es funcional.">ESTADO REGULAR
-            </option>
-            <option value="ESTADO DEFICIENTE"
-              title="El equipo tiene daños visibles y/o problemas de funcionamiento que afectan su rendimiento.  Es posible que aún funcione, pero no de manera óptima.">
-              ESTADO DEFICIENTE</option>
-            <option value="INOPERATIVO" title="El equipo ya no está operativo debido a fallas graves en el hardware.">
-              INOPERATIVO</option>
+            <option value="BUEN ESTADO">BUEN ESTADO</option>
+            <option value="ESTADO REGULAR">ESTADO REGULAR</option>
+            <option value="ESTADO DEFICIENTE">ESTADO DEFICIENTE</option>
+            <option value="INOPERATIVO">INOPERATIVO</option>
           </select>
+
+          <!-- Mensaje de advertencia usando la nueva variable -->
+          <span id="mensaje-advertencia" *ngIf="estado === 'INOPERATIVO' && equipoEnUso">
+            * No se puede inactivar porque esta en uso.
+          </span>
         </div>
 
         <div class="contenido-opcion textarea">
           <label for="descripcion">DESCRIPCION:<br></label>
-          <textarea [(ngModel)]="descripcion" name="descripcion" (input)="descripcion = descripcion.toUpperCase()"> </textarea>
+          <textarea [(ngModel)]="descripcion" name="descripcion"
+            (input)="descripcion = descripcion.toUpperCase()"> </textarea>
         </div>
 
         <div class="botones-registroeditar">

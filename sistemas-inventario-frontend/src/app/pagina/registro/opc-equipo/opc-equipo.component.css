@@ -541,6 +541,18 @@
     font-weight: 500;
 }
 
+
+#mensaje-advertencia{
+    color: #d32f2f; 
+    font-size: 13px; 
+    margin-top: 4px; 
+    display: block;
+    width: 270px;
+    right: -35px;
+    position: absolute;
+}
+
+
 @media (max-width: 1370px) {
     .modal {
         top: -80px;
@@ -638,3 +650,5 @@
     }
 
 }
+
+

@@ -49,4 +49,8 @@ export class ConsultarAsignacionesService {
     return this.http.patch(`${this.apiUrlBase}/equipos-software/serial/${serial}/desactivar-backups`, {});
   }
 
+  verificarSiEquipoEstaEnUso(serial: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrlConsultarAsignaciones}/${serial}/esta-asignado`);
+  }
+
 }

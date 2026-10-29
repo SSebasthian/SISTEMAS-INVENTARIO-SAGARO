@@ -72,11 +72,11 @@
       <div class="contenido-opcion">
         <label>TAMAÑO RAM<br></label>
         <div class="input-group">
-          <!-- En modo edición, permitimos escribir y formatear -->
+          <!-- En modo ediciOn, permitimos escribir y formatear -->
           <input *ngIf="modoEdicion" class="opcionForm" type="text" [(ngModel)]="equipoEdit.ram"
             (input)="formatearRamEdicion()" (keydown)="soloNumerosEdicion($event)">
 
-          <!-- En modo visualización, solo leemos el valor -->
+          <!-- En modo visualizaciOn, solo leemos el valor -->
           <input *ngIf="!modoEdicion" class="opcionForm" type="text" [(ngModel)]="equipoEdit.ram" readonly>
         </div>
       </div>
@@ -145,16 +145,25 @@
       <!-- ESTADO -->
       <div class="contenido-opcion">
         <label>ESTADO<br></label>
-        <!-- Si estamos editando, mostramos un select. Si no, un input readonly -->
-        <select *ngIf="modoEdicion" class="opcionForm select" [(ngModel)]="equipoEdit.estado">
+        
+        <!-- MODO EDICION -->
+        <select *ngIf="modoEdicion" class="opcionForm select" [(ngModel)]="equipoEdit.estado" (change)="onEstadoChange()">
           <option value="BUEN ESTADO">BUEN ESTADO</option>
           <option value="ESTADO REGULAR">ESTADO REGULAR</option>
           <option value="ESTADO DEFICIENTE">ESTADO DEFICIENTE</option>
           <option value="INOPERATIVO">INOPERATIVO</option>
         </select>
+        
+        <!-- MODO VISUALIZACION -->
         <input *ngIf="!modoEdicion" class="opcionForm" type="text" [value]="equipo.estado" readonly
           [style.color]="getEstadoColor(equipo.estado)" style="font-weight: bold;">
+
+        <!-- MENSAJE DE ADVERTENCIA (Solo si intenta poner inoperativo un equipo en uso) -->
+        <span id="mensaje-advertencia" *ngIf="modoEdicion && equipoEdit.estado === 'INOPERATIVO' && equipo.asignado">
+            * No se puede inactivar porque esta en uso.
+        </span>
       </div>
+
 
       <!-- DESCRIPCIoN -->
       <div class="contenido-opcion textarea">
@@ -174,7 +183,7 @@
           </label>
         </div>
 
-        <!-- Boton Editar (Solo en modo visualización) -->
+        <!-- Boton Editar (Solo en modo visualizaciOn) -->
         <div *ngIf="puedeEditar && !modoEdicion" (click)="activarEdicion()">
           <input id="checkboxInput2">
           <label for="checkboxInput2" class="bookmark2">
@@ -182,14 +191,16 @@
           </label>
         </div>
 
-        <!-- Boton Guardar (Solo en modo edición) -->
-        <div *ngIf="modoEdicion" (click)="guardarCambios()">
+        <!-- Boton Guardar (Solo en modo ediciOn) -->
+        <div *ngIf="modoEdicion" 
+             (click)="guardarCambios()"
+             [style.pointer-events]="(equipoEdit.estado === 'INOPERATIVO' && equipo.asignado) ? 'none' : 'auto'"
+             [style.opacity]="(equipoEdit.estado === 'INOPERATIVO' && equipo.asignado) ? '0.5' : '1'">
           <input id="checkboxInput4">
-          <label for="checkboxInput4" class="bookmark4">
+          <label for="checkboxInput4" class="bookmark4" title="Guardar">
             <mat-icon>bookmark</mat-icon>
           </label>
         </div>
-
       </div>
 
     </div>

@@ -218,4 +218,25 @@ export class OpcEquipoVisualizarComponent {
       this.equipoEdit.ram = '';
     }
   }
+
+
+ onEstadoChange() {
+    // Si el estado es INOPERATIVO y NO esta asignado (en uso), lo desactivamos
+    if (this.equipoEdit.estado === 'INOPERATIVO') {
+      if (!this.equipo.asignado) {
+        this.equipoEdit.activo = false;
+      } else {
+        // Si esta en uso, no lo desactivamos y le mostramos una alerta
+        this.notificacionSnackbarService.warning(
+          'Equipo en uso', 
+          'No se puede inactivar porque esta en uso.'
+        );
+      }
+    } else {
+      // Si cambia a cualquier otro estado, lo volvemos a activar
+      this.equipoEdit.activo = true;
+    }
+  }
+
+
 }
