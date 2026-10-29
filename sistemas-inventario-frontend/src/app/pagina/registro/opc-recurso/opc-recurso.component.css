@@ -229,11 +229,15 @@
     transition: all 0.2s ease;
     font-family: sans-serif;
     perspective: 100px;
+    width: 220px;
+    overflow: hidden; 
+    border-radius: 4px;
+    position: relative;
 }
 
 .contenedor-regRecurso .contenido .checkbox-wrapper-10 .tgl-flip+.tgl-btn:after,
 .contenedor-regRecurso .contenido .checkbox-wrapper-10 .tgl-flip+.tgl-btn:before {
-    display: inline-block;
+   display: inline-block;
     transition: all 0.4s ease;
     width: 100%;
     text-align: center;
@@ -241,7 +245,6 @@
     line-height: 2.5em;
     font-weight: bold;
     color: #fff;
-    position: absolute;
     top: 0;
     left: 0;
     -webkit-backface-visibility: hidden;
@@ -250,9 +253,9 @@
 }
 
 .contenedor-regRecurso .contenido .checkbox-wrapper-10 .tgl-flip+.tgl-btn:after {
-    content: attr(data-tg-on);
+   content: attr(data-tg-on);
     background: #02C66F;
-    transform: rotateY(-180deg);
+    transform: rotateY(-180deg)
 }
 
 .contenedor-regRecurso .contenido .checkbox-wrapper-10 .tgl-flip+.tgl-btn:before {
@@ -592,6 +595,17 @@
     border-radius: 10px;
     padding: 6px;
     transition: all 0.2s ease;
+}
+
+
+#mensaje-advertencia{
+    color: #d32f2f; 
+    font-size: 11px; 
+    margin-top: 4px; 
+    display: block;
+    width: 230px;
+    bottom: 10px;
+    position: absolute;
 }
 
 

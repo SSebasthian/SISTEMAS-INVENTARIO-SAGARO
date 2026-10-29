@@ -48,7 +48,9 @@ export class OpcRecursoComponent {
 
   // ========== MODELO DEL CORREO ==========
   mostrarClave = false;
+  claveCifrada: string = '';
   mostrarRepetirClave = false;
+  editarNuevaClave: boolean = false;
 
   recurso: any = {
     tipoCodigo: null,
@@ -57,6 +59,7 @@ export class OpcRecursoComponent {
     identificador: '',
     confirmarIdentificador: '',
     clave: '',
+    nuevaClave: '',
     repetirClave: '',
     plataformaCodigo: null,
     plataformaRolCodigo: null,
@@ -68,6 +71,8 @@ export class OpcRecursoComponent {
   enviando = false;
   modoEdicion = false;
   idOriginal: number | null = null;
+  recursoEnUso: boolean = false;
+
 
 
   // ========== MODALES Y LISTAS AUX ==========
@@ -91,7 +96,7 @@ export class OpcRecursoComponent {
     private snackbar: NotificacionSnackbarService,
     private permisoModuloService: PermisoModuloService,
     private consultarPlataformaService: ConsultarPlataformaService,
-    private consultarPlataformaRolService: ConsultarPlataformaRolService
+    private consultarPlataformaRolService: ConsultarPlataformaRolService,
   ) { }
 
   ngOnInit(): void {
@@ -136,6 +141,7 @@ export class OpcRecursoComponent {
       this.limpiarFormulario();          // resetear campos
       this.modoEdicion = false;
       this.idOriginal = null;
+      this.editarNuevaClave = false;
     } else {
       this.subtipos = [];
       this.registrosActivos = [];
@@ -144,7 +150,13 @@ export class OpcRecursoComponent {
 
   cargarSubtipos(recursoCodigo: number): void {
     this.consultarRecursoTipoService.listarPorRecurso(recursoCodigo).subscribe({
-      next: (data) => { this.subtipos = data; },
+      next: (data) => {
+        // FILTRAMOS: Excluimos el que tenga codigo 0 o se llame "NO APLICA"
+        this.subtipos = data.filter((s: any) =>
+          s.codigo !== 0 &&
+          s.nombre?.toUpperCase() !== 'NO APLICA'
+        );
+      },
       error: () => this.snackbar.error('Error', 'No se pudieron cargar los subtipos')
     });
   }
@@ -186,7 +198,7 @@ export class OpcRecursoComponent {
       this.consultarPlataformaService.listarPorTipo(subtipoCodigo).subscribe({
         next: (data) => {
           this.plataformas = data;
-          this.recurso.plataformaCodigo = null; // resetear selección
+          this.recurso.plataformaCodigo = null; // resetear seleccion
         },
         error: () => this.snackbar.error('Error', 'No se pudieron cargar las plataformas')
       });
@@ -206,7 +218,7 @@ export class OpcRecursoComponent {
       this.consultarPlataformaRolService.listarPorPlataforma(plataformaCodigo).subscribe({
         next: (data) => {
           this.roles = data;
-          this.recurso.plataformaRolCodigo = null; // resetear selección
+          this.recurso.plataformaRolCodigo = null; // resetear seleccion
         },
         error: () => this.snackbar.error('Error', 'No se pudieron cargar los roles')
       });
@@ -225,7 +237,7 @@ export class OpcRecursoComponent {
   registrar(): void {
     if (this.enviando) return;
 
-    // Validación común: solo tipoCodigo
+    // Validacion común: solo tipoCodigo
     if (!this.recurso.tipoCodigo) {
       this.snackbar.warning('Campos incompletos', 'Seleccione un tipo de recurso');
       return;
@@ -357,16 +369,22 @@ export class OpcRecursoComponent {
     let servicio: any;
 
     if (tipo.nombre === 'CORREO') {
-      if (this.recurso.clave && this.recurso.clave !== this.recurso.repetirClave) {
-        this.snackbar.warning('Claves no coinciden', 'Las claves deben ser iguales');
+      // Validar que si escribio nueva clave, tenga al menos 3 caracteres (opcional)
+      if (this.recurso.nuevaClave && this.recurso.nuevaClave.length > 0 && this.recurso.nuevaClave.length < 3) {
+        this.snackbar.warning('Clave muy corta', 'La nueva clave debe tener al menos 3 caracteres');
         return;
       }
+
       const direccion = `${this.recurso.identificador.toUpperCase()}@${subtipo.nombre.toUpperCase()}.COM`;
       payload = { direccion, activo: this.recurso.activo };
-      if (this.recurso.clave && this.recurso.clave.trim() !== '') {
-        payload.clave = this.recurso.clave;
+
+      // Solo enviamos la clave si el usuario escribio una nueva
+      if (this.recurso.nuevaClave && this.recurso.nuevaClave.trim() !== '') {
+        payload.clave = this.recurso.nuevaClave;
       }
+
       servicio = this.registroCorreoService;
+
 
     } else if (tipo.nombre === 'PLATAFORMA') {
       // Validar campos obligatorios
@@ -448,21 +466,38 @@ export class OpcRecursoComponent {
   seleccionarRegistro(registro: any): void {
     this.modoEdicion = true;
     this.idOriginal = registro.codigo;
-
-    // Establecer tipo
     this.recurso.tipoCodigo = this.tipoSeleccionado?.codigo;
 
-    // Buscar subtipo correspondiente
+    // ============ CORREO ============
     if (this.tipoSeleccionado?.nombre === 'CORREO') {
+
+      this.registroCorreoService.estaAsignado(registro.codigo).subscribe({
+        next: (resp: any) => {
+          this.recursoEnUso = resp.asignado === true;
+        },
+        error: () => this.recursoEnUso = false
+      });
+
+
       const partes = registro.direccion.split('@');
-      this.recurso.identificador = partes[0]; // usuario
+      this.recurso.identificador = partes[0];
+
       const nombreDominio = partes[1].split('.')[0].toLowerCase();
       const subtipo = this.subtipos.find(s => s.nombre.toLowerCase() === nombreDominio);
       this.recurso.subtipoCodigo = subtipo ? subtipo.codigo : null;
-      this.recurso.clave = '';
-      this.recurso.repetirClave = '';
+
+      // Guardamos el hash cifrado
+      this.claveCifrada = registro.clave || '';
+
+      // Ponemos puntitos si hay clave, para que el input no se vea vacío
+      this.recurso.clave = this.claveCifrada ? '••••••••' : '';
+      this.editarNuevaClave = false;
+      this.recurso.nuevaClave = '';
+      this.mostrarClave = false;
+      this.mostrarRepetirClave = false;
     }
 
+    // ============ LINEA TELEFONICA ============
     else if (this.tipoSeleccionado?.nombre === 'LINEATELEFONICA') {
       this.recurso.identificador = registro.numero;
       this.recurso.confirmarIdentificador = registro.numero;
@@ -470,23 +505,24 @@ export class OpcRecursoComponent {
       this.recurso.subtipoCodigo = registro.recursoTipo?.codigo || null;
       this.recurso.clave = '';
       this.recurso.repetirClave = '';
+    }
 
-
-    } else if (this.tipoSeleccionado?.nombre === 'PLATAFORMA') {
+    // ============ PLATAFORMA ============
+    else if (this.tipoSeleccionado?.nombre === 'PLATAFORMA') {
       this.recurso.usuario = registro.usuario;
       const subtipoCodigo = registro.plataforma?.recursoTipo?.codigo || null;
       this.recurso.subtipoCodigo = subtipoCodigo;
+
       if (subtipoCodigo) {
         this.consultarPlataformaService.listarPorTipo(subtipoCodigo).subscribe({
           next: (plataformas) => {
             this.plataformas = plataformas;
             this.recurso.plataformaCodigo = registro.plataforma?.codigo || null;
+
             if (this.recurso.plataformaCodigo) {
-              // Cargar roles y luego asignar el rol guardado
               this.consultarPlataformaRolService.listarPorPlataforma(this.recurso.plataformaCodigo).subscribe({
                 next: (roles) => {
                   this.roles = roles;
-                  // Buscar el rol que coincide con el registro
                   const rolEncontrado = roles.find(r => r.codigo === registro.plataformaRol?.codigo);
                   this.recurso.plataformaRolCodigo = rolEncontrado ? rolEncontrado.codigo : null;
                 },
@@ -499,11 +535,35 @@ export class OpcRecursoComponent {
       }
     }
 
-
+    // ============ ESTADO COMÚN ============
     this.recurso.activo = registro.activo;
-
     this.snackbar.success('Registro seleccionado', `Editando: ${this.tipoSeleccionado?.nombre}`);
     this.cerrarModalBuscar();
+  }
+
+
+
+  // ========== MÉTODO PARA EL OJITO ==========
+  verClaveOriginal(): void {
+    // Si ya tenemos la clave REAL cargada (no puntitos), solo ocultamos/mostramos
+    if (this.recurso.clave && this.recurso.clave !== '••••••••') {
+      this.mostrarClave = !this.mostrarClave;
+      return;
+    }
+
+    if (!this.idOriginal) return;
+
+    // Peticion al backend para descifrar
+    this.registroCorreoService.verClaveDesencriptada(this.idOriginal).subscribe({
+      next: (respuesta) => {
+        this.recurso.clave = respuesta.clave || '';
+        this.mostrarClave = true;
+      },
+      error: () => {
+        this.snackbar.error('Error', 'No se pudo obtener la clave del servidor');
+        this.mostrarClave = false;
+      }
+    });
   }
 
 
@@ -518,7 +578,7 @@ export class OpcRecursoComponent {
   }
 
   // ========== MOSTRAR/OCULTAR CLAVE ==========
-  
+
   toggleMostrarClave(): void {
     this.mostrarClave = !this.mostrarClave;
   }
@@ -543,6 +603,7 @@ export class OpcRecursoComponent {
       identificador: '',
       confirmarIdentificador: '',
       clave: '',
+      nuevaClave: '',
       repetirClave: '',
       operador: '',
       usuario: '',
@@ -550,6 +611,8 @@ export class OpcRecursoComponent {
       plataformaRolCodigo: null,
       activo: true
     };
+
+    this.claveCifrada = '';
     this.plataformas = [];
     this.roles = [];
     this.modoEdicion = false;
@@ -560,6 +623,18 @@ export class OpcRecursoComponent {
 
 
 
+  validarCambioEstado(event: Event): void {
+    // Si estamos creando (!modoEdicion) o el recurso está en uso (recursoEnUso)
+    if (!this.modoEdicion || this.recursoEnUso) {
+      event.preventDefault(); // Evita que el clic llegue al switch
+      event.stopPropagation();
 
+      if (!this.modoEdicion) {
+        this.snackbar.warning('Accion no permitida', 'No puedes cambiar el estado al crear un recurso. Por defecto sera ACTIVO.');
+      } else if (this.recursoEnUso) {
+        this.snackbar.error('Acción bloqueada', 'No se puede cambiar el estado porque el recurso esta en uso.');
+      }
+    }
+  }
 
 }

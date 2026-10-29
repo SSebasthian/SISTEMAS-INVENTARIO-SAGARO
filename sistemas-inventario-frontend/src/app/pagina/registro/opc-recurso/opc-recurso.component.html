@@ -18,7 +18,7 @@
           <mat-icon *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'">phone</mat-icon>
           <!-- Cuenta/Plataforma -->
           <mat-icon *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA'">account_circle</mat-icon>
-          <!-- Default (si no hay selección) -->
+          <!-- Default (si no hay seleccion) -->
           <mat-icon *ngIf="!tipoSeleccionado">image</mat-icon>
         </div>
       </div>
@@ -40,26 +40,65 @@
             <option *ngFor="let d of subtipos" [value]="d.codigo">&#64;{{ d.nombre }}.COM</option>
           </select>
         </p>
-        <div>
-          <label>DIGITAR CLAVE</label>
-          <div class="input-clave">
-            <input class="opcionForm" [type]="mostrarClave ? 'text' : 'password'" [(ngModel)]="recurso.clave"
-              name="clave" required>
-            <a type="button" class="btn-ver-clave" (click)="toggleMostrarClave()">
-              <mat-icon>{{ mostrarClave ? 'visibility_off' : 'visibility' }}</mat-icon>
-            </a>
+
+        <!-- MODO REGISTRO NUEVO -->
+        <ng-container *ngIf="!modoEdicion">
+          <div>
+            <label>DIGITAR CLAVE</label>
+            <div class="input-clave">
+              <input class="opcionForm" [type]="mostrarClave ? 'text' : 'password'" [(ngModel)]="recurso.clave"
+                name="clave" required>
+              <a type="button" class="btn-ver-clave" (click)="toggleMostrarClave()">
+                <mat-icon>{{ mostrarClave ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </a>
+            </div>
           </div>
-        </div>
-        <div>
-          <label>REPETIR CLAVE</label>
-          <div class="input-clave">
-            <input class="opcionForm" [type]="mostrarRepetirClave ? 'text' : 'password'"
-              [(ngModel)]="recurso.repetirClave" name="repetirClave" required>
-            <a type="button" class="btn-ver-clave" (click)="toggleMostrarRepetirClave()">
-              <mat-icon>{{ mostrarRepetirClave ? 'visibility_off' : 'visibility' }}</mat-icon>
-            </a>
+          <div>
+            <label>REPETIR CLAVE</label>
+            <div class="input-clave">
+              <input class="opcionForm" [type]="mostrarRepetirClave ? 'text' : 'password'"
+                [(ngModel)]="recurso.repetirClave" name="repetirClave" required>
+              <a type="button" class="btn-ver-clave" (click)="toggleMostrarRepetirClave()">
+                <mat-icon>{{ mostrarRepetirClave ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </a>
+            </div>
           </div>
-        </div>
+        </ng-container>
+
+        <!-- MODO EDICIoN -->
+        <ng-container *ngIf="modoEdicion">
+          <div>
+            <label>CLAVE ACTUAL</label>
+            <div class="input-clave">
+              <input class="opcionForm" [type]="recurso.clave && !mostrarClave ? 'password' : 'text'"
+                [value]="recurso.clave ? recurso.clave : (claveCifrada || 'Sin clave registrada')" readonly
+                style="background-color: #eaeaea; font-family: monospace;">
+              <a type="button" class="btn-ver-clave" (click)="verClaveOriginal()">
+                <mat-icon>{{ mostrarClave ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </a>
+            </div>
+          </div>
+          <div>
+            <label>NUEVA CLAVE</label>
+            <div class="input-clave">
+              <!-- El input esta deshabilitado hasta que el usuario haga clic en el ícono -->
+              <input class="opcionForm" [type]="mostrarRepetirClave ? 'text' : 'password'"
+                [(ngModel)]="recurso.nuevaClave" name="nuevaClave" [disabled]="!editarNuevaClave"
+                [style.background-color]="editarNuevaClave ? '#fff' : '#eaeaea'">
+
+              <!-- Boton para habilitar la edicion de la clave -->
+              <a type="button" class="btn-ver-clave" *ngIf="!editarNuevaClave" (click)="editarNuevaClave = true"
+                title="Cambiar contraseña" style="color: #1976d2;">
+                <mat-icon>edit</mat-icon>
+              </a>
+
+              <!-- Ojito para ver/ocultar la nueva clave (solo si esta habilitada) -->
+              <a type="button" class="btn-ver-clave" *ngIf="editarNuevaClave" (click)="toggleMostrarRepetirClave()">
+                <mat-icon>{{ mostrarRepetirClave ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </a>
+            </div>
+          </div>
+        </ng-container>
       </div>
 
 
@@ -134,14 +173,25 @@
       </div>
 
       <!-- Estado (comun) solo si hay tipo seleccionado -->
-      <div *ngIf="tipoSeleccionado" class="fila-de-tres campoestado">
-        <p class="checkbox-wrapper-10">
+       <div *ngIf="tipoSeleccionado" class="fila-de-tres campoestado">
+        <div class="checkbox-wrapper-10">
           <label>ESTADO</label>
-          <input type="checkbox" id="cb5" class="tgl tgl-flip" [(ngModel)]="recurso.activo" [disabled]="modoEdicion"
-            name="activo">
-          <label for="cb5" data-tg-on="ACTIVO" data-tg-off="INACTIVO" class="tgl-btn"></label>
-        </p>
+          
+          <div class="switch-container" (click)="validarCambioEstado($event)">
+            <input type="checkbox" id="cb5" class="tgl tgl-flip" 
+                   [(ngModel)]="recurso.activo" 
+                   [disabled]="!modoEdicion || recursoEnUso" 
+                   name="activo">
+            <label for="cb5" data-tg-on="ACTIVO" data-tg-off="INACTIVO" class="tgl-btn"></label>
+          </div>
+          
+          <!-- Mensaje si esta en uso -->
+          <span id="mensaje-advertencia" *ngIf="recursoEnUso && modoEdicion">
+            * No se puede desactivar porque esta en uso.
+          </span>
+        </div>
       </div>
+
 
       <!-- Botones de accion -->
       <div class="botones-registroeditar">
@@ -152,7 +202,7 @@
           </label>
         </div>
 
-        <!-- Botón de búsqueda (editar) para CORREO, LINEATELEFONICA y PLATAFORMAS -->
+        <!-- Boton de busqueda (editar) para CORREO, LINEATELEFONICA y PLATAFORMAS -->
         <div
           *ngIf="puedeEditarRegistro && !modoEdicion && (tipoSeleccionado?.nombre === 'CORREO' || tipoSeleccionado?.nombre === 'LINEATELEFONICA' || tipoSeleccionado?.nombre === 'PLATAFORMA')"
           (click)="abrirModalBuscar()">
@@ -162,7 +212,7 @@
           </label>
         </div>
 
-        <!-- Botón limpiar (visible cuando no se puede editar, o en modo edición, o el tipo no es editable) -->
+        <!-- Boton limpiar (visible cuando no se puede editar, o en modo edicion, o el tipo no es editable) -->
         <div
           *ngIf="!puedeEditarRegistro || modoEdicion || (tipoSeleccionado?.nombre !== 'CORREO' && tipoSeleccionado?.nombre !== 'LINEATELEFONICA' && tipoSeleccionado?.nombre !== 'PLATAFORMA')"
           (click)="limpiarFormulario()">
@@ -196,8 +246,8 @@
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>
           Buscar por
-          <ng-container *ngIf="tipoSeleccionado?.nombre === 'CORREO'">dirección</ng-container>
-          <ng-container *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'">número</ng-container>
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'CORREO'">direccion</ng-container>
+          <ng-container *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'">numero</ng-container>
           <ng-container *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA'">usuario o plataforma</ng-container>
         </mat-label>
         <input matInput [(ngModel)]="filtroBusquedaModal" placeholder="Ingrese al menos 2 caracteres">
@@ -251,7 +301,7 @@
             </div>
           </div>
 
-          <!-- Acción tactil -->
+          <!-- Accion tactil -->
           <mat-icon class="resultado-accion">touch_app</mat-icon>
         </div>
       </div>

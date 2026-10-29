@@ -8,7 +8,7 @@ import com.sistemas_inventario_backend.repositorios.CorreoCorporativoRepository;
 import com.sistemas_inventario_backend.repositorios.RecursoRepository;
 import com.sistemas_inventario_backend.repositorios.Recurso_TipoRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.sistemas_inventario_backend.seguridad.SeguridadClave;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +20,6 @@ import java.util.List;
 public class CorreoCorporativoService {
 
     private final CorreoCorporativoRepository repository;
-    private final PasswordEncoder passwordEncoder;
     private final RecursoRepository recursoRepository;
     private final Recurso_TipoRepository recursoTipoRepository;
 
@@ -47,9 +46,16 @@ public class CorreoCorporativoService {
 
         CorreosCorporativos correo = new CorreosCorporativos();
         correo.setDireccion(dto.getDireccion());
+
         if (dto.getClave() != null && !dto.getClave().isEmpty()) {
-            correo.setClave(passwordEncoder.encode(dto.getClave()));
+            try {
+                correo.setClave(SeguridadClave.encrypt(dto.getClave()));
+            } catch (Exception e) {
+                throw new RuntimeException("Error al encriptar la clave: " + e.getMessage());
+            }
         }
+
+
         correo.setRecurso(recurso);
         correo.setRecursoTipo(recursoTipo);
         correo.setActivo(dto.getActivo() != null ? dto.getActivo() : true);
@@ -66,11 +72,13 @@ public class CorreoCorporativoService {
         existente.setDireccion(datos.getDireccion());
         existente.setActivo(datos.getActivo());
 
-        // Solo actualizar clave si viene un valor no vacio
         if (datos.getClave() != null && !datos.getClave().isEmpty()) {
-            existente.setClave(passwordEncoder.encode(datos.getClave()));
+            try {
+                existente.setClave(SeguridadClave.encrypt(datos.getClave()));
+            } catch (Exception e) {
+                throw new RuntimeException("Error al encriptar la clave: " + e.getMessage());
+            }
         }
-
         return repository.save(existente);
     }
 

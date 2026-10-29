@@ -35,4 +35,12 @@ export class RegistroCorreoService {
   listarTodos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/todos`);
   }
+
+  estaAsignado(codigo: number): Observable<{ asignado: boolean }> {
+    return this.http.get<{ asignado: boolean }>(`${this.apiUrl}/${codigo}/esta-asignado`);
+  }
+
+  verClaveDesencriptada(codigo: number): Observable<{ clave: string }> {
+    return this.http.get<{ clave: string }>(`${this.apiUrl}/${codigo}/ver-clave`);
+  }
 }
