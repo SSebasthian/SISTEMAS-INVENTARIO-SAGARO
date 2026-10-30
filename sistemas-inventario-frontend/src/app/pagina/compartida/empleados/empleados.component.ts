@@ -11,6 +11,10 @@ import { NotificacionSnackbarService } from '../../../arquitectura/servicio/noti
 import { ConsultarEmpleadoService } from '../../../arquitectura/servicio/consulta/ConsultarEmpleado.service';
 import { A11yModule } from "@angular/cdk/a11y";
 import { forkJoin } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { OpcEquipoVisualizarComponent } from '../../registro/opc-equipo-visualizar/opc-equipo-visualizar.component';
+import { ConsultarEquipoService } from './../../../arquitectura/servicio/consulta/ConsultarEquipo.service';
+import { EquipoDeComputoLlamarDatos } from './../../../arquitectura/interface/LlamarDatos/EquipoDeComputoRespuesta.interface';
 
 
 
@@ -45,7 +49,9 @@ export class EmpleadosComponent implements OnInit {
     private consultarEmpleadoService: ConsultarEmpleadoService,
     private notificacionSnackbarService: NotificacionSnackbarService,
     private consultarAsignacionesService: ConsultarAsignacionesService,
-    private elementRef: ElementRef //CERRAR FILTRO AL DAR CLIC AFUERA
+    private elementRef: ElementRef, //CERRAR FILTRO AL DAR CLIC AFUERA,
+    private dialog: MatDialog,
+    private consultarEquipoService: ConsultarEquipoService
   ) { }
 
   ngOnInit(): void {
@@ -209,17 +215,17 @@ export class EmpleadosComponent implements OnInit {
   }
 
   limpiarFiltro(columna: string): void {
-  if (columna === 'estado') {
-    this.filtros.estado.valor = '';
-  } else if (columna === 'asignaciones') {
-    this.filtros.asignaciones.valor = 'TODOS';
-  } else {
-    this.filtros[columna].reglas = [{ condicion: 'Empieza con', valor: '' }];
-    this.filtros[columna].operador = 'AND';
+    if (columna === 'estado') {
+      this.filtros.estado.valor = '';
+    } else if (columna === 'asignaciones') {
+      this.filtros.asignaciones.valor = 'TODOS';
+    } else {
+      this.filtros[columna].reglas = [{ condicion: 'Empieza con', valor: '' }];
+      this.filtros[columna].operador = 'AND';
+    }
+    this.aplicarFiltros();
+    this.cerrarFiltro();
   }
-  this.aplicarFiltros();
-  this.cerrarFiltro();
-}
 
   aplicarFiltros(): void {
     // Primero aplicar los filtros por columna
@@ -628,5 +634,35 @@ export class EmpleadosComponent implements OnInit {
       this.cerrarFiltro();
     }
   }
+
+
+
+
+
+  abrirModalDetalleEquipo(serial: string): void {
+    this.consultarEquipoService.obtenerEquipo(serial).subscribe({
+      next: (equipoCompleto: EquipoDeComputoLlamarDatos) => {
+        equipoCompleto.asignado = true;
+        const dialogRef = this.dialog.open(OpcEquipoVisualizarComponent, {
+          width: '550px',
+          maxWidth: '550px',
+          maxHeight: '490px',
+          panelClass: 'modal-editar-equipo',
+          autoFocus: false,
+          data: {
+            equipo: equipoCompleto,
+            recargarTabla: () => { },
+            soloLectura: false
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error al cargar equipo:', err);
+        this.notificacionSnackbarService.error('Error', 'No se pudo cargar la informacion del equipo');
+      }
+    });
+  }
+
+
 }
 

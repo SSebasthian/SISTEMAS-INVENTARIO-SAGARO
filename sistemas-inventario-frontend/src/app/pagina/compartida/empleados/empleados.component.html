@@ -102,7 +102,7 @@
                             </div>
                         </div>
                     </th>
-                    
+
                 </tr>
             </thead>
             <tbody>
@@ -137,11 +137,23 @@
 
                                 <!-- Icono de Equipos (catalogoCodigo = 1) -->
                                 <div *ngIf="contarPorCatalogo(asignaciones, 1) > 0" class="tooltip-container">
-                                    <mat-icon class="icono-asignacion equipo">desktop_mac</mat-icon>
-                                    <div class="tooltip-modern" *ngFor="let item of getTooltipItems(asignaciones, 1)">
-                                        <span class="tooltip-marca">{{ item.marca }}</span>
-                                        <br><span class="tooltip-modelo">{{ item.modelo }}</span>
-                                        <br><span class="tooltip-serial">{{ item.serial }}</span>
+
+
+                                    <div *ngIf="contarPorCatalogo(asignaciones, 1) > 0" class="tooltip-container">
+                                        <!-- AGREGA EL (click) AQUÍ -->
+                                        <mat-icon class="icono-asignacion equipo" style="cursor: pointer;"
+                                            (click)="abrirModalDetalleEquipo(asignaciones[0].serialActivo)">
+                                            desktop_mac
+                                        </mat-icon>
+
+
+
+                                        <div class="tooltip-modern"
+                                            *ngFor="let item of getTooltipItems(asignaciones, 1)">
+                                            <span class="tooltip-marca">{{ item.marca }}</span>
+                                            <br><span class="tooltip-modelo">{{ item.modelo }}</span>
+                                            <br><span class="tooltip-serial">{{ item.serial }}</span>
+                                        </div>
                                     </div>
                                 </div>
 

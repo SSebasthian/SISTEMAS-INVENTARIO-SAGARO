@@ -32,6 +32,7 @@ export class OpcEquipoVisualizarComponent {
   modelos: any[] = [];
   sistemasOperativos: any[] = [];
   versionesSO: any[] = [];
+  soloLectura: boolean = false;
 
    constructor(
     public dialogRef: MatDialogRef<OpcEquipoVisualizarComponent>,

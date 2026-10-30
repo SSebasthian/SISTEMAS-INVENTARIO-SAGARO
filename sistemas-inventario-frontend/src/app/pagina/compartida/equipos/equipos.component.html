@@ -292,23 +292,43 @@
                         <div class="icon-asignacion">
                             <div class="tooltip-asignacion-container">
 
-                                <!-- ICONO DE ASIGNACION -->
-                                <mat-icon *ngIf="equipo.asignado" class="icono-asignado"
-                                    (click)="abrirModalAsignacion(equipo)">person</mat-icon>
-                                <div *ngIf="equipo.asignado" class="tooltip-asignacion-content">
+                                <!-- ICONO DE ASIGNACION - SI EL EQUIPO ES INOPERATIVO -->
+                                <mat-icon *ngIf="equipo.estado === 'INOPERATIVO'" class="icono-inoperativo"
+                                    style="color: #d32f2f; cursor: not-allowed;">
+                                    block
+                                </mat-icon>
+                                <div *ngIf="equipo.estado === 'INOPERATIVO'" class="tooltip-asignacion-content">
                                     <div class="tooltip-header">
-                                        <span>{{ equipo.asignadoArea }}</span>
+                                        <span>EQUIPO INOPERATIVO</span>
                                         <hr>
-                                        <span>{{ equipo.asignadoA }}</span>
+                                        <span>NO SE PUEDE ASIGNAR</span>
                                     </div>
                                 </div>
-                                <mat-icon *ngIf="!equipo.asignado" class="icono-disponible"
-                                    (click)="abrirModalAsignacion(equipo)">person_outline</mat-icon>
-                                <div *ngIf="!equipo.asignado" class="tooltip-asignacion-content tooltip-disponible">
-                                    <div class="tooltip-header">
-                                        <a>DISPONIBLE</a>
+
+                                <!-- ICONO DE ASIGNACION - SI ESTA ASIGNADO Y NO ES INOPERATIVO -->
+                                <ng-container *ngIf="equipo.estado !== 'INOPERATIVO' && equipo.asignado">
+                                    <mat-icon class="icono-asignado"
+                                        (click)="abrirModalAsignacion(equipo)">person</mat-icon>
+                                    <div class="tooltip-asignacion-content">
+                                        <div class="tooltip-header">
+                                            <span>{{ equipo.asignadoArea }}</span>
+                                            <hr>
+                                            <span>{{ equipo.asignadoA }}</span>
+                                        </div>
                                     </div>
-                                </div>
+                                </ng-container>
+
+                                <!-- ICONO DE ASIGNACION - SI ESTA DISPONIBLE Y NO ES INOPERATIVO -->
+                                <ng-container *ngIf="equipo.estado !== 'INOPERATIVO' && !equipo.asignado">
+                                    <mat-icon class="icono-disponible"
+                                        (click)="abrirModalAsignacion(equipo)">person_outline</mat-icon>
+                                    <div class="tooltip-asignacion-content tooltip-disponible">
+                                        <div class="tooltip-header">
+                                            <a>DISPONIBLE</a>
+                                        </div>
+                                    </div>
+                                </ng-container>
+
                             </div>
                         </div>
                     </td>
