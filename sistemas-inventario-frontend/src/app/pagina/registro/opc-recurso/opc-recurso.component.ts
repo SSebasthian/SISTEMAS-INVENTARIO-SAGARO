@@ -637,4 +637,104 @@ export class OpcRecursoComponent {
     }
   }
 
+
+
+
+    // ============ CORREOS ============
+
+
+  get registrosCoincidentes(): any[] {
+    // No mostrar nada si no hay texto
+    const texto = (this.recurso.identificador || '').toLowerCase().trim();
+    if (!texto) return [];
+
+    // No mostrar nada si estamos editando
+    if (this.modoEdicion) return [];
+
+    // Filtrar por el campo correspondiente según el tipo
+    return this.registrosActivos.filter(item => {
+      if (this.tipoSeleccionado?.nombre === 'CORREO') {
+        const cuerpo = (item.direccion || '').split('@')[0].toLowerCase();
+        return cuerpo.includes(texto);
+      } else if (this.tipoSeleccionado?.nombre === 'LINEATELEFONICA') {
+        return (item.numero || '').toLowerCase().includes(texto);
+      } else if (this.tipoSeleccionado?.nombre === 'PLATAFORMA') {
+        return (item.usuario || '').toLowerCase().includes(texto);
+      }
+      return false;
+    }).slice(0, 5); // máximo 5 sugerencias
+  }
+
+
+
+
+   get coincidenciasCorreo(): any[] {
+    if (!this.recurso.identificador || this.recurso.identificador.length < 2) {
+      return [];
+    }
+    
+    const texto = this.recurso.identificador.toLowerCase().trim();
+
+    // CASO 1: Ya seleccionó un dominio
+    if (this.recurso.subtipoCodigo) {
+      const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+      if (!subtipo) return [];
+      
+      const dominioActual = subtipo.nombre.toLowerCase();
+      const correoCompleto = `${texto}@${dominioActual}.com`;
+
+      // Buscamos si ese correo exacto existe
+      const correoExacto = this.registrosActivos.find(item => 
+        (item.direccion || '').toLowerCase() === correoCompleto
+      );
+
+      // Si el correo exacto existe, lo devolvemos (para que salga la alerta roja).
+      // Si NO existe, devolvemos un array vacío (no muestra nada).
+      return correoExacto ? [correoExacto] : [];
+    }
+
+    // CASO 2: Aún no ha seleccionado dominio (solo escribe el cuerpo)
+    // Mostramos sugerencias parciales
+    return this.registrosActivos
+      .filter(item => {
+        const cuerpo = (item.direccion || '').split('@')[0].toLowerCase();
+        return cuerpo.includes(texto);
+      })
+      .slice(0, 5);
+  }
+
+
+  get correoExisteExacto(): boolean {
+    if (!this.recurso.identificador || !this.recurso.subtipoCodigo) return false;
+    const texto = this.recurso.identificador.toLowerCase().trim();
+    if (!texto) return false;
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    if (!subtipo) return false;
+    const correoCompleto = `${texto}@${subtipo.nombre.toLowerCase()}.com`;
+    return this.registrosActivos.some(item =>
+      (item.direccion || '').toLowerCase() === correoCompleto
+    );
+  }
+
+  esCoincidenciaExacta(item: any): boolean {
+    if (!this.recurso.identificador || !this.recurso.subtipoCodigo) return false;
+    const texto = this.recurso.identificador.toLowerCase().trim();
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    if (!subtipo) return false;
+    const correoCompleto = `${texto}@${subtipo.nombre.toLowerCase()}.com`;
+    return (item.direccion || '').toLowerCase() === correoCompleto;
+  }
+
+   get dominioSeleccionado(): string {
+    if (!this.recurso.subtipoCodigo) return '';
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    return subtipo ? subtipo.nombre.toUpperCase() : '';
+  }
+
+   get correoCompleto(): string {
+    if (!this.recurso.identificador || !this.dominioSeleccionado) return '';
+    return `${this.recurso.identificador.toUpperCase()}@${this.dominioSeleccionado}.COM`;
+  }
+
+
 }

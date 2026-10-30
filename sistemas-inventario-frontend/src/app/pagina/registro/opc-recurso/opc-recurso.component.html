@@ -30,7 +30,8 @@
         <p>
           <label>CUERPO</label>
           <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.identificador" name="identificador"
-            (input)="recurso.identificador = recurso.identificador.toLowerCase()" required [disabled]="modoEdicion">
+            (input)="recurso.identificador = recurso.identificador.toLowerCase()"
+            (keydown.space)="$event.preventDefault()" required [disabled]="modoEdicion">
         </p>
         <p>
           <label>DOMINIO</label>
@@ -102,7 +103,6 @@
       </div>
 
 
-
       <!-- CAMPOSLINEATELEFONO -->
       <div *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA'" class="fila-de-tres campotelefono">
         <p>
@@ -123,14 +123,14 @@
         </p>
         <p>
           <label>DIGITAR NUMERO</label>
-          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.identificador" name="identificador" required
-            [disabled]="modoEdicion">
+          <input class="opcionForm cuerpo" type="number" [(ngModel)]="recurso.identificador" name="identificador"
+            (keydown.space)="$event.preventDefault()" required [disabled]="modoEdicion">
         </p>
 
         <p>
           <label>CONFIRMAR NUMERO</label>
-          <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.confirmarIdentificador"
-            name="confirmarIdentificador" required [disabled]="modoEdicion">
+          <input class="opcionForm cuerpo" type="number" [(ngModel)]="recurso.confirmarIdentificador"
+            name="confirmarIdentificador" (keydown.space)="$event.preventDefault()" required [disabled]="modoEdicion">
         </p>
 
       </div>
@@ -158,7 +158,8 @@
         <p>
           <label>USUARIO</label>
           <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.usuario" name="usuario"
-            (input)="recurso.usuario = recurso.usuario.toUpperCase()" required>
+            (input)="recurso.usuario = recurso.usuario.toUpperCase()" (keydown.space)="$event.preventDefault()"
+            required>
         </p>
 
         <p>
@@ -173,24 +174,23 @@
       </div>
 
       <!-- Estado (comun) solo si hay tipo seleccionado -->
-       <div *ngIf="tipoSeleccionado" class="fila-de-tres campoestado">
+      <div *ngIf="tipoSeleccionado" class="fila-de-tres campoestado">
         <div class="checkbox-wrapper-10">
           <label>ESTADO</label>
-          
+
           <div class="switch-container" (click)="validarCambioEstado($event)">
-            <input type="checkbox" id="cb5" class="tgl tgl-flip" 
-                   [(ngModel)]="recurso.activo" 
-                   [disabled]="!modoEdicion || recursoEnUso" 
-                   name="activo">
+            <input type="checkbox" id="cb5" class="tgl tgl-flip" [(ngModel)]="recurso.activo"
+              [disabled]="!modoEdicion || recursoEnUso" name="activo">
             <label for="cb5" data-tg-on="ACTIVO" data-tg-off="INACTIVO" class="tgl-btn"></label>
           </div>
-          
+
           <!-- Mensaje si esta en uso -->
           <span id="mensaje-advertencia" *ngIf="recursoEnUso && modoEdicion">
             * No se puede desactivar porque esta en uso.
           </span>
         </div>
       </div>
+
 
 
       <!-- Botones de accion -->
@@ -221,10 +221,50 @@
             <mat-icon>bookmark</mat-icon>
           </label>
         </div>
+
       </div>
 
     </div>
   </form>
+
+
+  <!-- MUESTRA LO QUE CONINCIDA AL CREAR -->
+
+
+  <!-- CORREO -->
+  <div class="sug-bloque"
+    *ngIf="tipoSeleccionado?.nombre === 'CORREO' && recurso.identificador && recurso.identificador.length >= 2 && (coincidenciasCorreo.length > 0 || (dominioSeleccionado && !correoExisteExacto))">
+
+    <p class="sug-titulo" [class.sug-titulo-alerta]="correoExisteExacto"
+      [class.sug-titulo-exito]="dominioSeleccionado && !correoExisteExacto">
+      <mat-icon>
+        {{ correoExisteExacto ? 'warning' : (dominioSeleccionado ? 'check_circle' : 'info') }}
+      </mat-icon>
+      <ng-container *ngIf="correoExisteExacto">
+        Este correo ya esta registrado:
+      </ng-container>
+      <ng-container *ngIf="!correoExisteExacto && dominioSeleccionado">
+        {{ correoCompleto }} <br> ¡Puedes registrarlo!
+      </ng-container>
+      <ng-container *ngIf="!correoExisteExacto && !dominioSeleccionado">
+        Correos existentes que coinciden:
+      </ng-container>
+    </p>
+
+    <div class="sug-contenedor" *ngIf="coincidenciasCorreo.length > 0">
+      <div class="sug-tarjeta" *ngFor="let item of coincidenciasCorreo"
+        [class.sug-tarjeta-alerta]="esCoincidenciaExacta(item)">
+        <div class="sug-info">
+          <strong class="sug-cuerpo">{{ item.direccion.split('@')[0] }}</strong>
+          <span class="sug-dominio">&#64;{{ item.direccion.split('@')[1].split('.')[0].toUpperCase() }}</span>
+          <span class="sug-estado" [class.sug-activo]="item.activo" [class.sug-inactivo]="!item.activo">
+            ● {{ item.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Modal de busqueda (edicion) -->
@@ -325,3 +365,6 @@
     </div>
   </div>
 </div>
+
+<br><br>
+<br><br>
