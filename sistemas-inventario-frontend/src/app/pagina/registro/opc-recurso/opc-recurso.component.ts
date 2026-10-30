@@ -315,11 +315,17 @@ export class OpcRecursoComponent {
 
 
     } else if (tipo.nombre === 'PLATAFORMA') {
-      // Validaciones especificas PLATAFORMAS
       if (!this.recurso.plataformaCodigo || !this.recurso.plataformaRolCodigo || !this.recurso.usuario) {
         this.snackbar.warning('Campos incompletos', 'Seleccione plataforma, rol y escriba usuario');
         return;
       }
+
+      // VALIDACION de duplicado
+      if (this.plataformaExisteExacta) {
+        this.snackbar.warning('Usuario duplicado', 'Ya existe este usuario en la plataforma seleccionada');
+        return;
+      }
+
       payload = {
         plataformaCodigo: this.recurso.plataformaCodigo,
         plataformaRolCodigo: this.recurso.plataformaRolCodigo,
@@ -817,7 +823,7 @@ export class OpcRecursoComponent {
 
   // ============ VALIDACION MOVIL / FIJO ============
 
-   get numeroValidoMovil(): boolean {
+  get numeroValidoMovil(): boolean {
     if (!this.recurso.identificador) return false;
     const numero = this.recurso.identificador.toString();
     // Movil: exactamente 10 digitos (sin importar el prefijo)
@@ -864,16 +870,74 @@ export class OpcRecursoComponent {
     return '';
   }
 
-   get operadoresDisponibles(): { valor: string, texto: string }[] {
+  get operadoresDisponibles(): { valor: string, texto: string }[] {
     // Si es fijo, solo SAGARO
     if (this.tipoLineaEsFijo) {
       return [{ valor: 'SAGARO', texto: 'SAGARO' }];
     }
-    // Si es móvil o no hay tipo: CLARO y MOVISTAR
+    // Si es movil o no hay tipo: CLARO y MOVISTAR
     return [
       { valor: 'CLARO', texto: 'CLARO' },
       { valor: 'MOVISTAR', texto: 'MOVISTAR' }
     ];
+  }
+
+
+
+
+  // ============ PLATAFORMA ============
+
+  get coincidenciasPlataforma(): any[] {
+    // 1. Si no hay usuario escrito (o es muy corto), no buscar
+    if (!this.recurso.usuario || this.recurso.usuario.length < 2) {
+      return [];
+    }
+
+    const texto = this.recurso.usuario.toLowerCase().trim();
+
+    // 2. Si ya seleccionó plataforma, buscar solo en esa plataforma
+    if (this.recurso.plataformaCodigo) {
+      return this.registrosActivos
+        .filter(item =>
+          (item.usuario || '').toLowerCase().includes(texto) &&
+          item.plataforma?.codigo === Number(this.recurso.plataformaCodigo)
+        )
+        .slice(0, 5);
+    }
+
+    // 3. Si no hay plataforma seleccionada, buscar en todas
+    return this.registrosActivos
+      .filter(item => (item.usuario || '').toLowerCase().includes(texto))
+      .slice(0, 5);
+  }
+
+  get plataformaExisteExacta(): boolean {
+    if (!this.recurso.usuario || !this.recurso.plataformaCodigo) return false;
+    const texto = this.recurso.usuario.toLowerCase().trim();
+    if (!texto) return false;
+
+    return this.registrosActivos.some(item =>
+      (item.usuario || '').toLowerCase() === texto &&
+      item.plataforma?.codigo === Number(this.recurso.plataformaCodigo)
+    );
+  }
+
+  esCoincidenciaExactaPlataforma(item: any): boolean {
+    if (!this.recurso.usuario || !this.recurso.plataformaCodigo) return false;
+    const texto = this.recurso.usuario.toLowerCase().trim();
+    return (item.usuario || '').toLowerCase() === texto &&
+      item.plataforma?.codigo === Number(this.recurso.plataformaCodigo);
+  }
+
+  get plataformaSeleccionadaNombre(): string {
+    if (!this.recurso.plataformaCodigo) return '';
+    const plataforma = this.plataformas.find(p => p.codigo === Number(this.recurso.plataformaCodigo));
+    return plataforma ? plataforma.descripcion.toUpperCase() : '';
+  }
+
+  get plataformaCompleta(): string {
+    if (!this.recurso.usuario || !this.plataformaSeleccionadaNombre) return '';
+    return `${this.recurso.usuario.toUpperCase()} (${this.plataformaSeleccionadaNombre})`;
   }
 
 }

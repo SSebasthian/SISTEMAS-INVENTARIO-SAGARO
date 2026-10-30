@@ -307,7 +307,7 @@
       </div>
     </div>
 
-    <!-- LISTA DE TARJETAS (fuera del <p>) -->
+    <!-- LISTA DE TARJETAS -->
     <div class="sug-contenedor" *ngIf="coincidenciasLinea.length > 0">
       <div class="sug-tarjeta" *ngFor="let item of coincidenciasLinea"
         [class.sug-tarjeta-alerta]="esCoincidenciaExactaLinea(item)"
@@ -322,8 +322,74 @@
       </div>
     </div>
 
+
+
+
+
+
+
+
   </div>
 
+
+  <!-- PLATAFORMA -->
+  <div class="sug-bloque" [class.sug-bloque-exito]="plataformaSeleccionadaNombre && !plataformaExisteExacta"
+    [class.sug-bloque-error]="plataformaExisteExacta"
+    *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA' && recurso.usuario && recurso.usuario.length >= 2 && (coincidenciasPlataforma.length > 0 || plataformaSeleccionadaNombre)">
+
+    <!-- TITULO -->
+    <div class="sug-titulo" [class.sug-titulo-alerta]="plataformaExisteExacta"
+      [class.sug-titulo-exito]="plataformaSeleccionadaNombre && !plataformaExisteExacta">
+
+      <mat-icon [class.icono-verde]="plataformaSeleccionadaNombre && !plataformaExisteExacta"
+        [class.icono-rojo]="plataformaExisteExacta">
+        {{ plataformaExisteExacta ? 'warning' : (plataformaSeleccionadaNombre ? 'check_circle' : 'info') }}
+      </mat-icon>
+
+      <div class="texto-titulo">
+        <!-- Si ya existe -->
+        <ng-container *ngIf="plataformaExisteExacta">
+          Este usuario ya esta registrado en esta plataforma:
+        </ng-container>
+
+        <!-- Si hay plataforma seleccionada y NO existe -->
+        <ng-container *ngIf="!plataformaExisteExacta && plataformaSeleccionadaNombre">
+          <strong class="texto-verde">{{ plataformaCompleta }}</strong> <br> Puedes registrarlo!
+        </ng-container>
+
+        <!-- Si no hay plataforma seleccionada -->
+        <ng-container *ngIf="!plataformaExisteExacta && !plataformaSeleccionadaNombre">
+          Usuarios existentes que coinciden:
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- LISTA DE TARJETAS -->
+    <div class="sug-contenedor contplataforma" *ngIf="coincidenciasPlataforma.length > 0">
+      <div class="sug-tarjeta" *ngFor="let item of coincidenciasPlataforma"
+        [class.sug-tarjeta-alerta]="esCoincidenciaExactaPlataforma(item)"
+        [class.sug-tarjeta-exito]="plataformaSeleccionadaNombre && !plataformaExisteExacta">
+
+        <div class="sug-info">
+          <strong class="sug-cuerpo">{{ item.usuario }}</strong>
+
+          <div class="sug-detalle-plataforma">
+            <span class="sug-dominio">{{ item.plataforma?.descripcion || 'Sin plataforma' }}</span>
+
+            <span class="sug-rol" *ngIf="item.plataformaRol">
+              {{ (item.plataformaRol.rol + '') | titlecase }} {{ item.plataformaRol.descripcion | titlecase }}
+            </span>
+          </div>
+
+          <span class="sug-estado" [class.sug-activo]="item.activo" [class.sug-inactivo]="!item.activo">
+            ● {{ item.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
 
 </div>
 
