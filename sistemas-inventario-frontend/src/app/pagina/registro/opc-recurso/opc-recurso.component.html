@@ -82,7 +82,7 @@
           <div>
             <label>NUEVA CLAVE</label>
             <div class="input-clave">
-              <!-- El input esta deshabilitado hasta que el usuario haga clic en el ícono -->
+              <!-- El input esta deshabilitado hasta que el usuario haga clic en el cono -->
               <input class="opcionForm" [type]="mostrarRepetirClave ? 'text' : 'password'"
                 [(ngModel)]="recurso.nuevaClave" name="nuevaClave" [disabled]="!editarNuevaClave"
                 [style.background-color]="editarNuevaClave ? '#fff' : '#eaeaea'">
@@ -117,8 +117,9 @@
           <label>OPERADOR</label>
           <select class="opcionForm select" [(ngModel)]="recurso.operador" name="operador" required>
             <option [value]="null" disabled selected></option>
-            <option value="CLARO">CLARO</option>
-            <option value="MOVISTAR">MOVISTAR</option>
+            <option *ngFor="let op of operadoresDisponibles" [value]="op.valor">
+              {{ op.texto }}
+            </option>
           </select>
         </p>
         <p>
@@ -264,6 +265,65 @@
       </div>
     </div>
   </div>
+
+
+  <!-- LINEA TELEFONICA -->
+  <div class="sug-bloque"
+    [class.sug-bloque-exito]="tipoLineaSeleccionado && !lineaExisteExacta && numeroValidoSegunTipo"
+    [class.sug-bloque-error]="tipoLineaSeleccionado && !lineaExisteExacta && !numeroValidoSegunTipo"
+    *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA' && recurso.identificador && recurso.identificador.toString().length >= 2 && (coincidenciasLinea.length > 0 || tipoLineaSeleccionado)">
+
+    <!-- TITULO -->
+    <div class="sug-titulo"
+      [class.sug-titulo-alerta]="lineaExisteExacta || (tipoLineaSeleccionado && !numeroValidoSegunTipo)"
+      [class.sug-titulo-exito]="tipoLineaSeleccionado && !lineaExisteExacta && numeroValidoSegunTipo">
+
+      <mat-icon [class.icono-verde]="tipoLineaSeleccionado && !lineaExisteExacta && numeroValidoSegunTipo"
+        [class.icono-rojo]="lineaExisteExacta || (tipoLineaSeleccionado && !numeroValidoSegunTipo)">
+        {{ lineaExisteExacta ? 'warning' : (tipoLineaSeleccionado ? (numeroValidoSegunTipo ? 'check_circle' :
+        'error_outline') : 'info') }}
+      </mat-icon>
+
+      <div class="texto-titulo">
+        <!-- Si ya existe -->
+        <ng-container *ngIf="lineaExisteExacta">
+          Este numero ya esta registrado:
+        </ng-container>
+
+        <!-- Si hay tipo seleccionado pero el numero NO es valido -->
+        <ng-container *ngIf="!lineaExisteExacta && tipoLineaSeleccionado && !numeroValidoSegunTipo">
+          <strong class="texto-error">{{ mensajeErrorNumero }}</strong>
+        </ng-container>
+
+        <!-- Si hay tipo seleccionado y el numero SI es valido -->
+        <ng-container *ngIf="!lineaExisteExacta && tipoLineaSeleccionado && numeroValidoSegunTipo">
+          <strong class="texto-verde">{{ lineaCompleta }}</strong> <br> Puedes registrarlo!
+        </ng-container>
+
+        <!-- Si no hay tipo seleccionado -->
+        <ng-container *ngIf="!lineaExisteExacta && !tipoLineaSeleccionado">
+          Numeros existentes que coinciden:
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- LISTA DE TARJETAS (fuera del <p>) -->
+    <div class="sug-contenedor" *ngIf="coincidenciasLinea.length > 0">
+      <div class="sug-tarjeta" *ngFor="let item of coincidenciasLinea"
+        [class.sug-tarjeta-alerta]="esCoincidenciaExactaLinea(item)"
+        [class.sug-tarjeta-exito]="tipoLineaSeleccionado && !lineaExisteExacta && numeroValidoSegunTipo">
+        <div class="sug-info">
+          <strong class="sug-cuerpo">{{ item.numero }}</strong>
+          <span class="sug-dominio">({{ item.recursoTipo?.nombre || '' }} - {{ item.operador }})</span>
+          <span class="sug-estado" [class.sug-activo]="item.activo" [class.sug-inactivo]="!item.activo">
+            * {{ item.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
 
 </div>
 

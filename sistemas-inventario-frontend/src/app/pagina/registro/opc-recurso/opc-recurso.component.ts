@@ -118,7 +118,7 @@ export class OpcRecursoComponent {
           const tipoPlataforma = data.find(t => t.nombre === 'PLATAFORMA' || t.nombre === 'PLATAFORMAS');
           if (tipoPlataforma) {
             this.recurso.tipoCodigo = tipoPlataforma.codigo;
-            this.onTipoChange(); // esto cargará subtipos, registros, etc.
+            this.onTipoChange(); // esto carg subtipos, registros, etc.
           }
         }
       },
@@ -171,7 +171,7 @@ export class OpcRecursoComponent {
     } else if (tipoNombre === 'LINEATELEFONICA') {
       this.registroLineaTelefonoService.listarTodos().subscribe({
         next: (data) => { this.registrosActivos = data; },
-        error: () => this.snackbar.error('Error', 'No se pudieron cargar los teléfonos activos')
+        error: () => this.snackbar.error('Error', 'No se pudieron cargar los telefonos activos')
       });
 
     } else if (tipoNombre === 'PLATAFORMA') {
@@ -237,7 +237,7 @@ export class OpcRecursoComponent {
   registrar(): void {
     if (this.enviando) return;
 
-    // Validacion común: solo tipoCodigo
+    // Validacion comun: solo tipoCodigo
     if (!this.recurso.tipoCodigo) {
       this.snackbar.warning('Campos incompletos', 'Seleccione un tipo de recurso');
       return;
@@ -245,7 +245,7 @@ export class OpcRecursoComponent {
 
     const tipo = this.tiposRecurso.find(t => t.codigo === Number(this.recurso.tipoCodigo));
     if (!tipo) {
-      this.snackbar.error('Error', 'Tipo de recurso no válido');
+      this.snackbar.error('Error', 'Tipo de recurso nolido');
       return;
     }
 
@@ -253,7 +253,7 @@ export class OpcRecursoComponent {
     let servicio: any;
 
     if (tipo.nombre === 'CORREO') {
-      // Validaciones específicas CORREO
+      // Validaciones especificas CORREO
       if (!this.recurso.subtipoCodigo || !this.recurso.identificador || !this.recurso.clave || !this.recurso.repetirClave) {
         this.snackbar.warning('Campos incompletos', 'Todos los campos son obligatorios');
         return;
@@ -264,7 +264,7 @@ export class OpcRecursoComponent {
       }
       const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
       if (!subtipo) {
-        this.snackbar.error('Error', 'Subtipo no válido');
+        this.snackbar.error('Error', 'Subtipo nolido');
         return;
       }
       const direccion = `${this.recurso.identificador.toUpperCase()}@${subtipo.nombre.toUpperCase()}.COM`;
@@ -278,18 +278,30 @@ export class OpcRecursoComponent {
       servicio = this.registroCorreoService;
 
     } else if (tipo.nombre === 'LINEATELEFONICA') {
-      // Validaciones específicas LINEATELEFONICA
       if (!this.recurso.subtipoCodigo || !this.recurso.identificador || !this.recurso.confirmarIdentificador || !this.recurso.operador) {
         this.snackbar.warning('Campos incompletos', 'Todos los campos son obligatorios');
         return;
       }
       if (this.recurso.identificador !== this.recurso.confirmarIdentificador) {
-        this.snackbar.warning('Números no coinciden', 'Los números deben ser iguales');
+        this.snackbar.warning('Numeros no coinciden', 'Los numeros deben ser iguales');
         return;
       }
+
+      // VALIDACION segun tipo de linea
+      if (!this.numeroValidoSegunTipo) {
+        this.snackbar.warning('Numero invalido', this.mensajeErrorNumero);
+        return;
+      }
+
+      // VALIDACION de duplicado
+      if (this.lineaExisteExacta) {
+        this.snackbar.warning('Numero duplicado', 'Ya existe un numero con este tipo de linea');
+        return;
+      }
+
       const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
       if (!subtipo) {
-        this.snackbar.error('Error', 'Subtipo no válido');
+        this.snackbar.error('Error', 'Subtipo no valido');
         return;
       }
       payload = {
@@ -301,8 +313,9 @@ export class OpcRecursoComponent {
       };
       servicio = this.registroLineaTelefonoService;
 
+
     } else if (tipo.nombre === 'PLATAFORMA') {
-      // Validaciones específicas PLATAFORMAS
+      // Validaciones especificas PLATAFORMAS
       if (!this.recurso.plataformaCodigo || !this.recurso.plataformaRolCodigo || !this.recurso.usuario) {
         this.snackbar.warning('Campos incompletos', 'Seleccione plataforma, rol y escriba usuario');
         return;
@@ -404,7 +417,7 @@ export class OpcRecursoComponent {
       servicio = this.registroCuentaService;
 
     } else {
-      this.snackbar.warning('Tipo no soportado', 'Este tipo de recurso aún no esta implementado');
+      this.snackbar.warning('Tipo no soportado', 'Este tipo de recurso aun no esta implementado');
       return;
     }
 
@@ -489,7 +502,7 @@ export class OpcRecursoComponent {
       // Guardamos el hash cifrado
       this.claveCifrada = registro.clave || '';
 
-      // Ponemos puntitos si hay clave, para que el input no se vea vacío
+      // Ponemos puntitos si hay clave, para que el input no se vea vacio
       this.recurso.clave = this.claveCifrada ? '••••••••' : '';
       this.editarNuevaClave = false;
       this.recurso.nuevaClave = '';
@@ -535,7 +548,7 @@ export class OpcRecursoComponent {
       }
     }
 
-    // ============ ESTADO COMÚN ============
+    // ============ ESTADO COMuN ============
     this.recurso.activo = registro.activo;
     this.snackbar.success('Registro seleccionado', `Editando: ${this.tipoSeleccionado?.nombre}`);
     this.cerrarModalBuscar();
@@ -543,7 +556,7 @@ export class OpcRecursoComponent {
 
 
 
-  // ========== MÉTODO PARA EL OJITO ==========
+  // ========== MeTODO PARA EL OJITO ==========
   verClaveOriginal(): void {
     // Si ya tenemos la clave REAL cargada (no puntitos), solo ocultamos/mostramos
     if (this.recurso.clave && this.recurso.clave !== '••••••••') {
@@ -624,7 +637,7 @@ export class OpcRecursoComponent {
 
 
   validarCambioEstado(event: Event): void {
-    // Si estamos creando (!modoEdicion) o el recurso está en uso (recursoEnUso)
+    // Si estamos creando (!modoEdicion) o el recurso e en uso (recursoEnUso)
     if (!this.modoEdicion || this.recursoEnUso) {
       event.preventDefault(); // Evita que el clic llegue al switch
       event.stopPropagation();
@@ -632,7 +645,7 @@ export class OpcRecursoComponent {
       if (!this.modoEdicion) {
         this.snackbar.warning('Accion no permitida', 'No puedes cambiar el estado al crear un recurso. Por defecto sera ACTIVO.');
       } else if (this.recursoEnUso) {
-        this.snackbar.error('Acción bloqueada', 'No se puede cambiar el estado porque el recurso esta en uso.');
+        this.snackbar.error('Accion bloqueada', 'No se puede cambiar el estado porque el recurso esta en uso.');
       }
     }
   }
@@ -640,7 +653,7 @@ export class OpcRecursoComponent {
 
 
 
-    // ============ CORREOS ============
+  // ============ CORREOS ============
 
 
   get registrosCoincidentes(): any[] {
@@ -651,7 +664,7 @@ export class OpcRecursoComponent {
     // No mostrar nada si estamos editando
     if (this.modoEdicion) return [];
 
-    // Filtrar por el campo correspondiente según el tipo
+    // Filtrar por el campo correspondiente segun el tipo
     return this.registrosActivos.filter(item => {
       if (this.tipoSeleccionado?.nombre === 'CORREO') {
         const cuerpo = (item.direccion || '').split('@')[0].toLowerCase();
@@ -662,38 +675,38 @@ export class OpcRecursoComponent {
         return (item.usuario || '').toLowerCase().includes(texto);
       }
       return false;
-    }).slice(0, 5); // máximo 5 sugerencias
+    }).slice(0, 5); //ximo 5 sugerencias
   }
 
 
 
 
-   get coincidenciasCorreo(): any[] {
+  get coincidenciasCorreo(): any[] {
     if (!this.recurso.identificador || this.recurso.identificador.length < 2) {
       return [];
     }
-    
+
     const texto = this.recurso.identificador.toLowerCase().trim();
 
-    // CASO 1: Ya seleccionó un dominio
+    // CASO 1: Ya selecciono un dominio
     if (this.recurso.subtipoCodigo) {
       const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
       if (!subtipo) return [];
-      
+
       const dominioActual = subtipo.nombre.toLowerCase();
       const correoCompleto = `${texto}@${dominioActual}.com`;
 
       // Buscamos si ese correo exacto existe
-      const correoExacto = this.registrosActivos.find(item => 
+      const correoExacto = this.registrosActivos.find(item =>
         (item.direccion || '').toLowerCase() === correoCompleto
       );
 
       // Si el correo exacto existe, lo devolvemos (para que salga la alerta roja).
-      // Si NO existe, devolvemos un array vacío (no muestra nada).
+      // Si NO existe, devolvemos un array vacio (no muestra nada).
       return correoExacto ? [correoExacto] : [];
     }
 
-    // CASO 2: Aún no ha seleccionado dominio (solo escribe el cuerpo)
+    // CASO 2: Aun no ha seleccionado dominio (solo escribe el cuerpo)
     // Mostramos sugerencias parciales
     return this.registrosActivos
       .filter(item => {
@@ -725,16 +738,142 @@ export class OpcRecursoComponent {
     return (item.direccion || '').toLowerCase() === correoCompleto;
   }
 
-   get dominioSeleccionado(): string {
+  get dominioSeleccionado(): string {
     if (!this.recurso.subtipoCodigo) return '';
     const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
     return subtipo ? subtipo.nombre.toUpperCase() : '';
   }
 
-   get correoCompleto(): string {
+  get correoCompleto(): string {
     if (!this.recurso.identificador || !this.dominioSeleccionado) return '';
     return `${this.recurso.identificador.toUpperCase()}@${this.dominioSeleccionado}.COM`;
   }
 
+
+
+
+  // ============ LINEA TELEFONICA ============
+
+  get coincidenciasLinea(): any[] {
+    if (!this.recurso.identificador || this.recurso.identificador.toString().length < 2) {
+      return [];
+    }
+
+    const texto = this.recurso.identificador.toString().toLowerCase().trim();
+
+    // CASO 1: Ya hay un tipo de linea seleccionado
+    if (this.recurso.subtipoCodigo) {
+      const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+      if (!subtipo) return [];
+
+      // Mostramos los numeros del mismo tipo que contengan el texto
+      return this.registrosActivos
+        .filter(item =>
+          (item.numero || '').toString().includes(texto) &&
+          item.recursoTipo?.codigo === subtipo.codigo
+        )
+        .slice(0, 5);
+    }
+
+    // CASO 2: Sin tipo de linea -> mostrar todos los que coincidan
+    return this.registrosActivos
+      .filter(item => (item.numero || '').toString().includes(texto))
+      .slice(0, 5);
+  }
+
+  get lineaExisteExacta(): boolean {
+    if (!this.recurso.identificador || !this.recurso.subtipoCodigo) return false;
+    const texto = this.recurso.identificador.toString().toLowerCase().trim();
+    if (!texto) return false;
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    if (!subtipo) return false;
+
+    return this.registrosActivos.some(item =>
+      (item.numero || '').toString() === texto &&
+      item.recursoTipo?.codigo === subtipo.codigo
+    );
+  }
+
+  esCoincidenciaExactaLinea(item: any): boolean {
+    if (!this.recurso.identificador || !this.recurso.subtipoCodigo) return false;
+    const texto = this.recurso.identificador.toString().toLowerCase().trim();
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    if (!subtipo) return false;
+
+    return (item.numero || '').toString() === texto &&
+      item.recursoTipo?.codigo === subtipo.codigo;
+  }
+
+  get tipoLineaSeleccionado(): string {
+    if (!this.recurso.subtipoCodigo) return '';
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    return subtipo ? subtipo.nombre.toUpperCase() : '';
+  }
+
+  get lineaCompleta(): string {
+    if (!this.recurso.identificador || !this.tipoLineaSeleccionado) return '';
+    return `${this.recurso.identificador} (${this.tipoLineaSeleccionado})`;
+  }
+
+  // ============ VALIDACION MOVIL / FIJO ============
+
+   get numeroValidoMovil(): boolean {
+    if (!this.recurso.identificador) return false;
+    const numero = this.recurso.identificador.toString();
+    // Movil: exactamente 10 digitos (sin importar el prefijo)
+    return /^\d{10}$/.test(numero);
+  }
+
+  get numeroValidoFijo(): boolean {
+    if (!this.recurso.identificador) return false;
+    // Fijo: exactamente 4 digitos (extension)
+    return /^\d{4}$/.test(this.recurso.identificador.toString());
+  }
+
+  get tipoLineaEsMovil(): boolean {
+    if (!this.recurso.subtipoCodigo) return false;
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    return subtipo ? subtipo.nombre.toUpperCase().includes('MOVIL') : false;
+  }
+
+  get tipoLineaEsFijo(): boolean {
+    if (!this.recurso.subtipoCodigo) return false;
+    const subtipo = this.subtipos.find(s => s.codigo === Number(this.recurso.subtipoCodigo));
+    return subtipo ? (subtipo.nombre.toUpperCase().includes('FIJO') || subtipo.nombre.toUpperCase().includes('FIJA')) : false;
+  }
+
+  get numeroValidoSegunTipo(): boolean {
+    if (!this.recurso.identificador) return true;
+    if (this.tipoLineaEsMovil) return this.numeroValidoMovil;
+    if (this.tipoLineaEsFijo) return this.numeroValidoFijo;
+    // Sin tipo: acepta cualquier numero entre 4 y 10 digitos
+    return /^\d{4,10}$/.test(this.recurso.identificador.toString());
+  }
+
+  get mensajeErrorNumero(): string {
+    if (!this.recurso.identificador) return '';
+    if (!this.numeroValidoSegunTipo) {
+      if (this.tipoLineaEsMovil) {
+        return 'Un numero movil debe tener 10 digitos';
+      }
+      if (this.tipoLineaEsFijo) {
+        return 'Una extension fija debe tener exactamente 4 digitos';
+      }
+      return 'El numero debe tener entre 4 y 10 digitos';
+    }
+    return '';
+  }
+
+   get operadoresDisponibles(): { valor: string, texto: string }[] {
+    // Si es fijo, solo SAGARO
+    if (this.tipoLineaEsFijo) {
+      return [{ valor: 'SAGARO', texto: 'SAGARO' }];
+    }
+    // Si es móvil o no hay tipo: CLARO y MOVISTAR
+    return [
+      { valor: 'CLARO', texto: 'CLARO' },
+      { valor: 'MOVISTAR', texto: 'MOVISTAR' }
+    ];
+  }
 
 }
