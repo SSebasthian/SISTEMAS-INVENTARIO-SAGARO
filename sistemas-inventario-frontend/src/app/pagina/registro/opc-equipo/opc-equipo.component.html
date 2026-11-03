@@ -16,22 +16,30 @@
         <div class="contenido-opcion">
           <label>TIPO DE EQUIPO<br></label>
           <select class="opcionForm select" [(ngModel)]="tipoSeleccionado" name="tipo" (change)="onTipoChange()"
-            [compareWith]="compararPorCodigo" [disabled]="modoEdicion"> <!-- [disabled]="modoEdicion" -->
+            [compareWith]="compararPorCodigo" [disabled]="modoEdicion"
+            [class.input-error]="intentadoGuardar && !tipoSeleccionado">
             <option [ngValue]="null"></option>
             <option *ngFor="let t of tipos" [ngValue]="t">{{ t.descripcion }}</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !tipoSeleccionado">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion">
           <label>SERIAL:<br></label>
-          <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial"
-            (input)="serial = serial.toUpperCase()" [disabled]="modoEdicion">
+          <input class="opcionForm" type="text" [(ngModel)]="serial" name="serial" (input)="onSerialInput($event)"
+            [disabled]="modoEdicion" [class.input-error]="intentadoGuardar && !serial?.trim()" autocomplete="off">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !serial?.trim()">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion">
           <label>MARCA<br></label>
           <select class="opcionForm select" [(ngModel)]="marcaSeleccionada" name="marca" (change)="onMarcaChange()"
-            [compareWith]="compararPorCodigo" [disabled]="modoEdicion"> <!-- [disabled]="modoEdicion" -->
+            [compareWith]="compararPorCodigo" [disabled]="modoEdicion"
+            [class.input-error]="intentadoGuardar && !marcaSeleccionada">
             <option [ngValue]="null"></option>
             <option *ngFor="let m of marcas" [ngValue]="m">{{ m.descripcion }}</option>
             <!-- SOLO aparece NUEVA MARCA si hay un tipo seleccionado -->
@@ -40,12 +48,16 @@
               <option value="new">NUEVA MARCA</option>
             </ng-container>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !marcaSeleccionada">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion">
           <label>MODELO:<br></label>
           <select class="opcionForm select" [(ngModel)]="modeloSeleccionado" name="modelo" (change)="onModeloChange()"
-            [compareWith]="compararPorCodigo" [disabled]="modoEdicion"> <!-- [disabled]="modoEdicion" -->
+            [compareWith]="compararPorCodigo" [disabled]="modoEdicion"
+            [class.input-error]="intentadoGuardar && !modeloSeleccionado">
             <option [ngValue]="null"></option>
             <option *ngFor="let mod of modelos" [ngValue]="mod">{{ mod.descripcion }}</option>
             <!-- SOLO aparece NUEVO MODELO si hay tipo Y marca seleccionados -->
@@ -54,21 +66,28 @@
               <option value="new">NUEVO MODELO</option>
             </ng-container>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !modeloSeleccionado">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion">
           <label>SISTEMA OPERATIVO<br></label>
           <select class="opcionForm select" [(ngModel)]="soSeleccionado" name="so" (change)="onSOChange()"
-            [compareWith]="compararPorCodigo">
+            [compareWith]="compararPorCodigo" [class.input-error]="intentadoGuardar && !soSeleccionado">
             <option [ngValue]="null"></option>
             <option *ngFor="let so of sistemasOperativos" [ngValue]="so">{{ so.descripcion }}</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !soSeleccionado">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion">
           <label>VERSION S.O.<br></label>
           <select class="opcionForm select" [(ngModel)]="versionSOSeleccionada" name="versionSO"
-            (change)="onVersionSOChange()" [compareWith]="compararPorCodigo">
+            (change)="onVersionSOChange()" [compareWith]="compararPorCodigo"
+            [class.input-error]="intentadoGuardar && !versionSOSeleccionada">
             <option [ngValue]="null"></option>
             <option *ngFor="let v of versionesSO" [ngValue]="v">{{ v.descripcion }}</option>
             <!-- SOLO aparece NUEVA VERSION si hay SO seleccionado -->
@@ -77,51 +96,71 @@
               <option value="new">NUEVA VERSION</option>
             </ng-container>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !versionSOSeleccionada">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion">
           <label>BITS<br></label>
-          <select class="opcionForm select" [(ngModel)]="bits" name="bits">
+          <select class="opcionForm select" [(ngModel)]="bits" name="bits"
+            [class.input-error]="intentadoGuardar && !bits">
             <option value=""></option>
             <option value="32">32</option>
             <option value="64">64</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !bits">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion">
           <label>TAMAÑO RAM<br></label>
           <div class="input-group">
             <input class="opcionForm" type="text" [(ngModel)]="ram" name="ram" (input)="formatearRam()"
-              (keydown)="soloNumeros($event)">
+              (keydown)="soloNumeros($event)" [class.input-error]="intentadoGuardar && !ram?.trim()">
           </div>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !ram?.trim()">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion">
           <label>TIPO DE RAM<br></label>
-          <select class="opcionForm select" [(ngModel)]="tipoRam" name="tipoRam">
+          <select class="opcionForm select" [(ngModel)]="tipoRam" name="tipoRam"
+            [class.input-error]="intentadoGuardar && !tipoRam">
             <option value=""></option>
             <option value="DDR2">DDR2</option>
             <option value="DDR3">DDR3</option>
             <option value="DDR4">DDR4</option>
             <option value="DDR5">DDR5</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !tipoRam">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion">
           <label>PROCESADOR<br></label>
           <input class="opcionForm" type="text" [(ngModel)]="procesador" name="procesador"
-            (input)="procesador = procesador.toUpperCase()">
+            (input)="procesador = procesador.toUpperCase()"
+            [class.input-error]="intentadoGuardar && !procesador?.trim()">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !procesador?.trim()">
+            Campo requerido
+          </span>
         </div>
 
         <div class="contenido-opcion" *ngIf="tipoSeleccionado?.codigo !== 4">
           <label>TAMAÑO DISCO<br></label>
-          <select class="opcionForm select" [(ngModel)]="disco" name="disco">
+          <select class="opcionForm select" [(ngModel)]="disco" name="disco"
+            [class.input-error]="intentadoGuardar && !disco?.trim()">
             <option value=""></option>
             <option value="125 GB">125 GB</option>
             <option value="250 GB">250 GB</option>
             <option value="500 GB">500 GB</option>
             <option value="1 TB">1 TB</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !disco?.trim()">Campo requerido</span>
         </div>
 
 
@@ -129,19 +168,22 @@
           <label>TAMAÑO DISCO<br></label>
           <div class="input-group">
             <input class="opcionForm" type="text" [(ngModel)]="disco" name="disco" (input)="formatearDisco()"
-              (keydown)="soloNumerosDisco($event)">
+              (keydown)="soloNumerosDisco($event)" [class.input-error]="intentadoGuardar && !disco?.trim()">
+            <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !disco?.trim()">Campo requerido</span>
           </div>
         </div>
 
 
         <div class="contenido-opcion">
           <label>TIPO DE DISCO<br></label>
-          <select class="opcionForm select" [(ngModel)]="tipoDisco" name="tipoDisco">
+          <select class="opcionForm select" [(ngModel)]="tipoDisco" name="tipoDisco"
+            [class.input-error]="intentadoGuardar && !tipoDisco">
             <option value=""></option>
             <option value="SSD">SSD</option>
             <option value="HDD">HDD</option>
             <option value="NVME">NVME</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !tipoDisco">Campo requerido</span>
         </div>
 
         <div class="contenido-opcion">
@@ -163,13 +205,16 @@
         <div class="contenido-opcion">
           <label>ESTADO<br></label>
           <select class="opcionForm select" [(ngModel)]="estado" name="estado" (change)="onEstadoChange()"
-            [style.border-color]="(estado === 'INOPERATIVO' && equipoEnUso) ? '#d32f2f' : '#ddd'">
+            [style.border-color]="(estado === 'INOPERATIVO' && equipoEnUso) ? '#d32f2f' : '#ddd'"
+            [class.input-error]="intentadoGuardar && !estado">
             <option value=""></option>
             <option value="BUEN ESTADO">BUEN ESTADO</option>
             <option value="ESTADO REGULAR">ESTADO REGULAR</option>
             <option value="ESTADO DEFICIENTE">ESTADO DEFICIENTE</option>
             <option value="INOPERATIVO">INOPERATIVO</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !estado">Campo requerido</span>
+
 
           <!-- Mensaje de advertencia usando la nueva variable -->
           <span id="mensaje-advertencia" *ngIf="estado === 'INOPERATIVO' && equipoEnUso">
@@ -185,7 +230,7 @@
 
         <div class="botones-registroeditar">
 
-          <!-- Botón Registrar/Actualizar -->
+          <!-- Boton Registrar/Actualizar -->
           <div>
             <input type="submit" id="checkboxInput" [value]="modoEdicion ? 'Actualizar' : 'Registrar'">
             <label for="checkboxInput" class="bookmark">
@@ -193,7 +238,7 @@
             </label>
           </div>
 
-          <!-- Botón Editar (solo si tiene permiso) -->
+          <!-- Boton Editar (solo si tiene permiso) -->
           <div *ngIf="puedeEditarRegistro && !modoEdicion" (click)="abrirModalBuscarEquipo()">
             <input id="checkboxInput2">
             <label for="checkboxInput2" class="bookmark2">
@@ -201,7 +246,7 @@
             </label>
           </div>
 
-          <!-- Botón Limpiar (se oculta en modo edición) -->
+          <!-- Boton Limpiar (se oculta en modo edicion) -->
           <div *ngIf="!puedeEditarRegistro || modoEdicion" (click)="limpiarFormularioEditar()">
             <input id="checkboxInput3">
             <label for="checkboxInput3" class="bookmark3">
@@ -214,6 +259,44 @@
       </div>
     </div>
   </form>
+
+
+  <!-- SUGERENCIAS DE SERIAL (solo en modo registro) -->
+  <div class="sug-bloque" [class.sug-bloque-exito]="serialExisteExacto" [class.sug-bloque-error]="serialExisteExacto"
+    *ngIf="!modoEdicion && serial && serial.length >= 2 && coincidenciasSerial.length > 0">
+
+    <div class="sug-titulo" [class.sug-titulo-alerta]="serialExisteExacto"
+      [class.sug-titulo-exito]="!serialExisteExacto && coincidenciasSerial.length > 0">
+
+      <mat-icon [class.icono-verde]="!serialExisteExacto" [class.icono-rojo]="serialExisteExacto">
+        {{ serialExisteExacto ? 'warning' : 'info' }}
+      </mat-icon>
+
+      <div class="texto-titulo">
+        <ng-container *ngIf="serialExisteExacto">
+          Este serial ya esta registrado:
+        </ng-container>
+        <ng-container *ngIf="!serialExisteExacto">
+          Equipos existentes que coinciden:
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="sug-contenedor">
+      <div class="sug-tarjeta" *ngFor="let item of coincidenciasSerial"
+        [class.sug-tarjeta-alerta]="esCoincidenciaExactaSerial(item)">
+        <div class="sug-info">
+          <strong class="sug-cuerpo">{{ item.serial }}</strong> 
+          <span class="sug-dominio"> - <strong>{{item.tipo?.descripcion}} </strong>  - {{ item.marca?.descripcion }} {{ item.modelo?.descripcion }}</span>
+          <span class="sug-estado" [class.sug-activo]="item.activo" [class.sug-inactivo]="!item.activo">
+            ● {{ item.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 </div>
 <br><br><br>
 
@@ -316,13 +399,13 @@
 
 
 
-<!-- Modal para crear Versión de SO -->
+<!-- Modal para crear Version de SO -->
 <div class="modal" [class.show]="mostrarModalVersionSO" *ngIf="mostrarModalVersionSO">
   <div class="modal-contenido">
     <div class="modal-cabezera">
       <div class="titulo">
         <h2>
-          <mat-icon class="cargoicon">select_all</mat-icon> Nueva Versión de SO <br>
+          <mat-icon class="cargoicon">select_all</mat-icon> Nueva Version de SO <br>
           <strong *ngIf="soSeleccionado">{{ soSeleccionado.descripcion }}</strong>
         </h2>
       </div>
@@ -330,7 +413,7 @@
 
     <div class="crear">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nueva Versión</mat-label>
+        <mat-label>Nueva Version</mat-label>
         <input matInput [(ngModel)]="nuevaVersionSODescripcion" [matAutocomplete]="autoVersion"
           (input)="convertirMayusculas()" placeholder="Ejemplo: Windows 10, Windows 11" autocomplete="off">
 
@@ -398,7 +481,7 @@
             <small>{{ equipo.tipo.descripcion }} | {{ equipo.estado }}</small>
           </div>
 
-          <!-- Icono de selección -->
+          <!-- Icono de seleccion -->
           <mat-icon>touch_app</mat-icon>
         </div>
       </div>

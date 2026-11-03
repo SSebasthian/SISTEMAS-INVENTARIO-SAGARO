@@ -53,10 +53,11 @@ export class OpcEmpleadoComponent implements OnInit {
   cargoSeleccionadoId: number | null = null;
   todosLosCargos: CargoLlamarDatos[] = [];
 
-  // ========== MODO EDICIÓN ==========
+  // ========== MODO EDICION ==========
   modoEdicion: boolean = false;
   cedulaOriginal: string = '';
   equipoSeleccionado: any = null;
+  intentadoGuardar: boolean = false;
 
   // ========== VARIABLES PARA BUSCADOR ==========
   mostrarModalBuscarCedula: boolean = false;
@@ -81,7 +82,7 @@ export class OpcEmpleadoComponent implements OnInit {
 
   // Determina si debe mostrar el botón Editar
   get mostrarBotonEditar(): boolean {
-    // SOLO si tiene permiso Y no está editando
+    // SOLO si tiene permiso Y no esta editando
     if (this.puedeEditarRegistro && !this.modoEdicion) {
       return true;
     }
@@ -91,7 +92,7 @@ export class OpcEmpleadoComponent implements OnInit {
   // Determina si debe mostrar el botón Limpiar
   get mostrarBotonLimpiar(): boolean {
     // Muestra Limpiar en dos casos:
-    // 1. Está en modo edición (cualquier usuario)
+    // 1. Esta en modo edición (cualquier usuario)
     // 2. No tiene permiso de editar (siempre)
     if (this.modoEdicion || !this.puedeEditarRegistro) {
       return true;
@@ -99,7 +100,7 @@ export class OpcEmpleadoComponent implements OnInit {
     return false;
   }
 
-  
+
   ngOnInit(): void {
     this.cargarAreas();
     this.cargarTodosLosCargos();
@@ -127,18 +128,18 @@ export class OpcEmpleadoComponent implements OnInit {
   onAreaChange(event: any): void {
     const valorSeleccionado = event.target.value;
 
-    // Si seleccionó la opción de crear nueva área (valor 'new' como string)
+    // Si seleccionó la opción de crear nueva area (valor 'new' como string)
     if (valorSeleccionado === 'new') {
       this.abrirModalArea();
-      // Restaurar el valor anterior del select a 0 (número)
+      // Restaurar el valor anterior del select a 0 (numero)
       this.empleado.areaCodigo = 0;
       return;
     }
 
-    // Convertir a número
+    // Convertir a numero
     this.empleado.areaCodigo = Number(valorSeleccionado);
 
-    // Cargar los cargos del área seleccionada
+    // Cargar los cargos del area seleccionada
     this.cargos = [];
     this.empleado.cargoCodigo = 0;
 
@@ -179,12 +180,15 @@ export class OpcEmpleadoComponent implements OnInit {
       return;
     }
 
-    // Convertir a número
+    // Convertir a numero
     this.empleado.cargoCodigo = Number(valorSeleccionado);
   }
 
   registrar(): void {
     if (this.enviando) return;
+
+    this.intentadoGuardar = true;
+
 
     if (!this.empleado.cedula || !this.empleado.nombre || !this.empleado.apellido ||
       !this.empleado.fechaIngreso || !this.empleado.areaCodigo || !this.empleado.cargoCodigo) {
@@ -192,10 +196,17 @@ export class OpcEmpleadoComponent implements OnInit {
       return;
     }
 
+
+    if (this.cedulaExisteExacta) {
+      this.notificacionSnackbarService.warning('Cedula duplicada', 'Ya existe un empleado con esta cedula');
+      return;
+    }
+
     this.enviando = true;
     this.registroEmpleadoService.registrarEmpleado(this.empleado).subscribe({
       next: (respuesta: EmpleadoLlamarDatos) => {
         this.notificacionSnackbarService.success('Empleado registrado', `${respuesta.nombre} ${respuesta.apellido}`);
+        this.intentadoGuardar = false;
         this.limpiarFormulario();
         this.enviando = false;
       },
@@ -223,16 +234,17 @@ export class OpcEmpleadoComponent implements OnInit {
     // Resetear modo edición
     this.modoEdicion = false;
     this.cedulaOriginal = '';
-    // Limpiar variables de búsqueda
+    // Limpiar variables de busqueda
     this.mostrarModalBuscarCedula = false;
     this.busquedaCedulaModal = ''; //
     this.resultadosBusquedaModal = [];
-    // Recargar áreas
+    this.intentadoGuardar = false;
+    // Recargar areas
     this.cargarAreas();
 
   }
 
-  // ========== MÉTODOS PARA CREAR ÁREA ==========
+  // ========== MÉTODOS PARA CREAR aREA ==========
   abrirModalArea(): void {
     this.mostrarModalArea = true;
     this.nuevaAreaDescripcion = '';
@@ -251,7 +263,7 @@ export class OpcEmpleadoComponent implements OnInit {
     if (texto.length > 0) {
       this.areasFiltradas = this.areas
         .filter(area => area.descripcion.toLowerCase().includes(texto))
-        .slice(0, 10); // Máximo 10 sugerencias
+        .slice(0, 10); // Maximo 10 sugerencias
     } else {
       this.areasFiltradas = [];
     }
@@ -263,12 +275,12 @@ export class OpcEmpleadoComponent implements OnInit {
     );
 
     if (areaSeleccionada) {
-      this.notificacionSnackbarService.info('Área existente',
-        `El área "${areaSeleccionada.descripcion}" ya existe. Se ha seleccionado automáticamente.`);
+      this.notificacionSnackbarService.info('area existente',
+        `El area "${areaSeleccionada.descripcion}" ya existe. Se ha seleccionado automaticamente.`);
       this.empleado.areaCodigo = areaSeleccionada.codigo;
       this.cerrarModalArea();
 
-      // Cargar cargos del área seleccionada
+      // Cargar cargos del area seleccionada
       this.cargos = [];
       this.empleado.cargoCodigo = 0;
       this.registroEmpleadoService.getCargosPorArea(areaSeleccionada.codigo).subscribe({
@@ -282,7 +294,7 @@ export class OpcEmpleadoComponent implements OnInit {
 
   crearArea(): void {
     if (!this.nuevaAreaDescripcion.trim()) {
-      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese la descripción del área');
+      this.notificacionSnackbarService.warning('Campo requerido', 'Ingrese la descripción del area');
       return;
     }
 
@@ -292,19 +304,19 @@ export class OpcEmpleadoComponent implements OnInit {
     );
 
     if (areaExistente) {
-      this.notificacionSnackbarService.info('Área existente',
-        `El área "${areaExistente.descripcion}" ya existe. Se ha seleccionado automáticamente.`);
+      this.notificacionSnackbarService.info('area existente',
+        `El area "${areaExistente.descripcion}" ya existe. Se ha seleccionado automaticamente.`);
       this.empleado.areaCodigo = areaExistente.codigo;
       this.cerrarModalArea();
       return;
     }
 
-    // Crear nueva área
+    // Crear nueva area
     this.registroEmpleadoService.crearArea(this.nuevaAreaDescripcion).subscribe({
       next: (nuevaArea: AreaLlamarDatos) => {
         this.areas.push(nuevaArea);
         this.empleado.areaCodigo = nuevaArea.codigo;
-        this.notificacionSnackbarService.success('Área creada', `Área "${nuevaArea.descripcion}" creada exitosamente`);
+        this.notificacionSnackbarService.success('area creada', `area "${nuevaArea.descripcion}" creada exitosamente`);
         this.cerrarModalArea();
 
         // Recargar cargos
@@ -316,7 +328,7 @@ export class OpcEmpleadoComponent implements OnInit {
         });
       },
       error: (err) => {
-        const mensaje = err.error?.message || 'Error al crear el área';
+        const mensaje = err.error?.message || 'Error al crear el area';
         this.notificacionSnackbarService.error('Error', mensaje);
       }
     });
@@ -328,7 +340,7 @@ export class OpcEmpleadoComponent implements OnInit {
   // ========== MÉTODOS PARA CREAR CARGO ==========
   abrirModalCargo(): void {
     if (!this.empleado.areaCodigo || this.empleado.areaCodigo === 0) {
-      this.notificacionSnackbarService.warning('Área requerida', 'Primero debe seleccionar un área');
+      this.notificacionSnackbarService.warning('area requerida', 'Primero debe seleccionar un area');
       return;
     }
 
@@ -357,18 +369,18 @@ export class OpcEmpleadoComponent implements OnInit {
       return;
     }
 
-    // Verificar si ya está asociado a esta área
+    // Verificar si ya esta asociado a esta area
     const yaAsociado = this.cargos.some(c => c.codigo === cargoSeleccionado.codigo);
 
     if (yaAsociado) {
       this.notificacionSnackbarService.info('Cargo ya asociado',
-        `El cargo "${cargoSeleccionado.descripcion}" ya está en esta área.`);
+        `El cargo "${cargoSeleccionado.descripcion}" ya esta en esta area.`);
       this.empleado.cargoCodigo = cargoSeleccionado.codigo;
       this.cerrarModalCargo();
       return;
     }
 
-    // Asociar el cargo al área actual
+    // Asociar el cargo al area actual
     this.registroEmpleadoService.crearCargo(cargoSeleccionado.descripcion, this.empleado.areaCodigo).subscribe({
       next: (resp: any) => {
         // Agregar a la lista local si no existe
@@ -378,7 +390,7 @@ export class OpcEmpleadoComponent implements OnInit {
         }
         this.empleado.cargoCodigo = cargoSeleccionado.codigo;
         this.notificacionSnackbarService.success('Cargo asignado',
-          `Cargo "${cargoSeleccionado.descripcion}" asignado al área`);
+          `Cargo "${cargoSeleccionado.descripcion}" asignado al area`);
         this.cerrarModalCargo();
       },
       error: (err) => {
@@ -388,14 +400,14 @@ export class OpcEmpleadoComponent implements OnInit {
     });
   }
 
-  // Método para obtener el nombre del área seleccionada
+  // Método para obtener el nombre del area seleccionada
   obtenerNombreArea(): string {
     if (!this.empleado.areaCodigo || this.empleado.areaCodigo === 0) {
       return 'No seleccionada';
     }
 
     const area = this.areas.find(a => a.codigo === this.empleado.areaCodigo);
-    return area ? area.descripcion : 'Área no encontrada';
+    return area ? area.descripcion : 'area no encontrada';
   }
 
   obtenerNombreCargoSeleccionado(): string {
@@ -421,7 +433,7 @@ export class OpcEmpleadoComponent implements OnInit {
         this.empleado.areaCodigo = empleado.area?.codigo || 0;
         this.empleado.cargoCodigo = empleado.cargo?.codigo || 0;
 
-        // Cargar cargos del área seleccionada
+        // Cargar cargos del area seleccionada
         if (this.empleado.areaCodigo && this.empleado.areaCodigo !== 0) {
           this.registroEmpleadoService.getCargosPorArea(this.empleado.areaCodigo).subscribe({
             next: (data) => {
@@ -445,6 +457,8 @@ export class OpcEmpleadoComponent implements OnInit {
   editar(): void {
     if (this.enviando) return;
 
+    this.intentadoGuardar = true;
+
     if (!this.empleado.nombre || !this.empleado.apellido ||
       !this.empleado.fechaIngreso || !this.empleado.areaCodigo || !this.empleado.cargoCodigo) {
       this.notificacionSnackbarService.warning('Campos incompletos', 'Todos los campos son obligatorios');
@@ -456,6 +470,7 @@ export class OpcEmpleadoComponent implements OnInit {
     this.registroEmpleadoService.editarEmpleado(this.cedulaOriginal, this.empleado).subscribe({
       next: (respuesta: EmpleadoLlamarDatos) => {
         this.notificacionSnackbarService.success('Empleado actualizado', `${respuesta.nombre} ${respuesta.apellido}`);
+        this.intentadoGuardar = false;
         this.limpiarFormulario();
         this.enviando = false;
       },
@@ -522,7 +537,7 @@ export class OpcEmpleadoComponent implements OnInit {
     this.empleado.cargoCodigo = empleado.cargo?.codigo || 0;
     this.cargos = [];
 
-    // Cargar cargos del área seleccionada
+    // Cargar cargos del area seleccionada
     if (this.empleado.areaCodigo && this.empleado.areaCodigo !== 0) {
       this.registroEmpleadoService.getCargosPorArea(this.empleado.areaCodigo).subscribe({
         next: (data) => {
@@ -546,5 +561,83 @@ export class OpcEmpleadoComponent implements OnInit {
       'Todos los campos han sido restablecidos');
   }
 
+
+
+
+
+  // ============ COINCIDENCIAS CEDULA ============
+
+
+  onCedulaInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    //Quitar todo lo que no sea numero
+    const soloNumeros = input.value.replace(/\D/g, '');
+
+    // Actualizar el modelo y el input (por si escribió letras)
+    this.empleado.cedula = soloNumeros;
+    input.value = soloNumeros;
+
+    //Llamar a la busqueda de coincidencias
+    this.buscarCoincidenciasCedula();
+  }
+
+  get coincidenciasCedula(): any[] {
+    if (!this.empleado.cedula || this.empleado.cedula.length < 2) {
+      return [];
+    }
+
+    const texto = this.empleado.cedula.toLowerCase().trim();
+
+    // Si estamos en modo edicion, no mostrar sugerencias
+    if (this.modoEdicion) {
+      return [];
+    }
+
+    return this.resultadosBusquedaModal
+      .filter(emp => (emp.cedula || '').toLowerCase().includes(texto))
+      .slice(0, 5);
+  }
+
+  get cedulaExisteExacta(): boolean {
+    if (!this.empleado.cedula || this.modoEdicion) return false;
+    const texto = this.empleado.cedula.toLowerCase().trim();
+    if (!texto) return false;
+
+    return this.resultadosBusquedaModal.some(emp =>
+      (emp.cedula || '').toLowerCase() === texto
+    );
+  }
+
+  esCoincidenciaExactaCedula(item: any): boolean {
+    if (!this.empleado.cedula || this.modoEdicion) return false;
+    const texto = this.empleado.cedula.toLowerCase().trim();
+    return (item.cedula || '').toLowerCase() === texto;
+  }
+
+
+  buscarCoincidenciasCedula(): void {
+    const texto = this.empleado.cedula?.trim() || '';
+
+    // Si estamos en edicion, no buscar
+    if (this.modoEdicion) {
+      this.resultadosBusquedaModal = [];
+      return;
+    }
+
+    if (texto.length < 2) {
+      this.resultadosBusquedaModal = [];
+      return;
+    }
+
+    this.registroEmpleadoService.buscarEmpleados(texto).subscribe({
+      next: (empleados) => {
+        this.resultadosBusquedaModal = empleados;
+      },
+      error: () => {
+        this.resultadosBusquedaModal = [];
+      }
+    });
+  }
 
 }

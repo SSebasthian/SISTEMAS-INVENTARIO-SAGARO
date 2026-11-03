@@ -67,6 +67,8 @@ export class OpcEquipoComponent implements OnInit {
 
   // =========== VARIABLES DE ESTADO ==============
   enviando = false;
+  sugerenciasSerial: EquipoDeComputoLlamarDatos[] = [];
+  private timeoutBusquedaSerial: any = null;
 
 
   // ========== VARIABLES PARA MODAL DE MARCA ==========
@@ -91,6 +93,7 @@ export class OpcEquipoComponent implements OnInit {
   modoEdicion: boolean = false;
   serialOriginal: string = '';
   equipoSeleccionado: any = null;
+  intentadoGuardar = false;
 
   // ========== VARIABLES PARA BUSCADOR ==========
   mostrarModalBuscarEquipo: boolean = false;
@@ -673,6 +676,8 @@ export class OpcEquipoComponent implements OnInit {
 
     if (this.enviando) return; // Evitar envios multiples
 
+    this.intentadoGuardar = true;
+
     // ========== VALIDACIONES DE CAMPOS OBLIGATORIOS ==========
 
     // Serial
@@ -823,6 +828,7 @@ export class OpcEquipoComponent implements OnInit {
       next: (respuesta) => {
         console.log('Equipo registrado:', respuesta);
         this.notificacionSnackbarService.success('Equipo registrado', `Serial: ${respuesta.serial}`);
+        this.intentadoGuardar = false;
         this.limpiarFormulario();
       },
       error: (err) => {
@@ -858,12 +864,19 @@ export class OpcEquipoComponent implements OnInit {
     this.imagenModeloSeleccionado = '';
 
     // Resetear modo edicion
+    this.intentadoGuardar = false;
     this.modoEdicion = false;
     this.equipoEnUso = false;
     this.modoEdicion = false;
     this.serialOriginal = '';
     // Recargar datos iniciales
     this.cargarDatosIniciales();
+
+    this.sugerenciasSerial = [];
+    if (this.timeoutBusquedaSerial) {
+      clearTimeout(this.timeoutBusquedaSerial);
+      this.timeoutBusquedaSerial = null;
+    }
   }
 
 
@@ -996,6 +1009,8 @@ export class OpcEquipoComponent implements OnInit {
 
     if (this.enviando) return;
 
+    this.intentadoGuardar = true;
+
     // Validaciones similares a registrar
     if (!this.serial || !this.tipoSeleccionado || !this.marcaSeleccionada ||
       !this.modeloSeleccionado || !this.soSeleccionado || !this.versionSOSeleccionada ||
@@ -1032,6 +1047,7 @@ export class OpcEquipoComponent implements OnInit {
     this.registroEquipoService.editarEquipo(this.serialOriginal, equipoData).subscribe({
       next: (respuesta) => {
         this.notificacionSnackbarService.success('Equipo actualizado', `Serial: ${respuesta.serial}`);
+        this.intentadoGuardar = false;
         this.limpiarFormulario();
         this.enviando = false;
       },
@@ -1073,6 +1089,82 @@ export class OpcEquipoComponent implements OnInit {
     }
   }
 
+
+
+
+  // ========== SUGERENCIAS DE SERIAL ==========
+
+  onSerialInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const valor = input.value || '';
+
+    this.serial = valor.toUpperCase();
+    input.value = this.serial;
+
+    if (this.timeoutBusquedaSerial) {
+      clearTimeout(this.timeoutBusquedaSerial);
+    }
+
+    this.timeoutBusquedaSerial = setTimeout(() => {
+      this.buscarCoincidenciasSerial();
+    }, 300);
+  }
+
+  buscarCoincidenciasSerial(): void {
+    const texto = this.serial?.trim() || '';
+
+    // Si estamos en edición, no buscar
+    if (this.modoEdicion) {
+      this.resultadosBusquedaModal = [];
+      return;
+    }
+
+    if (texto.length < 2) {
+      this.resultadosBusquedaModal = [];
+      return;
+    }
+
+    this.registroEquipoService.buscarEquipos(texto).subscribe({
+      next: (equipos) => {
+        this.resultadosBusquedaModal = equipos;
+      },
+      error: () => {
+        this.resultadosBusquedaModal = [];
+      }
+    });
+  }
+
+  get coincidenciasSerial(): any[] {
+    if (!this.serial || this.serial.length < 2) {
+      return [];
+    }
+
+    const texto = this.serial.toLowerCase().trim();
+
+    if (this.modoEdicion) {
+      return [];
+    }
+
+    return this.resultadosBusquedaModal
+      .filter(eq => (eq.serial || '').toLowerCase().includes(texto))
+      .slice(0, 5);
+  }
+
+  get serialExisteExacto(): boolean {
+    if (!this.serial || this.modoEdicion) return false;
+    const texto = this.serial.toLowerCase().trim();
+    if (!texto) return false;
+
+    return this.resultadosBusquedaModal.some(eq =>
+      (eq.serial || '').toLowerCase() === texto
+    );
+  }
+
+  esCoincidenciaExactaSerial(item: any): boolean {
+    if (!this.serial || this.modoEdicion) return false;
+    const texto = this.serial.toLowerCase().trim();
+    return (item.serial || '').toLowerCase() === texto;
+  }
 
 }
 

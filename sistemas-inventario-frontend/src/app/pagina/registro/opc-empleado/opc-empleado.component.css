@@ -550,19 +550,6 @@
     margin-top: 15px;
 }
 
-.sug-bloque-exito {
-    background-color: #f1f8f4;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #c8e6c9;
-}
-
-.sug-bloque-error {
-    background-color: #fff5f5;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #ffcdd2;
-}
 
 .sug-titulo {
     display: flex;
@@ -595,15 +582,6 @@
     border-left-color: #c62828 !important;
 }
 
-.sug-titulo-exito {
-    color: #2e7d32 !important;
-    background: #e8f5e9 !important;
-    border-left-color: #2e7d32 !important;
-}
-
-.icono-verde {
-    color: #2e7d32 !important;
-}
 
 .icono-rojo {
     color: #c62828 !important;

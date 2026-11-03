@@ -7,44 +7,69 @@
         <p>
           <label>CEDULA</label>
           <input class="opcionForm" type="text" [(ngModel)]="empleado.cedula" name="cedula" required
-            [disabled]="modoEdicion">
+            [disabled]="modoEdicion" [class.input-error]="intentadoGuardar && !empleado.cedula?.trim()"
+            (input)="onCedulaInput($event)">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !empleado.cedula?.trim()">
+            Campo requerido
+          </span>
         </p>
         <p>
           <label>FECHA DE INGRESO</label>
-          <input class="opcionForm" type="date" [(ngModel)]="empleado.fechaIngreso" name="fechaIngreso" required>
+          <input class="opcionForm" type="date" [(ngModel)]="empleado.fechaIngreso" name="fechaIngreso" required
+            [class.input-error]="intentadoGuardar && !empleado.fechaIngreso">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !empleado.fechaIngreso">
+            Campo requerido
+          </span>
         </p>
         <p>
           <label>NOMBRE</label>
           <input class="opcionForm" type="text" [(ngModel)]="empleado.nombre" name="nombre"
-            (input)="empleado.nombre = empleado.nombre.toUpperCase()" required>
+            (input)="empleado.nombre = empleado.nombre.toUpperCase()" required
+            [class.input-error]="intentadoGuardar && !empleado.nombre?.trim()">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !empleado.nombre?.trim()">
+            Campo requerido
+          </span>
         </p>
         <p>
           <label>APELLIDO</label>
           <input class="opcionForm" type="text" [(ngModel)]="empleado.apellido" name="apellido"
-            (input)="empleado.apellido = empleado.apellido.toUpperCase()" required>
+            (input)="empleado.apellido = empleado.apellido.toUpperCase()" required
+            [class.input-error]="intentadoGuardar && !empleado.apellido?.trim()">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !empleado.apellido?.trim()">
+            Campo requerido
+          </span>
         </p>
         <p>
           <label>AREA</label>
           <select class="opcionForm select" [(ngModel)]="empleado.areaCodigo" name="areaCodigo"
-            (change)="onAreaChange($event)">
+            (change)="onAreaChange($event)"
+            [class.input-error]="intentadoGuardar && (!empleado.areaCodigo || empleado.areaCodigo === 0)">
             <option [value]=""></option>
             <option *ngFor="let area of areas" [value]="area.codigo">{{ area.descripcion }}</option>
             <option [value]="-1" [disabled]="true">─────────────────</option>
             <option value="new"> Nueva Area</option>
           </select>
+          <span class="mensaje-error-campo"
+            *ngIf="intentadoGuardar && (!empleado.areaCodigo || empleado.areaCodigo === 0)">
+            Campo requerido
+          </span>
         </p>
         <p>
           <label>CARGO</label>
           <select class="opcionForm select" [(ngModel)]="empleado.cargoCodigo" name="cargoCodigo"
-            (change)="onCargoChange($event)">
+            (change)="onCargoChange($event)"
+            [class.input-error]="intentadoGuardar && (!empleado.cargoCodigo || empleado.cargoCodigo === 0)">
             <option [value]=""></option>
             <option *ngFor="let cargo of cargos" [value]="cargo.codigo">{{ cargo.descripcion }}</option>
-            <!-- Mostrar la opción de nuevo cargo SOLO si hay un área seleccionada -->
             <ng-container *ngIf="empleado.areaCodigo && empleado.areaCodigo !== 0">
               <option [value]="-1" [disabled]="true">─────────────────</option>
               <option value="new">Nuevo Cargo</option>
             </ng-container>
           </select>
+          <span class="mensaje-error-campo"
+            *ngIf="intentadoGuardar && (!empleado.cargoCodigo || empleado.cargoCodigo === 0)">
+            Campo requerido
+          </span>
         </p>
 
         <p class="checkbox-wrapper-10">
@@ -74,7 +99,7 @@
           </label>
         </div>
 
-         <!-- Botón Limpiar (se oculta en modo edición) -->
+        <!-- Botón Limpiar (se oculta en modo edición) -->
         <div *ngIf="!puedeEditarRegistro || modoEdicion" (click)="limpiarFormularioEditar()">
           <input id="checkboxInput3">
           <label for="checkboxInput3" class="bookmark3">
@@ -86,6 +111,41 @@
 
     </div>
   </form>
+
+  <!-- COINCIDENCIAS CEDULA -->
+  <div class="sug-bloque" [class.sug-bloque-exito]="cedulaExisteExacta" [class.sug-bloque-error]="cedulaExisteExacta"
+    *ngIf="!modoEdicion && empleado.cedula && empleado.cedula.length >= 2 && coincidenciasCedula.length > 0">
+
+    <div class="sug-titulo" [class.sug-titulo-alerta]="cedulaExisteExacta"
+      [class.sug-titulo-exito]="!cedulaExisteExacta && coincidenciasCedula.length > 0">
+
+      <mat-icon [class.icono-verde]="!cedulaExisteExacta" [class.icono-rojo]="cedulaExisteExacta">
+        {{ cedulaExisteExacta ? 'warning' : 'info' }}
+      </mat-icon>
+
+      <div class="texto-titulo">
+        <ng-container *ngIf="cedulaExisteExacta">
+          Esta cedula ya esta registrada:
+        </ng-container>
+        <ng-container *ngIf="!cedulaExisteExacta">
+          Empleados existentes que coinciden:
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="sug-contenedor">
+      <div class="sug-tarjeta" *ngFor="let item of coincidenciasCedula"
+        [class.sug-tarjeta-alerta]="esCoincidenciaExactaCedula(item)">
+        <div class="sug-info">
+          <strong class="sug-cuerpo">{{ item.cedula }}</strong>
+          <span class="sug-dominio">{{ item.nombre }} {{ item.apellido }}</span>
+          <span class="sug-estado" [class.sug-activo]="item.activo" [class.sug-inactivo]="!item.activo">
+            ● {{ item.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <br><br><br><br>
 
@@ -198,8 +258,8 @@
     <div class="buscar-contenido">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Buscar Empleado</mat-label>
-        <input matInput [(ngModel)]="busquedaCedulaModal" (input)="buscarEmpleadosEnModal()" placeholder="Ingrese cedula, nombre o apellido"
-          autocomplete="off">
+        <input matInput [(ngModel)]="busquedaCedulaModal" (input)="buscarEmpleadosEnModal()"
+          placeholder="Ingrese cedula, nombre o apellido" autocomplete="off">
         <mat-icon matSuffix>badge</mat-icon>
       </mat-form-field>
 
