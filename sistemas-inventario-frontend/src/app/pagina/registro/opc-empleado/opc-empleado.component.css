@@ -167,7 +167,7 @@
     perspective: 100px;
     width: 100%;
     max-width: 250px;
-    overflow: hidden; 
+    overflow: hidden;
     border-radius: 4px;
     position: relative;
 }
@@ -515,6 +515,217 @@
     padding: 6px;
     transition: all 0.2s ease;
 }
+
+
+.input-error {
+    border: 1px solid #c62828 !important;
+    background-color: #fff5f5 !important;
+    box-shadow: 0 0 5px rgba(198, 40, 40, 0.2) !important;
+}
+
+.input-error:focus {
+    border-color: #c62828 !important;
+    box-shadow: 0 0 7px rgba(198, 40, 40, 0.35) !important;
+}
+
+/* Mensaje de error debajo del campo */
+.mensaje-error-campo {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #c62828;
+    font-weight: 500;
+}
+
+
+/* COINCIDENCIAS CEDULAS */
+
+
+.sug-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 15px;
+}
+
+.sug-bloque-exito {
+    background-color: #f1f8f4;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #c8e6c9;
+}
+
+.sug-bloque-error {
+    background-color: #fff5f5;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ffcdd2;
+}
+
+.sug-titulo {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1976d2;
+    background: #e3f2fd;
+    border-left: 4px solid #1976d2;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+    line-height: 1.4;
+}
+
+.sug-titulo mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.sug-titulo-alerta {
+    color: #c62828 !important;
+    background: #ffebee !important;
+    border-left-color: #c62828 !important;
+}
+
+.sug-titulo-exito {
+    color: #2e7d32 !important;
+    background: #e8f5e9 !important;
+    border-left-color: #2e7d32 !important;
+}
+
+.icono-verde {
+    color: #2e7d32 !important;
+}
+
+.icono-rojo {
+    color: #c62828 !important;
+}
+
+.texto-titulo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.4;
+}
+
+.texto-verde {
+    color: #1b5e20;
+    font-weight: 700;
+}
+
+.texto-error {
+    color: #c62828;
+    font-weight: 700;
+}
+
+.sug-contenedor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 150px;
+    width: 100%;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.sug-tarjeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+}
+
+.sug-tarjeta:hover {
+    border-color: #1976d2;
+    box-shadow: 0 4px 10px rgba(25, 118, 210, 0.12);
+    transform: translateY(-1px);
+}
+
+.sug-tarjeta-alerta {
+    border-color: #ef9a9a;
+    background: #fff5f5;
+}
+
+.sug-tarjeta-alerta:hover {
+    border-color: #c62828;
+    box-shadow: 0 4px 10px rgba(198, 40, 40, 0.15);
+}
+
+.sug-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.sug-cuerpo {
+    font-size: 12px;
+    font-weight: 700;
+    color: #3f51b5;
+    padding: 4px 0;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+}
+
+.sug-tarjeta-alerta .sug-cuerpo {
+    color: #c62828;
+    background: #ffcdd2;
+}
+
+.sug-dominio {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #546e7a;
+    letter-spacing: 0.5px;
+}
+
+.sug-estado {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 10px;
+    margin-left: auto;
+}
+
+.sug-activo {
+    color: #2e7d32;
+    background: #e8f5e9;
+}
+
+.sug-inactivo {
+    color: #c62828;
+    background: #ffebee;
+}
+
+.sug-contenedor::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sug-contenedor::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.sug-contenedor::-webkit-scrollbar-thumb {
+    background: #3f51b5;
+    border-radius: 10px;
+}
+
+
 
 /* ========== SIN RESULTADOS ========== */
 .sin-resultados {

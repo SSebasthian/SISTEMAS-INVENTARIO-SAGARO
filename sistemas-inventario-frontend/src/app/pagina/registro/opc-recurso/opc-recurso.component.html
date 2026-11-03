@@ -25,49 +25,67 @@
 
 
 
-      <!-- CAMPOS CORREO -->
       <div *ngIf="tipoSeleccionado?.nombre === 'CORREO'" class="fila-de-tres campocorreo">
+
+        <!-- CUERPO -->
         <p>
           <label>CUERPO</label>
           <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.identificador" name="identificador"
             (input)="recurso.identificador = recurso.identificador.toLowerCase()"
-            (keydown.space)="$event.preventDefault()" required [disabled]="modoEdicion">
+            (keydown.space)="$event.preventDefault()" required [disabled]="modoEdicion"
+            [class.input-error]="intentadoGuardar && !recurso.identificador?.trim()">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.identificador?.trim()">
+            Campo requerido
+          </span>
         </p>
+
+        <!-- DOMINIO -->
         <p>
           <label>DOMINIO</label>
           <select class="opcionForm select" [(ngModel)]="recurso.subtipoCodigo" name="subtipoCodigo" required
-            [disabled]="modoEdicion">
+            [disabled]="modoEdicion" [class.input-error]="intentadoGuardar && !recurso.subtipoCodigo">
             <option [value]="null" disabled selected></option>
             <option *ngFor="let d of subtipos" [value]="d.codigo">&#64;{{ d.nombre }}.COM</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.subtipoCodigo">
+            Campo requerido
+          </span>
         </p>
 
-        <!-- MODO REGISTRO NUEVO -->
+        <!-- BLOQUE DE CLAVES (MODO REGISTRO) -->
         <ng-container *ngIf="!modoEdicion">
           <div>
             <label>DIGITAR CLAVE</label>
             <div class="input-clave">
               <input class="opcionForm" [type]="mostrarClave ? 'text' : 'password'" [(ngModel)]="recurso.clave"
-                name="clave" required>
+                name="clave" required [class.input-error]="intentadoGuardar && !recurso.clave?.trim()">
               <a type="button" class="btn-ver-clave" (click)="toggleMostrarClave()">
                 <mat-icon>{{ mostrarClave ? 'visibility_off' : 'visibility' }}</mat-icon>
               </a>
             </div>
+            <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.clave?.trim()">
+              Campo requerido
+            </span>
           </div>
           <div>
             <label>REPETIR CLAVE</label>
             <div class="input-clave">
               <input class="opcionForm" [type]="mostrarRepetirClave ? 'text' : 'password'"
-                [(ngModel)]="recurso.repetirClave" name="repetirClave" required>
+                [(ngModel)]="recurso.repetirClave" name="repetirClave" required
+                [class.input-error]="intentadoGuardar && !recurso.repetirClave?.trim()">
               <a type="button" class="btn-ver-clave" (click)="toggleMostrarRepetirClave()">
                 <mat-icon>{{ mostrarRepetirClave ? 'visibility_off' : 'visibility' }}</mat-icon>
               </a>
             </div>
+            <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.repetirClave?.trim()">
+              Campo requerido
+            </span>
           </div>
         </ng-container>
 
-        <!-- MODO EDICIoN -->
+        <!-- BLOQUE DE CLAVES (MODO EDICIoN) -->
         <ng-container *ngIf="modoEdicion">
+          <!-- CLAVE ACTUAL -->
           <div>
             <label>CLAVE ACTUAL</label>
             <div class="input-clave">
@@ -79,10 +97,11 @@
               </a>
             </div>
           </div>
+
+          <!-- NUEVA CLAVE -->
           <div>
             <label>NUEVA CLAVE</label>
             <div class="input-clave">
-              <!-- El input esta deshabilitado hasta que el usuario haga clic en el cono -->
               <input class="opcionForm" [type]="mostrarRepetirClave ? 'text' : 'password'"
                 [(ngModel)]="recurso.nuevaClave" name="nuevaClave" [disabled]="!editarNuevaClave"
                 [style.background-color]="editarNuevaClave ? '#fff' : '#eaeaea'">
@@ -93,13 +112,14 @@
                 <mat-icon>edit</mat-icon>
               </a>
 
-              <!-- Ojito para ver/ocultar la nueva clave (solo si esta habilitada) -->
+              <!-- Ojito para ver/ocultar la nueva clave -->
               <a type="button" class="btn-ver-clave" *ngIf="editarNuevaClave" (click)="toggleMostrarRepetirClave()">
                 <mat-icon>{{ mostrarRepetirClave ? 'visibility_off' : 'visibility' }}</mat-icon>
               </a>
             </div>
           </div>
         </ng-container>
+
       </div>
 
 
@@ -108,32 +128,43 @@
         <p>
           <label>TIPO DE LINEA</label>
           <select class="opcionForm select" [(ngModel)]="recurso.subtipoCodigo" name="subtipoCodigo" required
-            [disabled]="modoEdicion">
+            [disabled]="modoEdicion" [class.input-error]="intentadoGuardar && !recurso.subtipoCodigo">
             <option [value]="null" disabled selected></option>
             <option *ngFor="let o of subtipos" [value]="o.codigo">{{ o.nombre }}</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.subtipoCodigo">
+            Campo requerido
+          </span>
         </p>
         <p>
           <label>OPERADOR</label>
-          <select class="opcionForm select" [(ngModel)]="recurso.operador" name="operador" required>
+          <select class="opcionForm select" [(ngModel)]="recurso.operador" name="operador" required
+            [class.input-error]="intentadoGuardar && !recurso.operador">
             <option [value]="null" disabled selected></option>
-            <option *ngFor="let op of operadoresDisponibles" [value]="op.valor">
-              {{ op.texto }}
-            </option>
+            <option *ngFor="let op of operadoresDisponibles" [value]="op.valor">{{ op.texto }}</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.operador">
+            Campo requerido
+          </span>
         </p>
         <p>
           <label>DIGITAR NUMERO</label>
           <input class="opcionForm cuerpo" type="number" [(ngModel)]="recurso.identificador" name="identificador"
-            (keydown.space)="$event.preventDefault()" required [disabled]="modoEdicion">
+            (keydown.space)="$event.preventDefault()" required [disabled]="modoEdicion"
+            [class.input-error]="intentadoGuardar && !recurso.identificador">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.identificador">
+            Campo requerido
+          </span>
         </p>
-
         <p>
           <label>CONFIRMAR NUMERO</label>
           <input class="opcionForm cuerpo" type="number" [(ngModel)]="recurso.confirmarIdentificador"
-            name="confirmarIdentificador" (keydown.space)="$event.preventDefault()" required [disabled]="modoEdicion">
+            name="confirmarIdentificador" (keydown.space)="$event.preventDefault()" required [disabled]="modoEdicion"
+            [class.input-error]="intentadoGuardar && !recurso.confirmarIdentificador">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.confirmarIdentificador">
+            Campo requerido
+          </span>
         </p>
-
       </div>
 
 
@@ -141,37 +172,47 @@
         <p>
           <label>SOFTWARE</label>
           <select class="opcionForm select" [(ngModel)]="recurso.subtipoCodigo" name="subtipoCodigo"
-            (change)="onSubtipoChange()" required [disabled]="modoEdicion">
+            (change)="onSubtipoChange()" required [disabled]="modoEdicion"
+            [class.input-error]="intentadoGuardar && !recurso.subtipoCodigo">
             <option [value]="null" disabled selected></option>
             <option *ngFor="let t of subtipos" [value]="t.codigo">{{ t.nombre }}</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.subtipoCodigo">
+            Campo requerido
+          </span>
         </p>
-
         <p>
           <label>PLATAFORMA</label>
           <select class="opcionForm select" [(ngModel)]="recurso.plataformaCodigo" name="plataformaCodigo"
-            (change)="onPlataformaChange()" required [disabled]="modoEdicion">
+            (change)="onPlataformaChange()" required [disabled]="modoEdicion"
+            [class.input-error]="intentadoGuardar && !recurso.plataformaCodigo">
             <option [value]="null" disabled selected></option>
             <option *ngFor="let p of plataformas" [value]="p.codigo">{{ p.descripcion }}</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.plataformaCodigo">
+            Campo requerido
+          </span>
         </p>
-
         <p>
           <label>USUARIO</label>
           <input class="opcionForm cuerpo" type="text" [(ngModel)]="recurso.usuario" name="usuario"
-            (input)="recurso.usuario = recurso.usuario.toUpperCase()" (keydown.space)="$event.preventDefault()"
-            required>
+            (input)="recurso.usuario = recurso.usuario.toUpperCase()" (keydown.space)="$event.preventDefault()" required
+            [class.input-error]="intentadoGuardar && !recurso.usuario?.trim()">
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.usuario?.trim()">
+            Campo requerido
+          </span>
         </p>
-
         <p>
           <label>ROL</label>
           <select class="opcionForm select" [(ngModel)]="recurso.plataformaRolCodigo" name="plataformaRolCodigo"
-            required>
+            required [class.input-error]="intentadoGuardar && !recurso.plataformaRolCodigo">
             <option [value]="null" disabled selected></option>
             <option *ngFor="let r of roles" [value]="r.codigo">{{ r.rol }} {{ r.descripcion }}</option>
           </select>
+          <span class="mensaje-error-campo" *ngIf="intentadoGuardar && !recurso.plataformaRolCodigo">
+            Campo requerido
+          </span>
         </p>
-
       </div>
 
       <!-- Estado (comun) solo si hay tipo seleccionado -->
@@ -234,7 +275,8 @@
 
   <!-- CORREO -->
   <div class="sug-bloque"
-    *ngIf="tipoSeleccionado?.nombre === 'CORREO' && recurso.identificador && recurso.identificador.length >= 2 && (coincidenciasCorreo.length > 0 || (dominioSeleccionado && !correoExisteExacto))">
+    *ngIf="!modoEdicion && tipoSeleccionado?.nombre === 'CORREO' && recurso.identificador && recurso.identificador.length >= 2 && (coincidenciasCorreo.length > 0 || (dominioSeleccionado && !correoExisteExacto))">
+
 
     <p class="sug-titulo" [class.sug-titulo-alerta]="correoExisteExacto"
       [class.sug-titulo-exito]="dominioSeleccionado && !correoExisteExacto">
@@ -271,7 +313,7 @@
   <div class="sug-bloque"
     [class.sug-bloque-exito]="tipoLineaSeleccionado && !lineaExisteExacta && numeroValidoSegunTipo"
     [class.sug-bloque-error]="tipoLineaSeleccionado && !lineaExisteExacta && !numeroValidoSegunTipo"
-    *ngIf="tipoSeleccionado?.nombre === 'LINEATELEFONICA' && recurso.identificador && recurso.identificador.toString().length >= 2 && (coincidenciasLinea.length > 0 || tipoLineaSeleccionado)">
+    *ngIf="!modoEdicion && tipoSeleccionado?.nombre === 'LINEATELEFONICA' && recurso.identificador && recurso.identificador.toString().length >= 2 && (coincidenciasLinea.length > 0 || tipoLineaSeleccionado)">
 
     <!-- TITULO -->
     <div class="sug-titulo"
@@ -335,7 +377,7 @@
   <!-- PLATAFORMA -->
   <div class="sug-bloque" [class.sug-bloque-exito]="plataformaSeleccionadaNombre && !plataformaExisteExacta"
     [class.sug-bloque-error]="plataformaExisteExacta"
-    *ngIf="tipoSeleccionado?.nombre === 'PLATAFORMA' && recurso.usuario && recurso.usuario.length >= 2 && (coincidenciasPlataforma.length > 0 || plataformaSeleccionadaNombre)">
+    *ngIf="!modoEdicion && tipoSeleccionado?.nombre === 'PLATAFORMA' && recurso.usuario && recurso.usuario.length >= 2 && (coincidenciasPlataforma.length > 0 || plataformaSeleccionadaNombre)">
 
     <!-- TITULO -->
     <div class="sug-titulo" [class.sug-titulo-alerta]="plataformaExisteExacta"

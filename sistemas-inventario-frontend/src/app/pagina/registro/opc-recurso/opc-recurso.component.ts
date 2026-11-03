@@ -82,6 +82,7 @@ export class OpcRecursoComponent {
 
   plataformas: any[] = [];
   roles: any[] = [];
+  intentadoGuardar = false;
 
 
 
@@ -237,6 +238,8 @@ export class OpcRecursoComponent {
   registrar(): void {
     if (this.enviando) return;
 
+    this.intentadoGuardar = true;
+
     // Validacion comun: solo tipoCodigo
     if (!this.recurso.tipoCodigo) {
       this.snackbar.warning('Campos incompletos', 'Seleccione un tipo de recurso');
@@ -245,7 +248,7 @@ export class OpcRecursoComponent {
 
     const tipo = this.tiposRecurso.find(t => t.codigo === Number(this.recurso.tipoCodigo));
     if (!tipo) {
-      this.snackbar.error('Error', 'Tipo de recurso nolido');
+      this.snackbar.error('Error', 'Tipo de recurso no valido');
       return;
     }
 
@@ -343,6 +346,7 @@ export class OpcRecursoComponent {
     servicio.registrar(payload).subscribe({
       next: () => {
         this.snackbar.success('Registro exitoso', `${tipo.nombre} registrado`);
+        this.intentadoGuardar = false;
         this.limpiarFormulario();
         this.enviando = false;
         this.cargarRegistrosActivos(tipo.nombre);
@@ -367,6 +371,7 @@ export class OpcRecursoComponent {
 
   editar(): void {
     if (this.enviando) return;
+    this.intentadoGuardar = true;
     if (!this.idOriginal) {
       this.snackbar.warning('Sin ID', 'No se puede editar un registro sin ID');
       return;
@@ -431,6 +436,7 @@ export class OpcRecursoComponent {
     servicio.editar(this.idOriginal, payload).subscribe({
       next: () => {  //
         this.snackbar.success('Actualizacian exitosa', `${tipo.nombre} actualizado`);
+        this.intentadoGuardar = false;
         this.limpiarFormulario();
         this.enviando = false;
         this.cargarRegistrosActivos(tipo.nombre);
@@ -638,6 +644,7 @@ export class OpcRecursoComponent {
     this.idOriginal = null;
     this.mostrarModalBuscar = false;
     this.filtroBusquedaModal = '';
+    this.intentadoGuardar = false;
   }
 
 

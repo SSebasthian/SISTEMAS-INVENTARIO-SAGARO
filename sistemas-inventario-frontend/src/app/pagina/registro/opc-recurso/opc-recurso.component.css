@@ -712,6 +712,8 @@
 
 
 
+
+
 /* Tarjeta */
 .sug-tarjeta {
     display: flex;
@@ -874,6 +876,25 @@
         font-size: 13px;
     }
 
+    .input-error {
+        border: 1px solid #c62828 !important;
+        background-color: #fff5f5 !important;
+        box-shadow: 0 0 5px rgba(198, 40, 40, 0.2) !important;
+    }
+
+    .input-error:focus {
+        border-color: #c62828 !important;
+        box-shadow: 0 0 7px rgba(198, 40, 40, 0.35) !important;
+    }
+
+    /* Mensaje de error debajo del campo */
+    .mensaje-error-campo {
+        display: block;
+        margin-top: 4px;
+        font-size: 11px;
+        color: #c62828;
+        font-weight: 500;
+    }
 
     /* BOTON GUARDAR */
 
